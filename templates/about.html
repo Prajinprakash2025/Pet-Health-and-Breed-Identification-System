@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row align-items-center mb-5 pb-5">
+        <div class="col-lg-6 mb-4 mb-lg-0 pe-lg-5">
+            <div class="glass-card shadow-sm border-0 bg-white">
+                <span class="text-accent fw-bold text-uppercase tracking-wider small d-block mb-2" style="color: var(--accent-color);">Our Story</span>
+                <h1 class="display-4 fw-bold mb-4 text-dark">About Us</h1>
+                <p class="lead text-muted mb-4">
+                    PetCare AI is dedicated to providing pet owners with the most advanced
+                    and reliable tools for pet health management and breed identification.
+                </p>
+                <p class="text-secondary mb-4">
+                    Founded by a passionate team of veterinarians and AI experts, our mission is to empower you with the knowledge needed to give your furry companions the best life possible. We believe that preventative care is the key to longevity, and our state-of-the-art models are designed to help you catch potential issues before they become problems.
+                </p>
+                <a href="{% url 'contact' %}" class="btn btn-primary rounded-pill px-4 py-2 mt-2 shadow-sm">Contact Our Team</a>
+            </div>
+        </div>
+         <div class="col-lg-6">
+            <div class="position-relative text-center">
+                 <!-- Decorative Shape -->
+                 <div class="position-absolute bg-primary rounded-circle opacity-10" style="width: 80%; height: 80%; top: 10%; right: -10%; z-index: -1;"></div>
+                 <img src="{% static 'images/about_vet.png' %}" alt="Veterinarian with dog" class="img-fluid rounded-4 shadow-lg object-fit-cover" style="max-height: 500px; width: 100%;">
+            </div>
+        </div>
+    </div>
+
+    <!-- Vision Section -->
+    <div class="row align-items-center mb-5 pb-5 flex-row-reverse">
+         <div class="col-lg-6 mb-4 mb-lg-0 ps-lg-5">
+              <h2 class="display-5 fw-bold text-dark mb-4">Our Vision for the Future</h2>
+              <p class="text-muted fs-5 mb-4">
+                  We envision a world where every pet owner has a virtual veterinarian in their pocket. By combining thousands of data points with cutting-edge machine learning, we're building a comprehensive health ecosystem.
+              </p>
+              <ul class="list-unstyled text-muted">
+                   <li class="mb-3 d-flex align-items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check-circle-fill text-primary" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/></svg>
+                        Accessible preventative care for everyone.
+                   </li>
+                   <li class="mb-3 d-flex align-items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check-circle-fill text-primary" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/></svg>
+                        Highly accurate breed identification.
+                   </li>
+                   <li class="mb-3 d-flex align-items-center gap-2">
+                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check-circle-fill text-primary" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/></svg>
+                        A global community of educated pet owners.
+                   </li>
+              </ul>
+         </div>
+         <div class="col-lg-6">
+              <div class="rounded-4 overflow-hidden shadow-sm p-5 bg-gradient text-white text-center d-flex flex-column align-items-center justify-content-center border-0" style="background: linear-gradient(135deg, var(--primary-color) 0%, #0F766E 100%); min-height: 350px;">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="currentColor" class="bi bi-heart-pulse-fill mb-4 opacity-75" viewBox="0 0 16 16">
+                      <path d="M1.475 9C2.702 10.84 4.779 12.871 8 15c3.221-2.129 5.298-4.16 6.525-6H12a.5.5 0 0 1-.464-.314l-1.457-3.642-1.598 5.593a.5.5 0 0 1-.945.049L5.889 6.568l-1.473 2.21A.5.5 0 0 1 4 9H1.475Z"/>
+                      <path d="M.88 8C-2.427 1.68 4.41-2 7.823 1.143q.09.083.176.171a3 3 0 0 1 .176-.17C11.59-2 18.426 1.68 15.12 8h-2.783l-1.874-4.686a.5.5 0 0 0-.945.049L7.921 8.956 6.464 5.314a.5.5 0 0 0-.88-.091L3.732 8H.88Z"/>
+                    </svg>
+                     <h3 class="fw-bold mb-3">AI-Powered Health</h3>
+                     <p class="opacity-75 mb-0">Delivering accurate insights tailored for your pet's specific breed and parameters.</p>
+                 </div>
+         </div>
+    </div>
+
+    <!-- Stats or Values -->
+    <div class="row g-4 mt-2 text-center mb-5">
+        <div class="col-md-4">
+             <div class="p-4 bg-white rounded-4 shadow-sm h-100 border-0">
+                 <h2 class="display-5 fw-bold text-primary mb-2">99%</h2>
+                 <p class="text-muted fw-medium mb-0 text-uppercase tracking-wider small">Identification Accuracy</p>
+             </div>
+        </div>
+        <div class="col-md-4">
+             <div class="p-4 bg-white rounded-4 shadow-sm h-100 border-0">
+                 <h2 class="display-5 fw-bold text-primary mb-2">24/7</h2>
+                 <p class="text-muted fw-medium mb-0 text-uppercase tracking-wider small">Insights Availability</p>
+             </div>
+        </div>
+        <div class="col-md-4">
+             <div class="p-4 bg-white rounded-4 shadow-sm h-100 border-0">
+                 <h2 class="display-5 fw-bold text-primary mb-2">10k+</h2>
+                 <p class="text-muted fw-medium mb-0 text-uppercase tracking-wider small">Happy Owners</p>
+             </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

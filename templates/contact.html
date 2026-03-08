@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5 pb-3">
+        <span class="text-accent fw-bold text-uppercase tracking-wider small d-block mb-2" style="color: var(--accent-color);">Let's Connect</span>
+        <h1 class="display-4 fw-bold text-dark">Get in Touch</h1>
+        <p class="lead text-muted">Have a question or need support? We're here to help you.</p>
+    </div>
+
+    <div class="row align-items-center mb-5 bg-white rounded-5 shadow-sm overflow-hidden border-0">
+        <!-- Sidebar Image -->
+        <div class="col-lg-5 p-0 d-none d-lg-block">
+            <img src="{% static 'images/contact_puppy.png' %}" alt="Cute puppy looking at camera" class="img-fluid w-100 h-100 object-fit-cover" style="min-height: 500px;">
+        </div>
+        
+        <!-- Form Section -->
+        <div class="col-lg-7 p-5">
+            <h3 class="fw-bold mb-4">Send us a Message</h3>
+            <form action="#" method="POST" class="needs-validation" novalidate>
+                {% csrf_token %}
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label for="firstName" class="form-label fw-medium text-secondary">First Name</label>
+                        <input type="text" class="form-control bg-light border-0" id="firstName" placeholder="John" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="lastName" class="form-label fw-medium text-secondary">Last Name</label>
+                        <input type="text" class="form-control bg-light border-0" id="lastName" placeholder="Doe" required>
+                    </div>
+                    <div class="col-12">
+                        <label for="email" class="form-label fw-medium text-secondary">Email Address</label>
+                        <input type="email" class="form-control bg-light border-0" id="email" placeholder="john@example.com" required>
+                    </div>
+                    <div class="col-12">
+                        <label for="subject" class="form-label fw-medium text-secondary">Subject</label>
+                        <input type="text" class="form-control bg-light border-0" id="subject" placeholder="How can we help?" required>
+                    </div>
+                    <div class="col-12">
+                        <label for="message" class="form-label fw-medium text-secondary">Message</label>
+                        <textarea class="form-control bg-light border-0" id="message" rows="4" placeholder="Enter your message here..." required></textarea>
+                    </div>
+                    <div class="col-12 mt-4 pt-2">
+                        <button type="submit" class="btn btn-primary btn-lg rounded-pill px-5 shadow-sm text-uppercase tracking-wider">Send Message</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Contact Info Cards -->
+    <div class="row mt-5 text-center g-4">
+         <div class="col-md-4">
+             <div class="bg-white p-4 rounded-4 shadow-sm border-0 h-100">
+                 <div class="d-inline-flex align-items-center justify-content-center bg-light text-primary rounded-circle mb-3" style="width: 60px; height: 60px;">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-envelope-fill" viewBox="0 0 16 16"><path d="M.05 3.555A2 2 0 0 1 2 2h12a2 2 0 0 1 1.95 1.555L8 8.414.05 3.555ZM0 4.697v7.104l5.803-3.558L0 4.697ZM6.761 8.83l-6.57 4.027A2 2 0 0 0 2 14h12a2 2 0 0 0 1.808-1.144l-6.57-4.027L8 9.586l-1.239-.757Zm3.436-.586L16 11.801V4.697l-5.803 3.546Z"/></svg>
+                 </div>
+                 <h5 class="fw-bold text-dark">Email Us</h5>
+                 <p class="text-muted small mb-0">support@petcareai.com</p>
+             </div>
+         </div>
+         <div class="col-md-4">
+             <div class="bg-white p-4 rounded-4 shadow-sm border-0 h-100">
+                 <div class="d-inline-flex align-items-center justify-content-center bg-light text-primary rounded-circle mb-3" style="width: 60px; height: 60px;">
+                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-geo-alt-fill" viewBox="0 0 16 16"><path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/></svg>
+                 </div>
+                 <h5 class="fw-bold text-dark">Office</h5>
+                 <p class="text-muted small mb-0">123 AI Boulevard, Tech Park, CA</p>
+             </div>
+         </div>
+         <div class="col-md-4">
+             <div class="bg-white p-4 rounded-4 shadow-sm border-0 h-100">
+                 <div class="d-inline-flex align-items-center justify-content-center bg-light text-primary rounded-circle mb-3" style="width: 60px; height: 60px;">
+                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-telephone-fill" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.885.511a1.745 1.745 0 0 1 2.61.163L6.29 2.98c.329.394.33 1.028.005 1.443l-1.39 1.763a11.168 11.168 0 0 0 5.4 5.4l1.763-1.39c.415-.325 1.049-.324 1.443.004l2.307 1.794c.833.649.833 2.053-.005 2.699l-2.22 1.73a3.44 3.44 0 0 1-2.19.71 14.536 14.536 0 0 1-10.4-4.2A14.536 14.536 0 0 1 .536 3.44C.536 2.664.825 1.93 1.34 1.4l1.73-2.22c.646-.838 2.05-.838 2.698-.005z"/></svg>
+                 </div>
+                 <h5 class="fw-bold text-dark">Phone</h5>
+                 <p class="text-muted small mb-0">+1 (555) 123-4567</p>
+             </div>
+         </div>
+    </div>
+</div>
+{% endblock %}
