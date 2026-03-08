@@ -15,7 +15,7 @@ env/
 .venv/
 
 # Database
-db.sqlite3
+# db.sqlite3  (tracked for student use)
 db.sqlite3-journal
 
 # IDE
@@ -32,10 +32,10 @@ Thumbs.db
 # Media uploads
 media/
 
-# ML models (large files)
-ml/*.keras
-ml/*.h5
-ml/*.tflite
+# ML models (tracked for student use)
+# ml/*.keras
+# ml/*.h5
+# ml/*.tflite
 
 # Distribution / Packaging
 dist/
