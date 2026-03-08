@@ -7,4 +7,5 @@ seaborn>=0.13.0
 opencv-python>=4.9.0.0
 tensorflow>=2.15.0
 importlib_resources
+python-dotenv>=1.0.0
 
