@@ -1,32 +1,78 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">
-                <h2 class="mb-0">Create an Account</h2>
+<div class="row justify-content-center py-5">
+    <div class="col-lg-10">
+        <div class="row g-0 auth-card shadow-lg rounded-4 overflow-hidden">
+            <!-- Illustration / marketing side -->
+            <div class="col-lg-6 d-none d-lg-flex flex-column justify-content-between auth-illustration p-4">
+                <div>
+                    <span class="badge rounded-pill bg-light text-dark auth-badge mb-3">
+                        <span class="badge-dot"></span>
+                        Create your pet hub
+                    </span>
+                    <h2 class="fw-bold mb-3">Join PetCare AI in minutes</h2>
+                    <p class="mb-4 auth-text">
+                        Register to unlock intelligent health insights, vaccination reminders, and rich profiles for every pet you love.
+                    </p>
+                    <ul class="list-unstyled small mb-0">
+                        <li class="d-flex align-items-center mb-2">
+                            <span class="check-icon me-2"></span>
+                            Beautiful dashboards for each pet
+                        </li>
+                        <li class="d-flex align-items-center mb-2">
+                            <span class="check-icon me-2"></span>
+                            Quick access across all your devices
+                        </li>
+                        <li class="d-flex align-items-center">
+                            <span class="check-icon me-2"></span>
+                            Built with privacy and security in mind
+                        </li>
+                    </ul>
+                </div>
+                <div class="text-end mt-4">
+                    <img src="{% static 'images/first-aid.svg' %}" alt="Pet care illustration" class="auth-illustration-img">
+                </div>
             </div>
-            <div class="card-body">
-                <form method="post">
+
+            <!-- Form side -->
+            <div class="col-lg-6 bg-white p-4 p-lg-5">
+                <div class="mb-4 text-center text-lg-start">
+                    <span class="text-muted small text-uppercase fw-semibold tracking-wide">Register</span>
+                    <h3 class="fw-bold mt-1 mb-2">Create your PetCare AI account</h3>
+                    <p class="text-muted small mb-0">It only takes a moment to start organizing your pet’s world.</p>
+                </div>
+
+                <form method="post" novalidate>
                     {% csrf_token %}
                     {{ form.non_field_errors }}
                     {% for field in form %}
                         <div class="mb-3">
-                            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            <label class="form-label fw-semibold small text-uppercase" for="{{ field.id_for_label }}">
+                                {{ field.label }}
+                            </label>
                             {{ field }}
                             {% if field.help_text %}
-                                <div class="form-text">{{ field.help_text|safe }}</div>
+                                <div class="form-text small text-muted">{{ field.help_text|safe }}</div>
                             {% endif %}
                             {% for error in field.errors %}
-                                <div class="text-danger small">
+                                <div class="text-danger small mt-1">
                                     {{ error }}
                                 </div>
                             {% endfor %}
                         </div>
                     {% endfor %}
-                    <button type="submit" class="btn btn-primary w-100">Register</button>
+
+                    <button type="submit" class="btn btn-primary w-100 mt-2">Create account</button>
                 </form>
+
+                <div class="mt-4 text-center">
+                    <small class="text-muted">
+                        Already have an account?
+                        <a href="{% url 'accounts:login' %}" class="auth-link">Sign in instead</a>
+                    </small>
+                </div>
             </div>
         </div>
     </div>

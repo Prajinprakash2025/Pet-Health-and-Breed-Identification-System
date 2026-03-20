@@ -14,7 +14,7 @@
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/custom.css' %}">
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
 <nav class="navbar navbar-expand-lg navbar-light sticky-top py-3">
     <div class="container">
         <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'home' %}">
@@ -35,11 +35,7 @@
                 <li class="nav-item mx-2">
                     <a class="nav-link px-3" href="{% url 'pets:pet_list' %}">My Pets</a>
                 </li>
-                {% if user.is_authenticated %}
-                <li class="nav-item mx-2">
-                    <a class="nav-link px-3" href="{% url 'analytics:dashboard' %}">Dashboard</a>
-                </li>
-                {% endif %}
+                {# Dashboard link removed from main nav; accessible from profile #}
                  <li class="nav-item mx-2">
                     <a class="nav-link px-3" href="{% url 'about' %}">About</a>
                 </li>

@@ -1,32 +1,121 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">
-                <h2 class="mb-0">{% if pet %}Edit {{ pet.name }}{% else %}Add a New Pet{% endif %}</h2>
-            </div>
-            <div class="card-body">
-                <form method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    
-                    {% for field in form %}
-                        <div class="mb-3">
-                            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                            {{ field }}
-                            {% if field.help_text %}
-                                <div class="form-text text-muted">{{ field.help_text|safe }}</div>
-                            {% endif %}
-                            {% for error in field.errors %}
-                                <div class="invalid-feedback d-block">{{ error }}</div>
+<div class="row justify-content-center py-4">
+    <div class="col-lg-10">
+        <div class="glass-card">
+            <div class="row g-4 align-items-start">
+                <!-- Left: Illustration / Context -->
+                <div class="col-lg-4 d-none d-lg-block">
+                    <div class="h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <span class="badge rounded-pill bg-primary-subtle text-primary small text-uppercase mb-2">
+                                Smart profile
+                            </span>
+                            <h2 class="h3 fw-bold mb-3">
+                                {% if pet %}Update {{ pet.name }}{% else %}Add a new pet{% endif %}
+                            </h2>
+                            <p class="text-muted small mb-4">
+                                Start with a clear photo and a few basic details. We will use this to power breed
+                                identification and personalized health insights later.
+                            </p>
+                            <ul class="list-unstyled small text-muted mb-0">
+                                <li class="mb-1">• Upload a front-facing, well‑lit photo.</li>
+                                <li class="mb-1">• Include the full body where possible.</li>
+                                <li>• You can update the image any time from the pet page.</li>
+                            </ul>
+                        </div>
+                        <div class="mt-4">
+                            <img src="{% static 'images/hero_pet.png' %}" alt="Pet illustration"
+                                 class="img-fluid rounded-4 shadow-sm object-fit-cover"
+                                 style="max-height: 220px; width: 100%;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Form -->
+                <div class="col-lg-8">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <div class="row g-3">
+                            {% for field in form %}
+                                {% if field.name == "image" %}
+                                <!-- Special layout for image upload -->
+                                <div class="col-12">
+                                    <label for="{{ field.id_for_label }}" class="form-label fw-semibold small text-uppercase">
+                                        {{ field.label }}
+                                    </label>
+                                    <div class="file-dropzone p-3 p-sm-4 mb-2">
+                                        <div class="d-flex flex-column flex-sm-row align-items-center gap-3">
+                                            <div class="file-dropzone-icon d-flex align-items-center justify-content-center">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" viewBox="0 0 16 16">
+                                                    <path d="M.5 2a.5.5 0 0 0-.5.5v9.528l2.5-2.5 3 3L9.5 8l3 3 3-3v-7H.5z"/>
+                                                </svg>
+                                            </div>
+                                            <div class="flex-grow-1 text-center text-sm-start">
+                                                {{ field }}
+                                                <div class="small text-muted mt-1">
+                                                    Drag and drop a photo here or click to browse.
+                                                    JPG/PNG, up to 10MB.
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% if field.help_text %}
+                                        <div class="form-text text-muted">{{ field.help_text|safe }}</div>
+                                    {% endif %}
+                                    {% for error in field.errors %}
+                                        <div class="invalid-feedback d-block">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                                {% else %}
+                                <div class="col-md-6">
+                                    <label for="{{ field.id_for_label }}" class="form-label fw-semibold small text-uppercase">
+                                        {{ field.label }}
+                                    </label>
+                                    {{ field }}
+                                    {% if field.help_text %}
+                                        <div class="form-text text-muted small">{{ field.help_text|safe }}</div>
+                                    {% endif %}
+                                    {% for error in field.errors %}
+                                        <div class="invalid-feedback d-block">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
                             {% endfor %}
                         </div>
-                    {% endfor %}
-                    
-                    <button type="submit" class="btn btn-primary">{% if pet %}Save Changes{% else %}Add Pet{% endif %}</button>
-                    <a href="{% if pet %}{% url 'pets:pet_detail' pet.id %}{% else %}{% url 'pets:pet_list' %}{% endif %}" class="btn btn-secondary">Cancel</a>
-                </form>
+
+                        <div class="d-flex flex-wrap gap-3 mt-4 align-items-center">
+                            <button type="submit" class="btn btn-primary">
+                                {% if pet %}Save Changes{% else %}Create Pet Profile{% endif %}
+                            </button>
+                            <a href="{% if pet %}{% url 'pets:pet_detail' pet.id %}{% else %}{% url 'pets:pet_list' %}{% endif %}"
+                               class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+                        </div>
+
+                        <div class="mt-4 p-3 rounded-3 border border-dashed" style="border-color: #bae6fd; background-color: #f0f9ff;">
+                            <div class="d-flex flex-column flex-md-row align-items-start gap-3">
+                                <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center"
+                                     style="width: 40px; height: 40px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M8 1a4 4 0 0 0-4 4v1H3a2 2 0 0 0-2 2v4.5A2.5 2.5 0 0 0 3.5 15h9A2.5 2.5 0 0 0 15 12.5V8a2 2 0 0 0-2-2h-1V5a4 4 0 0 0-4-4zM6 5a2 2 0 1 1 4 0v1H6V5z"/>
+                                    </svg>
+                                </div>
+                                <div class="small text-muted">
+                                    <strong class="d-block mb-1" style="color: #0f766e;">Breed identification</strong>
+                                    <span>
+                                        After you create this pet profile and upload an image, open the pet page and click
+                                        <em>"Run AI Breed Identification"</em> to see the predicted breed and health insights.
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

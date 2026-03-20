@@ -1,0 +1,251 @@
+{% extends "admin/base_admin.html" %}
+
+{% block content %}
+<div class="row admin-layout">
+    <!-- Sidebar -->
+    <div class="col-lg-3 mb-4">
+        <div class="glass-card admin-sidebar-card">
+            <h6 class="fw-bold text-uppercase small mb-3">Admin panel</h6>
+            <ul class="list-unstyled mb-0 admin-sidebar">
+                <li class="admin-nav-item" data-target="#admin-overview">Overview</li>
+                <li class="admin-nav-item" data-target="#admin-users">Users</li>
+                <li class="admin-nav-item" data-target="#admin-reports">Reports</li>
+                <li class="admin-nav-item" data-target="#admin-dataset">Dataset &amp; Training</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Main content -->
+    <div class="col-lg-9">
+        <!-- Small metric strip -->
+        <div class="row g-3 mb-3 admin-panel" id="admin-overview">
+            <div class="col-md-4">
+                <div class="admin-metric-card">
+                    <span class="metric-label">Model status</span>
+                    {% if model_exists %}
+                        <span class="metric-value text-success">Ready</span>
+                        <span class="metric-sub">{{ model_path }}</span>
+                    {% else %}
+                        <span class="metric-value text-danger">Not trained</span>
+                        <span class="metric-sub">Upload data &amp; train</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="admin-metric-card">
+                    <span class="metric-label">Datasets</span>
+                    <span class="metric-value">{{ datasets|length }}</span>
+                    <span class="metric-sub">uploaded folders</span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="admin-metric-card">
+                    <span class="metric-label">Latest dataset</span>
+                    {% if latest_dataset %}
+                        <span class="metric-value">{{ latest_dataset }}</span>
+                        <span class="metric-sub">used for training</span>
+                    {% else %}
+                        <span class="metric-value">None</span>
+                        <span class="metric-sub">upload a ZIP first</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Users panel -->
+        <div class="glass-card mb-3 admin-panel d-none" id="admin-users">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="fw-bold mb-0">Users</h4>
+                <span class="badge bg-light text-muted small">{{ users|length }} total</span>
+            </div>
+            <p class="text-muted small">
+                View all accounts and quickly block or unblock users if needed.
+            </p>
+            <div class="table-responsive mt-3">
+                <table class="table align-middle mb-0 small">
+                    <thead>
+                    <tr class="text-muted">
+                        <th scope="col">Username</th>
+                        <th scope="col">Email</th>
+                        <th scope="col" class="text-center">Role</th>
+                        <th scope="col" class="text-center">Status</th>
+                        <th scope="col" class="text-end">Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for u in users %}
+                        <tr>
+                            <td>
+                                <strong>{{ u.username }}</strong>
+                            </td>
+                            <td>{{ u.email|default:"-" }}</td>
+                            <td class="text-center">
+                                {% if u.is_superuser %}
+                                    <span class="badge bg-danger-subtle text-danger">Superuser</span>
+                                {% elif u.is_staff %}
+                                    <span class="badge bg-primary-subtle text-primary">Staff</span>
+                                {% else %}
+                                    <span class="badge bg-light text-muted">User</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if u.is_active %}
+                                    <span class="badge bg-success-subtle text-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-secondary-subtle text-secondary">Blocked</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                {% if u != request.user %}
+                                    {% if u.is_active %}
+                                        <form method="post" class="d-inline">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="block_user_id" value="{{ u.id }}">
+                                            <button type="submit" class="btn btn-outline-danger btn-xs">Block</button>
+                                        </form>
+                                    {% else %}
+                                        <form method="post" class="d-inline">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="unblock_user_id" value="{{ u.id }}">
+                                            <button type="submit" class="btn btn-outline-success btn-xs">Unblock</button>
+                                        </form>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-muted">You</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">
+                                No users found.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Reports panel (placeholder) -->
+        <div class="glass-card mb-3 admin-panel d-none" id="admin-reports">
+            <h4 class="fw-bold mb-2">Reports</h4>
+            <p class="text-muted small mb-0">
+                Here you could show user-reported issues, flagged images and audit logs for admin review in the future.
+            </p>
+        </div>
+
+        <!-- Dataset & Training panel -->
+        <div class="glass-card mb-3 admin-panel d-none" id="admin-dataset">
+            <h4 class="fw-bold mb-3">Dataset &amp; Training</h4>
+            <p class="text-muted small mb-4">
+                Upload a ZIP dataset with subfolders for each class (e.g. <code>GoldenRetriever/</code>, <code>Siamese/</code>).
+                The server will extract it and train a simple CNN model used by the breed prediction API.
+            </p>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="bg-light rounded-3 p-3 h-100">
+                        <h6 class="text-muted text-uppercase small fw-semibold mb-2">Current model</h6>
+                        {% if model_exists %}
+                            <p class="mb-1"><strong>{{ model_path }}</strong></p>
+                            <p class="text-muted small mb-0">Used by the AI breed identifier.</p>
+                        {% else %}
+                            <p class="text-muted small mb-0">No model trained yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="bg-light rounded-3 p-3 h-100">
+                        <h6 class="text-muted text-uppercase small fw-semibold mb-2">Latest dataset</h6>
+                        {% if latest_dataset %}
+                            <p class="mb-1"><strong>{{ latest_dataset }}</strong></p>
+                            {% if dataset_stats %}
+                                <p class="text-muted small mb-2">{{ dataset_stats|length }} breeds detected ({{ total_images }} images total).</p>
+                                <div class="mt-2" style="max-height: 100px; overflow-y: auto;">
+                                    {% for breed, count in dataset_stats.items %}
+                                        <span class="badge bg-secondary-subtle text-secondary me-1 mb-1">{{ breed|title|replace:"_":" " }} ({{ count }})</span>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <p class="text-muted small mb-0">Used when you start training.</p>
+                            {% endif %}
+                        {% else %}
+                            <p class="text-muted small mb-0">No dataset uploaded yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="bg-light rounded-3 p-3 h-100">
+                        <h6 class="text-muted text-uppercase small fw-semibold mb-2">Datasets</h6>
+                        {% if datasets %}
+                            <ul class="text-muted small mb-0">
+                                {% for ds in datasets %}
+                                    <li>{{ ds }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-muted small mb-0">None yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <h5 class="fw-bold mb-2">1. Upload dataset (ZIP)</h5>
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <input type="file" name="dataset_zip" accept=".zip" class="form-control">
+                        </div>
+                        <button type="submit" class="btn btn-secondary btn-sm">Upload &amp; extract</button>
+                    </form>
+                    <p class="text-muted small mt-2 mb-0">
+                        Expected structure inside ZIP: <code>dataset_root/&lt;class_name&gt;/image1.jpg</code>, etc.
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <h5 class="fw-bold mb-2">2. Train CNN model</h5>
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="train_model" value="1">
+                        <button type="submit" class="btn btn-primary btn-sm" {% if not latest_dataset %}disabled{% endif %}>
+                            Start training
+                        </button>
+                    </form>
+                    <p class="text-muted small mt-2 mb-0">
+                        Trains on the latest uploaded dataset (80% train / 20% validation) and updates the model used by predictions.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const navItems = document.querySelectorAll('.admin-nav-item');
+        const panels = document.querySelectorAll('.admin-panel');
+
+        function showPanel(id) {
+            panels.forEach(p => {
+                p.classList.toggle('d-none', p.id !== id);
+            });
+        }
+
+        navItems.forEach(item => {
+            item.addEventListener('click', function () {
+                navItems.forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+                const target = this.getAttribute('data-target').replace('#', '');
+                showPanel(target);
+            });
+        });
+
+        // Default to Dataset & Training
+        showPanel('admin-dataset');
+        document.querySelector('[data-target="#admin-dataset"]').classList.add('active');
+    });
+</script>
+{% endblock %}

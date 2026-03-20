@@ -152,4 +152,86 @@
         </div>
     </div>
 </div>
+
+<!-- Community & Pet Gallery -->
+<div class="container py-5 mb-5">
+    <div class="row align-items-start g-4">
+        <!-- Your Pet Gallery -->
+        <div class="col-lg-6">
+            <div class="glass-card h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2 class="h3 fw-bold mb-0">Your Pet Gallery</h2>
+                    <span class="badge bg-primary-subtle text-primary small text-uppercase">For registered users</span>
+                </div>
+                <p class="text-muted mb-4">
+                    Keep all your pets in one beautiful dashboard. Add profiles, upload photos, and let PetCare AI keep track of health, breed details, and vet visits.
+                </p>
+                <div class="row g-3 mb-4">
+                    <div class="col-4">
+                        <div class="rounded-4 overflow-hidden bg-light ratio ratio-1x1">
+                            <img src="{% static 'images/hero_pet.png' %}" alt="Pet gallery sample" class="w-100 h-100 object-fit-cover">
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="rounded-4 overflow-hidden bg-light ratio ratio-1x1 d-flex align-items-center justify-content-center text-muted small">
+                            + your pets
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="rounded-4 overflow-hidden bg-light ratio ratio-1x1 d-flex align-items-center justify-content-center text-muted small">
+                            + more memories
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="{% url 'pets:pet_add' %}" class="btn btn-primary">
+                        Add a new pet
+                    </a>
+                    <a href="{% url 'pets:pet_list' %}" class="btn btn-outline-secondary">
+                        View my pets
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Missing Pets & Sightings -->
+        <div class="col-lg-6">
+            <div class="glass-card h-100">
+                <h2 class="h3 fw-bold mb-3">Missing Pets & Sightings</h2>
+                <p class="text-muted mb-4">
+                    Turn PetCare AI into a safety net for your community. Share missing pet alerts and let nearby users report when they see a pet that might match.
+                </p>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-12">
+                        <div class="border rounded-4 p-3 bg-light">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <strong>Missing: Luna (Golden Retriever)</strong>
+                                <span class="badge bg-warning text-dark small">Sample alert</span>
+                            </div>
+                            <p class="text-muted small mb-2">
+                                Last seen near City Park on 12 March. Friendly and wearing a blue collar.
+                            </p>
+                            <span class="text-muted small">If you think you saw Luna, you could submit a quick sighting report.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-info small mb-3">
+                    This is a preview of the upcoming missing-pet feature. For now, you can use your pet profiles and the contact page to share details.
+                </div>
+
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="{% url 'contact' %}" class="btn btn-secondary">
+                        Report a missing pet
+                    </a>
+                    <a href="{% url 'contact' %}" class="btn btn-outline-secondary">
+                        I saw a pet, contact support
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}

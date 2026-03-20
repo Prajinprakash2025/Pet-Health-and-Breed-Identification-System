@@ -1,0 +1,145 @@
+{% extends "analytics/dashboard_base.html" %}
+
+{% block dashboard_content %}
+<!-- Section Header -->
+<div class="section-header">
+    <h1 class="section-title">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="#3B82F6" viewBox="0 0 16 16">
+            <path d="M9.5 0a.5.5 0 0 1 .5.5.5.5 0 0 0 .5.5.5.5 0 0 1 .5.5V2a.5.5 0 0 1-.5.5h-5A.5.5 0 0 1 5 2v-.5a.5.5 0 0 1 .5-.5.5.5 0 0 0 .5-.5.5.5 0 0 1 .5-.5h3Z"/>
+            <path d="M3 2.5a.5.5 0 0 1 .5-.5H4a.5.5 0 0 0 0-1h-.5A1.5 1.5 0 0 0 2 2.5v12A1.5 1.5 0 0 0 3.5 16h9a1.5 1.5 0 0 0 1.5-1.5v-12A1.5 1.5 0 0 0 12.5 1H12a.5.5 0 0 0 0 1h.5a.5.5 0 0 1 .5.5v12a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5v-12Z"/>
+        </svg>
+        Medical Records
+    </h1>
+    <p class="section-subtitle">Vaccination records and medical visit history for all your pets</p>
+</div>
+
+<!-- ── Summary Cards ──────────────────────────────────────────────────── -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="stat-card" style="border-left: 4px solid #3B82F6;">
+            <span class="text-muted small fw-medium text-uppercase d-block mb-1">Vaccinations</span>
+            <h3 class="fw-bold mb-0">{{ total_vaccinations }}</h3>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card" style="border-left: 4px solid #8B5CF6;">
+            <span class="text-muted small fw-medium text-uppercase d-block mb-1">Medical Visits</span>
+            <h3 class="fw-bold mb-0">{{ total_medical }}</h3>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card" style="border-left: 4px solid #22C55E;">
+            <span class="text-muted small fw-medium text-uppercase d-block mb-1">Completed</span>
+            <h3 class="fw-bold mb-0 text-success">{{ completed_vax }}</h3>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card" style="border-left: 4px solid #EAB308;">
+            <span class="text-muted small fw-medium text-uppercase d-block mb-1">Scheduled</span>
+            <h3 class="fw-bold mb-0" style="color: #ca8a04;">{{ scheduled_vax }}</h3>
+        </div>
+    </div>
+</div>
+
+<!-- ── Vaccination Chart ──────────────────────────────────────────────── -->
+{% if vax_labels %}
+<div class="chart-card mb-4">
+    <div class="chart-card-title">💉 Vaccination Status Breakdown</div>
+    <div style="max-height: 220px;">
+        <canvas id="vaxChart"></canvas>
+    </div>
+</div>
+{% endif %}
+
+<!-- ── Vaccination Records Table ───────────────────────────────────────── -->
+<div class="chart-card mb-4">
+    <div class="chart-card-title">💉 Vaccination Records</div>
+    {% if vaccinations %}
+    <div class="table-responsive">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Pet</th>
+                    <th>Vaccine</th>
+                    <th>Scheduled</th>
+                    <th>Administered</th>
+                    <th>Vet</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for vax in vaccinations %}
+                <tr>
+                    <td><strong>{{ vax.pet.name }}</strong></td>
+                    <td>{{ vax.vaccine_name }}</td>
+                    <td class="text-muted">{{ vax.scheduled_date|date:"M d, Y"|default:"—" }}</td>
+                    <td class="text-muted">{{ vax.administered_date|date:"M d, Y"|default:"—" }}</td>
+                    <td class="text-muted">{{ vax.vet_name|default:"—" }}</td>
+                    <td><span class="status-badge {{ vax.status }}">{{ vax.get_status_display }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" viewBox="0 0 16 16"><path d="M9.5 0a.5.5 0 0 1 .5.5.5.5 0 0 0 .5.5z"/></svg>
+        <p>No vaccination records yet.</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- ── Medical Visit Records Table ─────────────────────────────────────── -->
+<div class="chart-card">
+    <div class="chart-card-title">🏥 Medical Visit Records</div>
+    {% if medical_records %}
+    <div class="table-responsive">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Pet</th>
+                    <th>Visit Date</th>
+                    <th>Clinic</th>
+                    <th>Diagnosis</th>
+                    <th>Treatment</th>
+                    <th>Follow-up</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for rec in medical_records %}
+                <tr>
+                    <td><strong>{{ rec.pet.name }}</strong></td>
+                    <td class="text-muted">{{ rec.visit_date|date:"M d, Y" }}</td>
+                    <td class="text-muted">{{ rec.clinic_name|default:"—" }}</td>
+                    <td>{{ rec.diagnosis|truncatewords:10 }}</td>
+                    <td class="text-muted">{{ rec.treatment|truncatewords:8|default:"—" }}</td>
+                    <td class="text-muted">{{ rec.follow_up_date|date:"M d, Y"|default:"—" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14z"/></svg>
+        <p>No medical visit records yet.</p>
+    </div>
+    {% endif %}
+</div>
+
+{% if vax_labels %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+Chart.defaults.font.family = "'Inter', sans-serif";
+Chart.defaults.plugins.legend.labels.usePointStyle = true;
+new Chart(document.getElementById('vaxChart'), {
+    type: 'doughnut',
+    data: {
+        labels: {{ vax_labels|safe }},
+        datasets: [{ data: {{ vax_counts|safe }}, backgroundColor: ['#22C55E', '#3B82F6', '#EF4444'], borderWidth: 0, hoverOffset: 10 }]
+    },
+    options: { cutout: '55%', plugins: { legend: { position: 'right', labels: { padding: 20 } } }, responsive: true, maintainAspectRatio: false }
+});
+</script>
+{% endif %}
+{% endblock %}

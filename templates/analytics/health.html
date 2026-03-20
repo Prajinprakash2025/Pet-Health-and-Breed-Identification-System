@@ -1,0 +1,113 @@
+{% extends "analytics/dashboard_base.html" %}
+
+{% block dashboard_content %}
+<!-- Section Header -->
+<div class="section-header">
+    <h1 class="section-title">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="#22C55E" viewBox="0 0 16 16">
+            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+            <path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/>
+        </svg>
+        Health Assessments
+    </h1>
+    <p class="section-subtitle">Track your pets' health risk levels and assessment history</p>
+</div>
+
+<!-- ── Summary Cards ──────────────────────────────────────────────────── -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="stat-card" style="border-left: 4px solid #22C55E;">
+            <span class="text-muted small fw-medium text-uppercase d-block mb-1">Total Assessments</span>
+            <h3 class="fw-bold mb-0">{{ total_assessments }}</h3>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card" style="border-left: 4px solid #22C55E;">
+            <span class="text-muted small fw-medium text-uppercase d-block mb-1">Low Risk</span>
+            <h3 class="fw-bold mb-0 text-success">{{ low_risk_count }}</h3>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card" style="border-left: 4px solid #EAB308;">
+            <span class="text-muted small fw-medium text-uppercase d-block mb-1">Medium Risk</span>
+            <h3 class="fw-bold mb-0" style="color: #ca8a04;">{{ medium_risk_count }}</h3>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card" style="border-left: 4px solid #EF4444;">
+            <span class="text-muted small fw-medium text-uppercase d-block mb-1">High Risk</span>
+            <h3 class="fw-bold mb-0 text-danger">{{ high_risk_count }}</h3>
+        </div>
+    </div>
+</div>
+
+<!-- ── Health Risk Chart ──────────────────────────────────────────────── -->
+{% if health_labels %}
+<div class="chart-card mb-4">
+    <div class="chart-card-title">🩺 Overall Risk Distribution</div>
+    <div style="max-height: 260px;">
+        <canvas id="healthRiskChart"></canvas>
+    </div>
+</div>
+{% endif %}
+
+<!-- ── Assessment History Table ────────────────────────────────────────── -->
+<div class="chart-card">
+    <div class="chart-card-title">📋 Assessment History</div>
+    {% if assessments %}
+    <div class="table-responsive">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Pet</th>
+                    <th>Date</th>
+                    <th>Skin</th>
+                    <th>Fur Loss</th>
+                    <th>Eye</th>
+                    <th>Wound</th>
+                    <th>Parasite</th>
+                    <th>Obesity</th>
+                    <th>Overall</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for asmt in assessments %}
+                <tr>
+                    <td><strong>{{ asmt.pet.name }}</strong></td>
+                    <td class="text-muted">{{ asmt.assessment_date|date:"M d, Y" }}</td>
+                    <td><span class="risk-badge {{ asmt.skin_infection_risk }}">{{ asmt.skin_infection_risk }}</span></td>
+                    <td><span class="risk-badge {{ asmt.fur_loss_risk }}">{{ asmt.fur_loss_risk }}</span></td>
+                    <td><span class="risk-badge {{ asmt.eye_issue_risk }}">{{ asmt.eye_issue_risk }}</span></td>
+                    <td><span class="risk-badge {{ asmt.wound_risk }}">{{ asmt.wound_risk }}</span></td>
+                    <td><span class="risk-badge {{ asmt.parasite_risk }}">{{ asmt.parasite_risk }}</span></td>
+                    <td><span class="risk-badge {{ asmt.obesity_risk }}">{{ asmt.obesity_risk }}</span></td>
+                    <td><span class="risk-badge {{ asmt.overall_risk_level }}"><strong>{{ asmt.get_overall_risk_level_display }}</strong></span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/></svg>
+        <p>No health assessments yet. Run a health check on one of your pets to see the results here.</p>
+    </div>
+    {% endif %}
+</div>
+
+{% if health_labels %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+Chart.defaults.font.family = "'Inter', sans-serif";
+Chart.defaults.plugins.legend.labels.usePointStyle = true;
+new Chart(document.getElementById('healthRiskChart'), {
+    type: 'doughnut',
+    data: {
+        labels: {{ health_labels|safe }},
+        datasets: [{ data: {{ health_counts|safe }}, backgroundColor: ['#22C55E', '#EAB308', '#EF4444'], borderWidth: 0, hoverOffset: 10 }]
+    },
+    options: { cutout: '60%', plugins: { legend: { position: 'right', labels: { padding: 20 } } }, responsive: true, maintainAspectRatio: false }
+});
+</script>
+{% endif %}
+{% endblock %}

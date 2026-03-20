@@ -1,47 +1,60 @@
-# Environment
+# --- Environment & Credentials ---
 .env
 .env.*
 !.env.example
 
-# Python
+# --- Python & Bytecode ---
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
+*.pyo
 
-# Virtual Environment
+# --- Virtual Environment ---
 venv/
 env/
 .venv/
+ENV/
 
-# Database
-# db.sqlite3  (tracked for student use)
+# --- Database ---
+# db.sqlite3 is UNCOMMENTED so students get the initial data
+# db.sqlite3 
 db.sqlite3-journal
 
-# IDE
+# --- ML & Datasets (Crucial for Repo Size) ---
+# We ignore the raw datasets and zip files to keep the repo clean
+ml_datasets/
+*.zip
+*.tar.gz
+*.rar
+image.png
+
+# --- Django Specifics ---
+media/
+static/collected_static/
+
+# --- IDE & Editor ---
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
+.project
+.pydevproject
+.settings/
 
-# OS
+# --- OS Specific ---
 .DS_Store
+.DS_Store?
+._*
 Thumbs.db
+ehthumbs.db
 
-# Media uploads
-media/
-
-# ML models (tracked for student use)
-# ml/*.keras
-# ml/*.h5
-# ml/*.tflite
-
-# Distribution / Packaging
+# --- Distribution / Packaging ---
 dist/
 build/
 *.egg-info/
 *.egg
 
-# Logs
+# --- Logs ---
 *.log

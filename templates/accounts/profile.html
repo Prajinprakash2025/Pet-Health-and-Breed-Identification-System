@@ -1,24 +1,68 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h2 class="mb-0">My Profile</h2>
-                <a href="{% url 'accounts:profile_edit' %}" class="btn btn-outline-primary btn-sm">Edit Profile</a>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <p><strong>Username:</strong> {{ request.user.username }}</p>
-                        <p><strong>Email:</strong> {{ request.user.email }}</p>
+<div class="row justify-content-center py-4">
+    <div class="col-xl-9 col-lg-10">
+        <div class="row g-4">
+            <!-- Sidebar -->
+            <div class="col-md-4">
+                <div class="glass-card h-100 text-center text-md-start">
+                    <div class="d-flex flex-column align-items-center align-items-md-start gap-3 mb-3">
+                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
+                             style="width: 72px; height: 72px; font-weight: 700; font-size: 28px;">
+                            {{ request.user.username|make_list|first|upper }}
+                        </div>
+                        <div>
+                            <h2 class="h5 fw-bold mb-1">{{ request.user.username }}</h2>
+                            <p class="text-muted small mb-0">PetCare AI member</p>
+                        </div>
                     </div>
-                    <div class="col-md-6">
-                        <p><strong>Phone:</strong> {{ profile.phone_number|default:"-" }}</p>
-                        <p><strong>Address:</strong> {{ profile.address|default:"-" }}</p>
-                        <p><strong>City:</strong> {{ profile.city|default:"-" }}</p>
-                        <p><strong>Country:</strong> {{ profile.country|default:"-" }}</p>
+
+                    <div class="d-grid gap-2 mb-3">
+                        <a href="{% url 'analytics:dashboard' %}" class="btn btn-primary btn-sm">
+                            Open health dashboard
+                        </a>
+                        <a href="{% url 'pets:pet_list' %}" class="btn btn-outline-secondary btn-sm">
+                            View my pets
+                        </a>
+                        <a href="{% url 'pets:pet_add' %}" class="btn btn-outline-secondary btn-sm">
+                            Add a new pet
+                        </a>
+                    </div>
+
+                    <p class="text-muted small mb-0">
+                        Use your dashboard to see breed identification history and health insights for all of your pets.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Main details -->
+            <div class="col-md-8">
+                <div class="glass-card">
+                    <h2 class="h5 fw-bold mb-3">Account details</h2>
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <div class="bg-light rounded-3 p-3 h-100">
+                                <h6 class="text-muted text-uppercase small fw-semibold mb-2">Account</h6>
+                                <p class="mb-1"><strong>Username:</strong> {{ request.user.username }}</p>
+                                <p class="mb-0"><strong>Email:</strong> {{ request.user.email }}</p>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="bg-light rounded-3 p-3 h-100">
+                                <h6 class="text-muted text-uppercase small fw-semibold mb-2">Contact & Location</h6>
+                                <p class="mb-1"><strong>Phone:</strong> {{ profile.phone_number|default:"-" }}</p>
+                                <p class="mb-1"><strong>Address:</strong> {{ profile.address|default:"-" }}</p>
+                                <p class="mb-1"><strong>City:</strong> {{ profile.city|default:"-" }}</p>
+                                <p class="mb-0"><strong>Country:</strong> {{ profile.country|default:"-" }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2 mt-4">
+                        <a href="{% url 'accounts:profile_edit' %}" class="btn btn-outline-secondary btn-sm">
+                            Edit profile
+                        </a>
                     </div>
                 </div>
             </div>

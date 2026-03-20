@@ -1,315 +1,232 @@
-{% extends "base.html" %}
-{% load static %}
+{% extends "analytics/dashboard_base.html" %}
 
-{% block content %}
-<div class="container py-4">
-    <!-- Dashboard Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="display-6 fw-bold text-dark mb-1">Dashboard</h1>
-            <p class="text-muted mb-0">Your pet health analytics at a glance.</p>
-        </div>
-        <a href="{% url 'pets:pet_add' %}" class="btn btn-primary rounded-pill px-4 shadow-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-lg me-1" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z"/></svg>
-            Add Pet
-        </a>
-    </div>
-
-    <!-- ── Summary Cards ──────────────────────────────────────────────── -->
-    <div class="row g-4 mb-5">
-        <div class="col-6 col-lg-3">
-            <div class="bg-white rounded-4 shadow-sm p-4 h-100 border-start border-4 border-primary">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <span class="text-muted small fw-medium text-uppercase">Total Pets</span>
-                    <div class="bg-light text-primary rounded-circle d-flex align-items-center justify-content-center" style="width:40px;height:40px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0Zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4Zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10Z"/></svg>
-                    </div>
-                </div>
-                <h2 class="fw-bold mb-0">{{ total_pets }}</h2>
-                <small class="text-muted">🐕 {{ total_dogs }} Dogs · 🐈 {{ total_cats }} Cats</small>
-            </div>
-        </div>
-        <div class="col-6 col-lg-3">
-            <div class="bg-white rounded-4 shadow-sm p-4 h-100 border-start border-4" style="border-color: var(--accent-color) !important;">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <span class="text-muted small fw-medium text-uppercase">Predictions</span>
-                    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center" style="width:40px;height:40px; color: var(--accent-color);">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
-                    </div>
-                </div>
-                <h2 class="fw-bold mb-0">{{ total_predictions }}</h2>
-                <small class="text-muted">Breed identifications</small>
-            </div>
-        </div>
-        <div class="col-6 col-lg-3">
-            <div class="bg-white rounded-4 shadow-sm p-4 h-100 border-start border-4 border-success">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <span class="text-muted small fw-medium text-uppercase">Assessments</span>
-                    <div class="bg-light text-success rounded-circle d-flex align-items-center justify-content-center" style="width:40px;height:40px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/></svg>
-                    </div>
-                </div>
-                <h2 class="fw-bold mb-0">{{ total_assessments }}</h2>
-                <small class="text-muted">Health reports</small>
-            </div>
-        </div>
-        <div class="col-6 col-lg-3">
-            <div class="bg-white rounded-4 shadow-sm p-4 h-100 border-start border-4 border-info">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <span class="text-muted small fw-medium text-uppercase">Records</span>
-                    <div class="bg-light text-info rounded-circle d-flex align-items-center justify-content-center" style="width:40px;height:40px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M9.5 0a.5.5 0 0 1 .5.5.5.5 0 0 0 .5.5.5.5 0 0 1 .5.5V2a.5.5 0 0 1-.5.5h-5A.5.5 0 0 1 5 2v-.5a.5.5 0 0 1 .5-.5.5.5 0 0 0 .5-.5.5.5 0 0 1 .5-.5h3Z"/><path d="M3 2.5a.5.5 0 0 1 .5-.5H4a.5.5 0 0 0 0-1h-.5A1.5 1.5 0 0 0 2 2.5v12A1.5 1.5 0 0 0 3.5 16h9a1.5 1.5 0 0 0 1.5-1.5v-12A1.5 1.5 0 0 0 12.5 1H12a.5.5 0 0 0 0 1h.5a.5.5 0 0 1 .5.5v12a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5v-12Z"/></svg>
-                    </div>
-                </div>
-                <h2 class="fw-bold mb-0">{{ total_vaccinations|add:total_medical }}</h2>
-                <small class="text-muted">Vaccinations & visits</small>
-            </div>
-        </div>
-    </div>
-
-    <!-- ── Charts Row ─────────────────────────────────────────────────── -->
-    <div class="row g-4 mb-5">
-        <!-- Species Distribution (Doughnut) -->
-        <div class="col-lg-4">
-            <div class="bg-white rounded-4 shadow-sm p-4 h-100">
-                <h5 class="fw-bold mb-3">Species Distribution</h5>
-                <canvas id="speciesChart" height="260"></canvas>
-            </div>
-        </div>
-        <!-- Breed Distribution (Bar) -->
-        <div class="col-lg-8">
-            <div class="bg-white rounded-4 shadow-sm p-4 h-100">
-                <h5 class="fw-bold mb-3">Breed Identification Results</h5>
-                {% if breed_labels %}
-                    <canvas id="breedChart" height="200"></canvas>
-                {% else %}
-                    <div class="d-flex flex-column align-items-center justify-content-center py-5 text-muted">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="mb-3 opacity-25" viewBox="0 0 16 16"><path d="M4 11H2v3h2v-3zm5-4H7v7h2V7zm5-5h-2v12h2V2zm-2-1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1h-2zM6 7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7zm-5 4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1v-3z"/></svg>
-                        <p>No breed predictions yet. Add pets and run the AI identifier!</p>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-
-    <!-- ── Health & Vaccination Row ────────────────────────────────────── -->
-    <div class="row g-4 mb-5">
-        <div class="col-lg-6">
-            <div class="bg-white rounded-4 shadow-sm p-4 h-100">
-                <h5 class="fw-bold mb-3">Health Risk Overview</h5>
-                {% if health_labels %}
-                    <canvas id="healthChart" height="220"></canvas>
-                {% else %}
-                    <div class="text-center py-5 text-muted">
-                        <p>No health assessments recorded yet.</p>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-        <div class="col-lg-6">
-            <div class="bg-white rounded-4 shadow-sm p-4 h-100">
-                <h5 class="fw-bold mb-3">Vaccination Status</h5>
-                {% if vax_labels %}
-                    <canvas id="vaxChart" height="220"></canvas>
-                {% else %}
-                    <div class="text-center py-5 text-muted">
-                        <p>No vaccination records found. Manage vaccinations in your pet's detail page.</p>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-
-    <!-- ── Recent Activity ────────────────────────────────────────────── -->
-    <div class="row g-4 mb-4">
-        <!-- Recent Predictions -->
-        <div class="col-lg-6">
-            <div class="bg-white rounded-4 shadow-sm p-4 h-100">
-                <h5 class="fw-bold mb-3">Recent Breed Predictions</h5>
-                {% if recent_predictions %}
-                    <div class="list-group list-group-flush">
-                        {% for pred in recent_predictions %}
-                        <div class="list-group-item border-0 px-0 d-flex justify-content-between align-items-center">
-                            <div>
-                                <strong>{{ pred.pet.name }}</strong>
-                                <span class="text-muted ms-1">→ {{ pred.predicted_breed }}</span>
-                            </div>
-                            <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2">{{ pred.confidence }}%</span>
-                        </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <p class="text-muted text-center py-3 mb-0">No predictions yet.</p>
-                {% endif %}
-            </div>
-        </div>
-        <!-- Recent Assessments -->
-        <div class="col-lg-6">
-            <div class="bg-white rounded-4 shadow-sm p-4 h-100">
-                <h5 class="fw-bold mb-3">Recent Health Assessments</h5>
-                {% if recent_assessments %}
-                    <div class="list-group list-group-flush">
-                        {% for asmt in recent_assessments %}
-                        <div class="list-group-item border-0 px-0 d-flex justify-content-between align-items-center">
-                            <div>
-                                <strong>{{ asmt.pet.name }}</strong>
-                                <span class="text-muted ms-1">— {{ asmt.assessment_date|date:"M d, Y" }}</span>
-                            </div>
-                            {% if asmt.overall_risk_level == "low" %}
-                                <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2">Low Risk</span>
-                            {% elif asmt.overall_risk_level == "medium" %}
-                                <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-3 py-2">Medium Risk</span>
-                            {% else %}
-                                <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 py-2">High Risk</span>
-                            {% endif %}
-                        </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <p class="text-muted text-center py-3 mb-0">No assessments yet.</p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-
-    <!-- ── My Pets Quick View ─────────────────────────────────────────── -->
-    {% if pets %}
-    <div class="bg-white rounded-4 shadow-sm p-4 mb-4">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="fw-bold mb-0">My Pets</h5>
-            <a href="{% url 'pets:pet_list' %}" class="text-primary text-decoration-none small fw-medium">View All →</a>
-        </div>
-        <div class="row g-3">
-            {% for pet in pets %}
-            <div class="col-6 col-md-4 col-lg-3">
-                <a href="{% url 'pets:pet_detail' pet.id %}" class="text-decoration-none">
-                    <div class="bg-light rounded-3 p-3 text-center h-100 position-relative" style="transition: all 0.2s ease;">
-                        {% if pet.image %}
-                            <img src="{{ pet.image.url }}" class="rounded-circle mb-2 object-fit-cover" style="width:64px;height:64px;" alt="{{ pet.name }}">
-                        {% else %}
-                            <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-inline-flex align-items-center justify-content-center mb-2" style="width:64px;height:64px;">
-                                {% if pet.species == "dog" %}🐕{% else %}🐈{% endif %}
-                            </div>
-                        {% endif %}
-                        <h6 class="fw-bold text-dark mb-0">{{ pet.name }}</h6>
-                        <small class="text-muted">{{ pet.get_species_display }}</small>
-                    </div>
-                </a>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-    {% endif %}
+{% block dashboard_content %}
+<!-- Section Header -->
+<div class="section-header">
+    <h1 class="section-title">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="var(--primary-color)" viewBox="0 0 16 16">
+            <path d="M8 4a.5.5 0 0 1 .5.5V6a.5.5 0 0 1-1 0V4.5A.5.5 0 0 1 8 4zM3.732 5.732a.5.5 0 0 1 .707 0l1.06 1.06a.5.5 0 0 1-.707.708l-1.06-1.06a.5.5 0 0 1 0-.708zM12.268 5.732a.5.5 0 0 1 0 .708l-1.06 1.06a.5.5 0 1 1-.708-.708l1.06-1.06a.5.5 0 0 1 .708 0z"/>
+            <path d="M8 1a.5.5 0 0 1 .5.5v.538A3.981 3.981 0 0 1 12 6c0 1.032-.39 1.974-1.03 2.684l-.353.388A7.495 7.495 0 0 1 14.5 13.5a.5.5 0 0 1-1 0A6.495 6.495 0 0 0 8 8.5a6.495 6.495 0 0 0-5.5 5 .5.5 0 0 1-1 0A7.495 7.495 0 0 1 5.383 9.072l-.353-.388A3.981 3.981 0 0 1 4 6a3.981 3.981 0 0 1 3.5-3.962V1.5A.5.5 0 0 1 8 1zM5 6a3 3 0 1 0 6 0 3 3 0 0 0-6 0z"/>
+        </svg>
+        Overview
+    </h1>
+    <p class="section-subtitle">Your pet health analytics at a glance</p>
 </div>
+
+<!-- ── Summary Stat Cards ─────────────────────────────────────────────── -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-xl-3">
+        <div class="stat-card" style="border-left: 4px solid var(--primary-color);">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="text-muted small fw-medium text-uppercase">Total Pets</span>
+                <div class="bg-light text-primary rounded-circle d-flex align-items-center justify-content-center" style="width:38px;height:38px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0Zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4Zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10Z"/></svg>
+                </div>
+            </div>
+            <h2 class="fw-bold mb-0">{{ total_pets }}</h2>
+            <small class="text-muted">🐕 {{ total_dogs }} Dogs · 🐈 {{ total_cats }} Cats</small>
+        </div>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="stat-card" style="border-left: 4px solid var(--accent-color);">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="text-muted small fw-medium text-uppercase">Predictions</span>
+                <div class="bg-light rounded-circle d-flex align-items-center justify-content-center" style="width:38px;height:38px; color: var(--accent-color);">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
+                </div>
+            </div>
+            <h2 class="fw-bold mb-0">{{ total_predictions }}</h2>
+            <small class="text-muted">Breed identifications</small>
+        </div>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="stat-card" style="border-left: 4px solid #22C55E;">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="text-muted small fw-medium text-uppercase">Assessments</span>
+                <div class="bg-light text-success rounded-circle d-flex align-items-center justify-content-center" style="width:38px;height:38px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/></svg>
+                </div>
+            </div>
+            <h2 class="fw-bold mb-0">{{ total_assessments }}</h2>
+            <small class="text-muted">Health reports</small>
+        </div>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="stat-card" style="border-left: 4px solid #3B82F6;">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="text-muted small fw-medium text-uppercase">Records</span>
+                <div class="bg-light text-info rounded-circle d-flex align-items-center justify-content-center" style="width:38px;height:38px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M9.5 0a.5.5 0 0 1 .5.5.5.5 0 0 0 .5.5.5.5 0 0 1 .5.5V2a.5.5 0 0 1-.5.5h-5A.5.5 0 0 1 5 2v-.5a.5.5 0 0 1 .5-.5.5.5 0 0 0 .5-.5.5.5 0 0 1 .5-.5h3Z"/><path d="M3 2.5a.5.5 0 0 1 .5-.5H4a.5.5 0 0 0 0-1h-.5A1.5 1.5 0 0 0 2 2.5v12A1.5 1.5 0 0 0 3.5 16h9a1.5 1.5 0 0 0 1.5-1.5v-12A1.5 1.5 0 0 0 12.5 1H12a.5.5 0 0 0 0 1h.5a.5.5 0 0 1 .5.5v12a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5v-12Z"/></svg>
+                </div>
+            </div>
+            <h2 class="fw-bold mb-0">{{ total_vaccinations|add:total_medical }}</h2>
+            <small class="text-muted">Vaccinations & visits</small>
+        </div>
+    </div>
+</div>
+
+<!-- ── Quick Charts Row ───────────────────────────────────────────────── -->
+<div class="row g-3 mb-4">
+    <div class="col-md-5">
+        <div class="chart-card">
+            <div class="chart-card-title">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="var(--primary-color)" viewBox="0 0 16 16"><path d="M1 0a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V1a1 1 0 0 0-1-1H1zm14 1v14H1V1h14z"/></svg>
+                Species Distribution
+            </div>
+            {% if species_labels %}
+                <div class="dashboard-chart-wrapper">
+                    <canvas id="speciesChart"></canvas>
+                </div>
+            {% else %}
+                <div class="empty-state py-3">
+                    <p class="mb-0 small">No pets yet. Add a pet to see this chart.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-md-7">
+        <div class="chart-card">
+            <div class="chart-card-title">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="var(--accent-color)" viewBox="0 0 16 16"><path d="M4 11H2v3h2v-3zm5-4H7v7h2V7zm5-5h-2v12h2V2zm-2-1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1h-2zM6 7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7zm-5 4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1v-3z"/></svg>
+                Top Breed Predictions
+            </div>
+            {% if breed_labels %}
+                <div class="dashboard-chart-wrapper">
+                    <canvas id="breedChart"></canvas>
+                </div>
+            {% else %}
+                <div class="empty-state py-3">
+                    <p class="mb-0 small">No breed predictions yet. Identify a breed from a pet page.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- ── Recent Activity ────────────────────────────────────────────────── -->
+<div class="row g-3 mb-4">
+    <!-- Recent Predictions -->
+    <div class="col-lg-6">
+        <div class="chart-card">
+            <div class="chart-card-title">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="var(--accent-color)" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
+                Recent Breed Predictions
+            </div>
+            {% if recent_predictions %}
+                <div class="list-group list-group-flush">
+                    {% for pred in recent_predictions %}
+                    <div class="list-group-item border-0 px-0 d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ pred.pet.name }}</strong>
+                            <span class="text-muted ms-1">→ {{ pred.predicted_breed }}</span>
+                        </div>
+                        <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2">{{ pred.confidence }}%</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state py-3"><p class="mb-0 small">No predictions yet.</p></div>
+            {% endif %}
+        </div>
+    </div>
+    <!-- Recent Assessments -->
+    <div class="col-lg-6">
+        <div class="chart-card">
+            <div class="chart-card-title">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#22C55E" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/></svg>
+                Recent Health Assessments
+            </div>
+            {% if recent_assessments %}
+                <div class="list-group list-group-flush">
+                    {% for asmt in recent_assessments %}
+                    <div class="list-group-item border-0 px-0 d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ asmt.pet.name }}</strong>
+                            <span class="text-muted ms-1">— {{ asmt.assessment_date|date:"M d, Y" }}</span>
+                        </div>
+                        <span class="risk-badge {{ asmt.overall_risk_level }}">{{ asmt.get_overall_risk_level_display }} Risk</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state py-3"><p class="mb-0 small">No assessments yet.</p></div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- ── Quick Pet Preview ──────────────────────────────────────────────── -->
+{% if pets %}
+<div class="chart-card">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="chart-card-title mb-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="var(--primary-color)" viewBox="0 0 16 16"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0Zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4Zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10Z"/></svg>
+            My Pets
+        </div>
+        <a href="{% url 'analytics:my_pets_section' %}" class="text-primary text-decoration-none small fw-semibold">View All →</a>
+    </div>
+    <div class="row g-3">
+        {% for pet in pets|slice:":4" %}
+        <div class="col-6 col-md-3">
+            <a href="{% url 'pets:pet_detail' pet.id %}" class="text-decoration-none">
+                <div class="bg-light rounded-3 p-3 text-center h-100" style="transition: all 0.2s ease;">
+                    {% if pet.image %}
+                        <img src="{{ pet.image.url }}" class="rounded-circle mb-2 object-fit-cover" style="width:56px;height:56px;" alt="{{ pet.name }}">
+                    {% else %}
+                        <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-inline-flex align-items-center justify-content-center mb-2" style="width:56px;height:56px;">
+                            {% if pet.species == "dog" %}🐕{% else %}🐈{% endif %}
+                        </div>
+                    {% endif %}
+                    <h6 class="fw-bold text-dark mb-0">{{ pet.name }}</h6>
+                    <small class="text-muted">{{ pet.get_species_display }}</small>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
 
 <!-- Chart.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script>
-/* Color palette */
 const TEAL   = '#0D9488';
 const ORANGE = '#F97316';
 const GREEN  = '#22C55E';
-const YELLOW = '#EAB308';
-const RED    = '#EF4444';
 const BLUE   = '#3B82F6';
 const PURPLE = '#8B5CF6';
 const PINK   = '#EC4899';
+const YELLOW = '#EAB308';
+const RED    = '#EF4444';
 const SLATE  = '#64748B';
-
 const PALETTE = [TEAL, ORANGE, BLUE, PURPLE, GREEN, PINK, YELLOW, RED, SLATE, '#06B6D4'];
 
 Chart.defaults.font.family = "'Inter', sans-serif";
 Chart.defaults.plugins.legend.labels.usePointStyle = true;
 
-/* Species Doughnut */
 {% if species_labels %}
 new Chart(document.getElementById('speciesChart'), {
     type: 'doughnut',
     data: {
         labels: {{ species_labels|safe }},
-        datasets: [{
-            data: {{ species_counts|safe }},
-            backgroundColor: [TEAL, ORANGE, BLUE],
-            borderWidth: 0,
-            hoverOffset: 8,
-        }]
+        datasets: [{ data: {{ species_counts|safe }}, backgroundColor: [TEAL, ORANGE, BLUE], borderWidth: 0, hoverOffset: 8 }]
     },
-    options: {
-        cutout: '65%',
-        plugins: { legend: { position: 'bottom' } },
-        responsive: true,
-        maintainAspectRatio: false,
-    }
+    options: { cutout: '65%', plugins: { legend: { position: 'bottom' } }, responsive: true, maintainAspectRatio: true }
 });
 {% endif %}
 
-/* Breed Bar */
 {% if breed_labels %}
 new Chart(document.getElementById('breedChart'), {
     type: 'bar',
     data: {
         labels: {{ breed_labels|safe }},
-        datasets: [{
-            label: 'Identifications',
-            data: {{ breed_counts|safe }},
-            backgroundColor: PALETTE,
-            borderRadius: 8,
-            barPercentage: 0.7,
-        }]
+        datasets: [{ label: 'Identifications', data: {{ breed_counts|safe }}, backgroundColor: PALETTE, borderRadius: 8, barPercentage: 0.7 }]
     },
     options: {
         indexAxis: 'y',
         plugins: { legend: { display: false } },
-        scales: {
-            x: { grid: { display: false }, ticks: { stepSize: 1 } },
-            y: { grid: { display: false } },
-        },
-        responsive: true,
-        maintainAspectRatio: false,
-    }
-});
-{% endif %}
-
-/* Health Doughnut */
-{% if health_labels %}
-new Chart(document.getElementById('healthChart'), {
-    type: 'doughnut',
-    data: {
-        labels: {{ health_labels|safe }},
-        datasets: [{
-            data: {{ health_counts|safe }},
-            backgroundColor: [GREEN, YELLOW, RED],
-            borderWidth: 0,
-            hoverOffset: 8,
-        }]
-    },
-    options: {
-        cutout: '60%',
-        plugins: { legend: { position: 'bottom' } },
-        responsive: true,
-        maintainAspectRatio: false,
-    }
-});
-{% endif %}
-
-/* Vaccination Doughnut */
-{% if vax_labels %}
-new Chart(document.getElementById('vaxChart'), {
-    type: 'doughnut',
-    data: {
-        labels: {{ vax_labels|safe }},
-        datasets: [{
-            data: {{ vax_counts|safe }},
-            backgroundColor: [GREEN, BLUE, RED],
-            borderWidth: 0,
-            hoverOffset: 8,
-        }]
-    },
-    options: {
-        cutout: '60%',
-        plugins: { legend: { position: 'bottom' } },
-        responsive: true,
-        maintainAspectRatio: false,
+        scales: { x: { grid: { display: false }, ticks: { stepSize: 1 } }, y: { grid: { display: false } } },
+        responsive: true, maintainAspectRatio: true
     }
 });
 {% endif %}
