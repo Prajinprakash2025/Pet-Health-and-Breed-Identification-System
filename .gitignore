@@ -3,12 +3,12 @@
 .env.*
 !.env.example
 
-# --- Python & Bytecode ---
+# --- Python ---
 __pycache__/
 *.py[cod]
-*$py.class
-*.so
 *.pyo
+*.pyd
+*.so
 
 # --- Virtual Environment ---
 venv/
@@ -17,40 +17,37 @@ env/
 ENV/
 
 # --- Database ---
-# db.sqlite3 is UNCOMMENTED so students get the initial data
-# db.sqlite3 
+db.sqlite3
 db.sqlite3-journal
 
-# --- ML & Datasets (Crucial for Repo Size) ---
-# We ignore the raw datasets and zip files to keep the repo clean
+# --- ML / Large Files ---
 ml_datasets/
 *.zip
 *.tar.gz
 *.rar
-image.png
+*.h5
+*.pkl
+*.joblib
+*.onnx
+*.pt
+*.pth
 
-# --- Django Specifics ---
+# --- Media / Static ---
 media/
 static/collected_static/
 
-# --- IDE & Editor ---
+# --- IDE ---
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
-.project
-.pydevproject
-.settings/
 
-# --- OS Specific ---
+# --- OS ---
 .DS_Store
-.DS_Store?
-._*
 Thumbs.db
-ehthumbs.db
 
-# --- Distribution / Packaging ---
+# --- Build ---
 dist/
 build/
 *.egg-info/

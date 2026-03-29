@@ -3,16 +3,14 @@ from pathlib import Path
 from typing import Dict, List
 
 import tensorflow as tf
-from tensorflow.keras.applications import MobileNetV2
-from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
+from tensorflow.keras.applications.efficientnet import preprocess_input
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATASETS_DIR = BASE_DIR / "ml_datasets"
 MODELS_DIR = BASE_DIR / "ml"
-MODEL_DIR = MODELS_DIR / "model"
-MODEL_PATH = MODEL_DIR / "dog_breed_model.h5"
+MODEL_PATH = MODELS_DIR / "pet_breed_model.keras"
 LABELS_PATH = MODELS_DIR / "breed_labels.json"
 
 IMG_SIZE = 224
@@ -24,22 +22,24 @@ def _build_mobilenet_model(num_classes: int) -> tf.keras.Model:
     Build a transfer-learning model using MobileNetV2 as the feature extractor
     and a custom classifier head.
     """
-    base_model = MobileNetV2(
+    base_model = tf.keras.applications.EfficientNetB0(
         include_top=False,
         weights="imagenet",
         input_shape=(IMG_SIZE, IMG_SIZE, 3),
     )
-    base_model.trainable = False  # Stage 1: freeze base
+    base_model.trainable = False
 
     inputs = tf.keras.Input(shape=(IMG_SIZE, IMG_SIZE, 3))
     x = base_model(inputs, training=False)
     x = tf.keras.layers.GlobalAveragePooling2D()(x)
-    x = tf.keras.layers.Dense(128, activation="relu")(x)
-    x = tf.keras.layers.Dropout(0.5)(x)
+    x = tf.keras.layers.BatchNormalization()(x)
+    x = tf.keras.layers.Dense(512, activation="relu")(x)
+    x = tf.keras.layers.Dropout(0.4)(x)
+    x = tf.keras.layers.Dense(256, activation="relu")(x)
+    x = tf.keras.layers.Dropout(0.3)(x)
     outputs = tf.keras.layers.Dense(num_classes, activation="softmax")(x)
 
-    model = tf.keras.Model(inputs=inputs, outputs=outputs, name="dog_breed_mobilenetv2")
-
+    model = tf.keras.Model(inputs=inputs, outputs=outputs)
     model.compile(
         optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
         loss="categorical_crossentropy",
@@ -79,7 +79,6 @@ def train_from_directory(dataset_root: Path, epochs_head: int = 5, epochs_finetu
     """
     DATASETS_DIR.mkdir(exist_ok=True, parents=True)
     MODELS_DIR.mkdir(exist_ok=True, parents=True)
-    MODEL_DIR.mkdir(exist_ok=True, parents=True)
 
     dataset_root = Path(dataset_root)
     if not dataset_root.exists():
@@ -132,9 +131,9 @@ def train_from_directory(dataset_root: Path, epochs_head: int = 5, epochs_finetu
         verbose=1,
     )
 
-    # Stage 2: fine-tune last 20 layers of base model
+    # Stage 2: fine-tune last 30 layers of base model
     base_model.trainable = True
-    for layer in base_model.layers[:-20]:
+    for layer in base_model.layers[:-30]:
         layer.trainable = False
 
     model.compile(

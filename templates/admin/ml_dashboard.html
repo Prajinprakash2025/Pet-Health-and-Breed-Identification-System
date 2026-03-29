@@ -1,5 +1,6 @@
 {% extends "admin/base_admin.html" %}
 
+
 {% block content %}
 <div class="row admin-layout">
     <!-- Sidebar -->
@@ -164,7 +165,7 @@
                                 <p class="text-muted small mb-2">{{ dataset_stats|length }} breeds detected ({{ total_images }} images total).</p>
                                 <div class="mt-2" style="max-height: 100px; overflow-y: auto;">
                                     {% for breed, count in dataset_stats.items %}
-                                        <span class="badge bg-secondary-subtle text-secondary me-1 mb-1">{{ breed|title|replace:"_":" " }} ({{ count }})</span>
+{{ breed }} ({{ count }})
                                     {% endfor %}
                                 </div>
                             {% else %}

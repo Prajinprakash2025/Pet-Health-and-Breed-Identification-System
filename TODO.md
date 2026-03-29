@@ -1,9 +1,17 @@
-# Training TODO for dog_v1 model
+# Pet Health ML Admin Dashboard Fix - Revised Plan ✅
 
-## Steps:
-- [✅] 1. Create this TODO.md
-- [ ] 2. Execute python training command on dog_v1 dataset (failed scipy, installing)
-- [ ] 3. Verify outputs: ml/model/dog_breed_model.h5 and ml/breed_labels.json
-- [ ] 4. Update TODO and complete task
+**Issue:** Template filter syntax `|replace:"_":" "` unparsable by Django lexer even with {% load %}
 
-Current status: Installing scipy, then retry training. Dataset: 826 train imgs, 5 breeds.
+**Revised Approach:** Preprocess breed names in view (cleaner, no custom filters needed)
+
+**Completed:**
+- [x] Diagnosed filter loading vs parsing issue
+- [x] User approved view preprocessing approach
+- [x] Created updated TODO.md
+
+**Remaining:**
+- [ ] Step 1: Read analytics/views.py for precise edit location
+- [ ] Step 2: Read templates/admin/ml_dashboard.html confirm loop
+- [ ] Step 3: Edit views.py - create dataset_stats_display dict with formatted names
+- [ ] Step 4: Edit template - use dataset_stats_display, remove pipe filters
+- [ ] Step 5: Update TODO.md as final completion

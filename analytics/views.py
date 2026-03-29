@@ -385,11 +385,11 @@ def ml_admin_dashboard(request):
 
     context = {
         "model_exists": model_exists,
-        "model_path": model_path.name if model_exists else None,
         "latest_dataset": latest_dataset.name if latest_dataset else None,
-        "dataset_stats": dataset_stats,
+        "dataset_stats_display": dataset_stats,
         "total_images": total_images,
         "datasets": [p.name for p in dataset_dirs],
         "users": users,
     }
+
     return render(request, "admin/ml_dashboard.html", context)
