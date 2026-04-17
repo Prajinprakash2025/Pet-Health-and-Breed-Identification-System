@@ -1,0 +1,22 @@
+{
+  "0": {
+    "disease": "Allergic_Dermatitis",
+    "description": "Allergic Dermatitis"
+  },
+  "1": {
+    "disease": "Bacterial_Dermatosis",
+    "description": "Bacterial Dermatosis"
+  },
+  "2": {
+    "disease": "Fungal_Infections",
+    "description": "Fungal Infections"
+  },
+  "3": {
+    "disease": "Healthy",
+    "description": "Healthy"
+  },
+  "4": {
+    "disease": "Scabies_Mange",
+    "description": "Scabies Mange"
+  }
+}

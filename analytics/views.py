@@ -8,6 +8,7 @@ from django.conf import settings
 from pathlib import Path
 import zipfile
 import shutil
+import json
 
 from pets.models import Pet, BreedPrediction, HealthAssessment
 from ml.trainer import DATASETS_DIR, train_from_directory
@@ -86,14 +87,14 @@ def dashboard_view(request):
         "total_assessments": total_assessments,
         "total_vaccinations": total_vaccinations,
         "total_medical": total_medical,
-        "breed_labels": breed_labels,
-        "breed_counts": breed_counts,
-        "species_labels": species_labels,
-        "species_counts": species_counts,
-        "health_labels": health_labels,
-        "health_counts": health_counts,
-        "vax_labels": vax_labels,
-        "vax_counts": vax_counts,
+        "breed_labels": json.dumps(breed_labels),
+        "breed_counts": json.dumps(breed_counts),
+        "species_labels": json.dumps(species_labels),
+        "species_counts": json.dumps(species_counts),
+        "health_labels": json.dumps(health_labels),
+        "health_counts": json.dumps(health_counts),
+        "vax_labels": json.dumps(vax_labels),
+        "vax_counts": json.dumps(vax_counts),
         "recent_predictions": recent_predictions,
         "recent_assessments": recent_assessments,
         "pets": pets,
@@ -139,14 +140,14 @@ def analytics_section_view(request):
 
     context = {
         "active_section": "analytics",
-        "breed_labels": breed_labels,
-        "breed_counts": breed_counts,
-        "species_labels": species_labels,
-        "species_counts": species_counts,
-        "health_labels": health_labels,
-        "health_counts": health_counts,
-        "vax_labels": vax_labels,
-        "vax_counts": vax_counts,
+        "breed_labels": json.dumps(breed_labels),
+        "breed_counts": json.dumps(breed_counts),
+        "species_labels": json.dumps(species_labels),
+        "species_counts": json.dumps(species_counts),
+        "health_labels": json.dumps(health_labels),
+        "health_counts": json.dumps(health_counts),
+        "vax_labels": json.dumps(vax_labels),
+        "vax_counts": json.dumps(vax_counts),
     }
     return render(request, "analytics/analytics.html", context)
 
@@ -181,8 +182,8 @@ def health_section_view(request):
         "active_section": "health",
         "assessments": assessments,
         "total_assessments": total_assessments,
-        "health_labels": health_labels,
-        "health_counts": health_counts,
+        "health_labels": json.dumps(health_labels),
+        "health_counts": json.dumps(health_counts),
         "low_risk_count": low_risk_count,
         "medium_risk_count": medium_risk_count,
         "high_risk_count": high_risk_count,
@@ -229,8 +230,8 @@ def records_section_view(request):
         "total_medical": total_medical,
         "completed_vax": completed_vax,
         "scheduled_vax": scheduled_vax,
-        "vax_labels": vax_labels,
-        "vax_counts": vax_counts,
+        "vax_labels": json.dumps(vax_labels),
+        "vax_counts": json.dumps(vax_counts),
     }
     return render(request, "analytics/records.html", context)
 

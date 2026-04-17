@@ -11,4 +11,6 @@ urlpatterns = [
     path("<int:pet_id>/", views.pet_detail_view, name="pet_detail"),
     path("<int:pet_id>/edit/", views.pet_edit_view, name="pet_edit"),
     path("<int:pet_id>/predict/", views.run_breed_prediction_view, name="run_breed_prediction"),
+    path("<int:pet_id>/health-scan/", views.health_scan_view, name="health_scan"),
+    path("<int:pet_id>/run-health-scan/", views.run_health_prediction_view, name="run_health_prediction"),
 ]

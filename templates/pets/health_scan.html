@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{% url 'pets:pet_list' %}" class="text-decoration-none text-success">My Pets</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'pets:pet_detail' pet.id %}" class="text-decoration-none text-success">{{ pet.name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Health Scan</li>
+        </ol>
+    </nav>
+
+    <div class="row pt-2">
+        <div class="col-md-5">
+            <div class="bg-white rounded-4 shadow-sm overflow-hidden mb-4 border border-success border-opacity-25">
+                {% if health_assessment and health_assessment.scan_image %}
+                    <img src="{{ health_assessment.scan_image.url }}" class="img-fluid w-100 object-fit-cover" alt="Health Scan for {{ pet.name }}" style="height: 400px;">
+                    <div class="bg-success text-white text-center py-1 small fw-medium">Last Scanned Image</div>
+                {% elif pet.image %}
+                    <img src="{{ pet.image.url }}" class="img-fluid w-100 object-fit-cover" alt="{{ pet.name }}" style="height: 400px;">
+                {% else %}
+                    <div class="bg-light d-flex align-items-center justify-content-center w-100" style="height: 400px;">
+                        <span class="text-muted">No Image Available</span>
+                    </div>
+                {% endif %}
+            </div>
+            
+            {% if pet.image %}
+            <div class="text-center mt-3 p-3 bg-light rounded-4 border">
+                <form action="{% url 'pets:run_health_prediction' pet.id %}" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <p class="small text-muted mb-2 text-start fw-medium">Upload a specific photo showing the affected skin/eyes (optional). If not provided, the profile picture will be scanned.</p>
+                    <input type="file" name="scan_image" class="form-control mb-3" accept="image/*">
+                    <textarea name="symptom_details" class="form-control mb-3" rows="3" placeholder="Describe any symptoms (e.g., scratching, lethargy, loss of appetite) - Optional"></textarea>
+                    <button type="submit" class="btn btn-success btn-lg rounded-pill px-5 py-3 shadow-sm w-100 d-flex align-items-center justify-content-center gap-2" onclick="this.innerHTML='<span class=\'spinner-border spinner-border-sm\'></span> Scanning Image...'; this.classList.add('disabled');">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/></svg>
+                        Run AI Health Scan
+                    </button>
+                    <small class="text-muted d-block mt-3">Powered by Advanced Computer Vision AI.</small>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-md-7 ps-md-4">
+            <div class="d-flex align-items-center gap-3 mb-4 mt-4 mt-md-0">
+                <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 56px; height: 56px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 1a.5.5 0 0 1 .5.5v13a.5.5 0 0 1-1 0v-13A.5.5 0 0 1 8 1Z"/><path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13A.5.5 0 0 1 1 8Z"/></svg>
+                </div>
+                <div>
+                    <h2 class="fw-bold mb-0">Health Diagnostic</h2>
+                    <p class="text-muted mb-0">Analyzes fur, eyes, and skin conditions visually.</p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-4 shadow-sm p-4 border-top border-4 border-success">
+                {% if health_assessment %}
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5 class="fw-bold text-success mb-3 border-bottom pb-2">Diagnostic Summary</h5>
+                        </div>
+                        <div class="col-md-7">
+                            <p class="text-muted small mb-1">AI Detected Condition</p>
+                            <h4 class="text-dark fw-bold mb-3">{{ health_assessment.notes }}</h4>
+                        </div>
+                        <div class="col-md-5 text-md-end">
+                            <p class="text-muted small mb-1">Overall System Risk</p>
+                            {% if health_assessment.overall_risk_level == "low" %}
+                                <span class="badge bg-success rounded-pill px-4 py-2 fs-5 shadow-sm">🟢 LOW</span>
+                            {% elif health_assessment.overall_risk_level == "medium" %}
+                                <span class="badge bg-warning text-dark rounded-pill px-4 py-2 fs-5 shadow-sm">🟡 MEDIUM</span>
+                            {% else %}
+                                <span class="badge bg-danger rounded-pill px-4 py-2 fs-5 shadow-sm">🔴 HIGH</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if health_assessment.symptom_details %}
+                    <div class="bg-light p-3 rounded-3 mb-4">
+                        <span class="text-muted d-block small fw-bold mb-1">Reported Symptoms</span>
+                        <p class="mb-0 text-dark">{{ health_assessment.symptom_details }}</p>
+                    </div>
+                    {% endif %}
+
+                    <h5 class="fw-bold text-success mb-3 border-bottom pb-2">Health Risk Indicators</h5>
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <div class="border rounded-3 p-3">
+                                <span class="text-muted d-block small fw-bold">Skin Infection</span>
+                                <span class="fs-5 text-capitalize text-dark fw-medium">{{ health_assessment.skin_infection_risk }}</span>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="border rounded-3 p-3">
+                                <span class="text-muted d-block small fw-bold">Parasites / Ticks</span>
+                                <span class="fs-5 text-capitalize text-dark fw-medium">{{ health_assessment.parasite_risk }}</span>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="border rounded-3 p-3">
+                                <span class="text-muted d-block small fw-bold">Fur Loss (Alopecia)</span>
+                                <span class="fs-5 text-capitalize text-dark fw-medium">{{ health_assessment.fur_loss_risk }}</span>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="border rounded-3 p-3 text-opacity-50">
+                                <span class="text-muted d-block small fw-bold">Eye Issues</span>
+                                <span class="fs-5 text-capitalize text-muted fw-medium">{{ health_assessment.eye_issue_risk }}</span>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="border rounded-3 p-3 text-opacity-50">
+                                <span class="text-muted d-block small fw-bold">Open Wounds</span>
+                                <span class="fs-5 text-capitalize text-muted fw-medium">{{ health_assessment.wound_risk }}</span>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="border rounded-3 p-3 text-opacity-50">
+                                <span class="text-muted d-block small fw-bold">Obesity</span>
+                                <span class="fs-5 text-capitalize text-muted fw-medium">{{ health_assessment.obesity_risk }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if health_assessment.care_recommendations %}
+                    <div class="mt-4">
+                        <h5 class="fw-bold text-primary mb-3 border-bottom pb-2 d-flex align-items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/></svg>
+                            Care Recommendations & Advisory
+                        </h5>
+                        <div class="bg-primary bg-opacity-10 rounded-3 p-3 text-dark">
+                            {{ health_assessment.care_recommendations|linebreaks }}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="alert alert-warning mt-4 mb-0 d-flex align-items-center gap-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/></svg>
+                        <small>This AI analysis is for advisory purposes only. Always consult a certified veterinarian for medical diagnosis.</small>
+                    </div>
+
+                {% else %}
+                    <div class="text-center py-5 my-3 text-muted">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="mb-3 opacity-25" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/></svg>
+                        <h4 class="fw-bold">No Records Found</h4>
+                        <p class="mb-0 mx-auto" style="max-width: 300px;">Click the <strong>Run AI Health Scan</strong> button to analyze your pet's image for diseases.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,8 +1,9 @@
 """
-ML Predictor – Pet Breed Identification
-========================================
-Loads the trained EfficientNetB0 model and provides
-predict_breed(image_path) for use in Django views.
+ML Predictor – Pet Breed & Health Identification
+================================================
+Loads the trained EfficientNetB0 models and provides
+predict_breed(image_path) and predict_health(image_path)
+for use in Django views.
 """
 
 import json
@@ -11,24 +12,38 @@ import os
 import numpy as np
 from PIL import Image
 
-_model = None
-_labels = None
+_breed_model = None
+_breed_labels = None
+_health_model = None
+_health_labels = None
 
 IMG_SIZE   = 224
 ML_DIR     = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "ml")
-MODEL_PATH = os.path.join(ML_DIR, "pet_breed_model.keras")
-LABELS_PATH = os.path.join(ML_DIR, "breed_labels.json")
+BREED_MODEL_PATH = os.path.join(ML_DIR, "pet_breed_model.keras")
+BREED_LABELS_PATH = os.path.join(ML_DIR, "breed_labels.json")
+HEALTH_MODEL_PATH = os.path.join(ML_DIR, "pet_health_model.keras")
+HEALTH_LABELS_PATH = os.path.join(ML_DIR, "health_labels.json")
 
 
-def _load_model():
-    global _model, _labels
-    if _model is None:
+def _load_breed_model():
+    global _breed_model, _breed_labels
+    if _breed_model is None:
         import tensorflow as tf
-        _model = tf.keras.models.load_model(MODEL_PATH, compile=False)
-    if _labels is None:
-        with open(LABELS_PATH) as f:
-            _labels = json.load(f)
-    return _model, _labels
+        _breed_model = tf.keras.models.load_model(BREED_MODEL_PATH, compile=False)
+    if _breed_labels is None:
+        with open(BREED_LABELS_PATH) as f:
+            _breed_labels = json.load(f)
+    return _breed_model, _breed_labels
+
+def _load_health_model():
+    global _health_model, _health_labels
+    if _health_model is None:
+        import tensorflow as tf
+        _health_model = tf.keras.models.load_model(HEALTH_MODEL_PATH, compile=False)
+    if _health_labels is None:
+        with open(HEALTH_LABELS_PATH) as f:
+            _health_labels = json.load(f)
+    return _health_model, _health_labels
 
 
 def _preprocess_image(image_path: str) -> np.ndarray:
@@ -40,38 +55,37 @@ def _preprocess_image(image_path: str) -> np.ndarray:
 
 
 def predict_breed(image_path: str) -> dict:
-    """
-    Returns dict with keys:
-        breed          – best breed name (always shown, even if low confidence)
-        species        – "dog" or "cat"
-        confidence     – float 0-100
-        top3           – list of {breed, species, confidence}
-        low_confidence – True if confidence < 45%
-    """
-    model, labels = _load_model()
+    """Returns dict with top predicted breed details."""
+    model, labels = _load_breed_model()
     img_array = _preprocess_image(image_path)
     predictions = model.predict(img_array, verbose=0)[0]
 
-    top3_indices = predictions.argsort()[-3:][::-1]
-    top3 = []
-    for idx in top3_indices:
-        info = labels[str(idx)]
-        conf = float(predictions[idx])
-        top3.append({
-            "breed": info["breed"],
-            "species": info["species"],
-            "confidence": round(conf * 100, 2),
-        })
-
-    best_idx  = int(top3_indices[0])
+    best_idx  = int(predictions.argsort()[-1])
     best_info = labels[str(best_idx)]
     best_conf = float(predictions[best_idx])
-    low_conf  = best_conf < 0.45
 
     return {
-        "breed": best_info["breed"],          # always return the breed name
+        "breed": best_info["breed"],
         "species": best_info["species"],
         "confidence": round(best_conf * 100, 2),
-        "top3": top3,
-        "low_confidence": low_conf,
+        "low_confidence": best_conf < 0.45,
     }
+
+
+def predict_health(image_path: str) -> dict:
+    """Returns dict with predicted health conditions."""
+    model, labels = _load_health_model()
+    img_array = _preprocess_image(image_path)
+    predictions = model.predict(img_array, verbose=0)[0]
+
+    best_idx = int(predictions.argsort()[-1])
+    best_info = labels[str(best_idx)]
+    best_conf = float(predictions[best_idx])
+    
+    return {
+        "disease": best_info["disease"],
+        "description": best_info["description"],
+        "confidence": round(best_conf * 100, 2),
+        "low_confidence": best_conf < 0.50,
+    }
+

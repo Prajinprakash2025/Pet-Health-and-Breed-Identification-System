@@ -116,26 +116,18 @@ def run_breed_prediction_view(request, pet_id):
     # ── Real ML Model Inference ────────────────────────────────────────────
     try:
         from .ml_predictor import predict_breed
-        result = predict_breed(pet.image.path)
-
-        predicted_breed = result["breed"]
-        species = result["species"]
-        confidence = result["confidence"]
+        breed_result = predict_breed(pet.image.path)
+        predicted_breed = breed_result["breed"]
+        species = breed_result["species"]
+        confidence = breed_result["confidence"]
         model_version = "1.0.0-mobilenetv2"
     except Exception as e:
-        # Fallback to simple prediction if model fails
-        messages.warning(request, f"AI model error ({e}). Using fallback prediction.")
-        if pet.species == "dog":
-            predicted_breed = random.choice(["Golden Retriever", "German Shepherd", "Poodle", "Labrador Retriever"])
-        elif pet.species == "cat":
-            predicted_breed = random.choice(["Siamese", "Persian", "Maine Coon", "Bengal"])
-        else:
-            predicted_breed = "Unknown"
+        messages.warning(request, f"AI model error ({e}).")
+        predicted_breed = "Unknown"
         species = pet.species
-        confidence = random.uniform(60, 80)
+        confidence = 0.0
         model_version = "0.1.0-fallback"
 
-    # Save breed prediction
     BreedPrediction.objects.create(
         pet=pet,
         predicted_breed=predicted_breed,
@@ -144,25 +136,90 @@ def run_breed_prediction_view(request, pet_id):
         model_version=model_version,
     )
 
-    # ── Auto-generate Health Assessment ────────────────────────────────────
-    risks = BREED_HEALTH_RISKS.get(predicted_breed, {})
-    assessment = HealthAssessment(
-        pet=pet,
-        skin_infection_risk=risks.get("skin_infection_risk", "low"),
-        fur_loss_risk=risks.get("fur_loss_risk", "low"),
-        eye_issue_risk=risks.get("eye_issue_risk", "low"),
-        wound_risk=risks.get("wound_risk", "low"),
-        parasite_risk=risks.get("parasite_risk", "low"),
-        obesity_risk=risks.get("obesity_risk", "low"),
-        notes=f"Auto-generated health assessment based on breed: {predicted_breed}.",
-    )
+    messages.success(request, f"AI identified {pet.name} as a {predicted_breed} ({confidence:.1f}% confidence).")
+    return redirect("pets:pet_detail", pet_id=pet.id)
+
+
+@login_required
+def health_scan_view(request, pet_id):
+    pet = get_object_or_404(Pet, id=pet_id, owner=request.user)
+    assessment = pet.health_assessments.first()
+    return render(request, "pets/health_scan.html", {"pet": pet, "health_assessment": assessment})
+
+
+@require_POST
+@login_required
+def run_health_prediction_view(request, pet_id):
+    pet = get_object_or_404(Pet, id=pet_id, owner=request.user)
+
+    uploaded_image = request.FILES.get("scan_image")
+    symptom_details = request.POST.get("symptom_details", "").strip()
+    
+    # We need an image to scan: either the newly uploaded one, or the pet's default profile picture
+    if not uploaded_image and not pet.image:
+        messages.error(request, "Cannot run prediction without a pet image.")
+        return redirect("pets:health_scan", pet_id=pet.id)
+
+    # Resolve target image path
+    if uploaded_image:
+        assessment = HealthAssessment(pet=pet)
+        assessment.scan_image = uploaded_image
+        assessment.symptom_details = symptom_details
+        assessment.save()
+        target_path = assessment.scan_image.path
+    else:
+        assessment = HealthAssessment(pet=pet, symptom_details=symptom_details)
+        target_path = pet.image.path
+
+    try:
+        from .ml_predictor import predict_health
+        health_result = predict_health(target_path)
+        predicted_disease = health_result["disease"]
+        disease_desc = health_result["description"]
+        health_conf = health_result["confidence"]
+    except Exception as e:
+        messages.warning(request, f"AI model error ({e}).")
+        predicted_disease = "Healthy"
+        disease_desc = "Healthy"
+        health_conf = 0.0
+
+    skin_risk = "low"
+    fur_risk = "low"
+    parasite_risk = "low"
+    notes = f"AI Health Detection: {disease_desc} ({health_conf}% confidence)."
+    care = ""
+
+    if predicted_disease == "Scabies_Mange":
+        skin_risk = "high"
+        parasite_risk = "high"
+        fur_risk = "high"
+        care = "• Isolate your pet to prevent spreading mites to other animals or humans.\n• Avoid direct contact without gloves.\n• Consult a vet immediately for anti-parasitic dips, oral medications, or topical treatments.\n• Thoroughly clean its bedding, collars, and your home."
+    elif predicted_disease == "Fungal_Infections":
+        skin_risk = "high"
+        fur_risk = "medium"
+        care = "• Fungal infections (like Ringworm) are highly contagious. Isolate the pet.\n• Wash your hands thoroughly after handling.\n• Keep the affected area clean and dry.\n• Schedule a vet visit for prescriptive anti-fungal shampoos or medication."
+    elif predicted_disease == "Bacterial_Dermatosis":
+        skin_risk = "high"
+        fur_risk = "medium"
+        care = "• Keep the affected skin clean and dry. Do not let the pet lick or scratch the area (use an E-collar if necessary).\n• Bacterial infections often require antibiotics; seek veterinary care for proper diagnosis.\n• Avoid using human creams or ointments without vet approval."
+    elif predicted_disease == "Allergic_Dermatitis":
+        skin_risk = "medium"
+        fur_risk = "medium"
+        care = "• Check for fleas, as flea allergy is a common cause. Ensure flea preventatives are up to date.\n• Review recent changes in diet or environment (new shampoos, pollen, food).\n• A vet can provide antihistamines or corticosteroids to instantly relieve the itching."
+    else:
+        care = "• Maintain regular grooming and bathing.\n• Keep up with routine vaccinations and flea/tick preventatives.\n• Ensure a balanced diet and regular exercise.\n• Schedule an annual wellness checkup with your veterinarian."
+
+    assessment.skin_infection_risk = skin_risk
+    assessment.fur_loss_risk = fur_risk
+    assessment.eye_issue_risk = "low"
+    assessment.wound_risk = "low"
+    assessment.parasite_risk = parasite_risk
+    assessment.obesity_risk = "low"
+    assessment.notes = notes
+    assessment.care_recommendations = care
     assessment.overall_risk_level = _calculate_overall_risk(assessment)
     assessment.save()
 
-    messages.success(
-        request,
-        f"AI identified {pet.name} as a {predicted_breed} ({confidence:.1f}% confidence). "
-        f"Health assessment generated."
-    )
-    return redirect("pets:pet_detail", pet_id=pet.id)
+    messages.success(request, f"AI Health Scan complete for {pet.name}.")
+    return redirect("pets:health_scan", pet_id=pet.id)
 

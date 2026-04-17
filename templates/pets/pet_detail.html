@@ -110,75 +110,17 @@
             </div>
         </div>
 
-        <!-- Health Assessment Result -->
+        <!-- Health Assessment Link -->
         <div class="col-md-6">
-            <div class="bg-white rounded-4 shadow-sm p-4 h-100">
-                <div class="d-flex align-items-center gap-2 mb-3">
-                    <div class="bg-success bg-opacity-10 text-success rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/></svg>
-                    </div>
-                    <h5 class="fw-bold mb-0">Health Assessment</h5>
+            <div class="bg-white rounded-4 shadow-sm p-4 h-100 d-flex flex-column justify-content-center align-items-center text-center">
+                <div class="bg-success bg-opacity-10 text-success rounded-circle d-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/></svg>
                 </div>
-                {% if health_assessment %}
-                    <div class="mb-3">
-                        <span class="fw-bold fs-5">Overall Risk: </span>
-                        {% if health_assessment.overall_risk_level == "low" %}
-                            <span class="badge bg-success rounded-pill px-3 py-2 fs-6">🟢 Low</span>
-                        {% elif health_assessment.overall_risk_level == "medium" %}
-                            <span class="badge bg-warning text-dark rounded-pill px-3 py-2 fs-6">🟡 Medium</span>
-                        {% else %}
-                            <span class="badge bg-danger rounded-pill px-3 py-2 fs-6">🔴 High</span>
-                        {% endif %}
-                    </div>
-                    <div class="row g-2">
-                        <div class="col-6">
-                            <div class="bg-light rounded-3 p-2 small">
-                                <span class="text-muted">Skin Infection:</span>
-                                <span class="fw-bold ms-1 text-capitalize">{{ health_assessment.skin_infection_risk }}</span>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="bg-light rounded-3 p-2 small">
-                                <span class="text-muted">Fur Loss:</span>
-                                <span class="fw-bold ms-1 text-capitalize">{{ health_assessment.fur_loss_risk }}</span>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="bg-light rounded-3 p-2 small">
-                                <span class="text-muted">Eye Issue:</span>
-                                <span class="fw-bold ms-1 text-capitalize">{{ health_assessment.eye_issue_risk }}</span>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="bg-light rounded-3 p-2 small">
-                                <span class="text-muted">Wound Risk:</span>
-                                <span class="fw-bold ms-1 text-capitalize">{{ health_assessment.wound_risk }}</span>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="bg-light rounded-3 p-2 small">
-                                <span class="text-muted">Parasite:</span>
-                                <span class="fw-bold ms-1 text-capitalize">{{ health_assessment.parasite_risk }}</span>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="bg-light rounded-3 p-2 small">
-                                <span class="text-muted">Obesity:</span>
-                                <span class="fw-bold ms-1 text-capitalize">{{ health_assessment.obesity_risk }}</span>
-                            </div>
-                        </div>
-                    </div>
-                    {% if health_assessment.notes %}
-                        <div class="mt-3 bg-light rounded-3 p-2">
-                            <small class="text-muted fst-italic">{{ health_assessment.notes }}</small>
-                        </div>
-                    {% endif %}
-                {% else %}
-                    <div class="text-center py-4 text-muted">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" class="mb-2 opacity-25" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/></svg>
-                        <p class="mb-0">Run a breed prediction first to get a health assessment.</p>
-                    </div>
-                {% endif %}
+                <h4 class="fw-bold mb-2">Pet Health Screening</h4>
+                <p class="text-muted mb-4 px-3">Run an advanced AI vision scan to detect skin diseases, wounds, and parasitic infections.</p>
+                <a href="{% url 'pets:health_scan' pet.id %}" class="btn btn-success btn-lg rounded-pill px-4">
+                    Open Health Scanner 🩺
+                </a>
             </div>
         </div>
     </div>

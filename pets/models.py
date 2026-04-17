@@ -58,6 +58,12 @@ class HealthAssessment(models.Model):
 
     overall_risk_level = models.CharField(max_length=10, choices=RISK_LEVEL_CHOICES, default="low")
     notes = models.TextField(blank=True)
+    scan_image = models.ImageField(upload_to="health_scans/", null=True, blank=True)
+    symptom_details = models.TextField(blank=True, help_text="Optional symptom details provided by user.")
+    care_recommendations = models.TextField(blank=True, help_text="AI generated care recommendations.")
+
+    class Meta:
+        ordering = ["-assessment_date"]
 
     def __str__(self) -> str:
         return f"Health assessment for {self.pet} on {self.assessment_date:%Y-%m-%d}"

@@ -24,8 +24,8 @@ import tensorflow_datasets as tfds
 # ── Configuration ──────────────────────────────────────────────────────────────
 IMG_SIZE        = 224
 BATCH_SIZE      = 32
-EPOCHS_HEAD     = 10
-EPOCHS_FINETUNE = 10
+EPOCHS_HEAD     = 25
+EPOCHS_FINETUNE = 35
 MODEL_DIR       = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH      = os.path.join(MODEL_DIR, "pet_breed_model.keras")
 LABELS_PATH     = os.path.join(MODEL_DIR, "breed_labels.json")
@@ -133,10 +133,10 @@ def main():
 
     callbacks = [
         tf.keras.callbacks.EarlyStopping(
-            monitor="val_accuracy", patience=3, restore_best_weights=True, verbose=1
+            monitor="val_accuracy", patience=5, restore_best_weights=True, verbose=1
         ),
         tf.keras.callbacks.ReduceLROnPlateau(
-            monitor="val_loss", factor=0.5, patience=2, min_lr=1e-7, verbose=1
+            monitor="val_loss", factor=0.5, patience=3, min_lr=1e-7, verbose=1
         ),
     ]
 

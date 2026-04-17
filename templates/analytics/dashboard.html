@@ -211,7 +211,7 @@ new Chart(document.getElementById('speciesChart'), {
         labels: {{ species_labels|safe }},
         datasets: [{ data: {{ species_counts|safe }}, backgroundColor: [TEAL, ORANGE, BLUE], borderWidth: 0, hoverOffset: 8 }]
     },
-    options: { cutout: '65%', plugins: { legend: { position: 'bottom' } }, responsive: true, maintainAspectRatio: true }
+    options: { cutout: '65%', plugins: { legend: { position: 'bottom' } }, responsive: true, maintainAspectRatio: false }
 });
 {% endif %}
 
@@ -226,7 +226,7 @@ new Chart(document.getElementById('breedChart'), {
         indexAxis: 'y',
         plugins: { legend: { display: false } },
         scales: { x: { grid: { display: false }, ticks: { stepSize: 1 } }, y: { grid: { display: false } } },
-        responsive: true, maintainAspectRatio: true
+        responsive: true, maintainAspectRatio: false
     }
 });
 {% endif %}

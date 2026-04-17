@@ -411,14 +411,9 @@ main.container {
 
 /* Dashboard charts */
 .dashboard-chart-wrapper {
-  max-height: 200px;
-  min-height: 160px;
-  overflow: hidden;
-}
-
-.dashboard-chart-wrapper canvas {
-  width: 100% !important;
-  height: 100% !important;
+  position: relative;
+  height: 250px;
+  width: 100%;
 }
 
 /* Admin dashboard sidebar */
@@ -486,6 +481,9 @@ main.container {
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /* When the dashboard sidebar is active, remove default container padding */
+body.has-dashboard-sidebar {
+  overflow: hidden;
+}
 body.has-dashboard-sidebar main.container {
   max-width: 100%;
   padding: 0;
@@ -493,12 +491,14 @@ body.has-dashboard-sidebar main.container {
 }
 
 body.has-dashboard-sidebar .footer {
-  margin-left: 0;
+  display: none !important;
 }
 
 .dashboard-layout {
   display: flex;
-  min-height: calc(100vh - 72px);
+  height: calc(100vh - 72px);
+  width: 100%;
+  overflow: hidden;
 }
 
 /* ── Sidebar ────────────────────────────────────────────────────────────── */
@@ -510,9 +510,7 @@ body.has-dashboard-sidebar .footer {
   display: flex;
   flex-direction: column;
   padding: 1.5rem 1rem;
-  position: sticky;
-  top: 72px;
-  height: calc(100vh - 72px);
+  height: 100%;
   overflow-y: auto;
   z-index: 100;
   transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
@@ -656,6 +654,8 @@ body.has-dashboard-sidebar .footer {
   padding: 2rem 2.5rem;
   background: var(--bg-color);
   min-width: 0;
+  height: 100%;
+  overflow-y: auto;
 }
 
 /* ── Section Header ─────────────────────────────────────────────────────── */
