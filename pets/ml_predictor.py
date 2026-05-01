@@ -63,12 +63,23 @@ def predict_breed(image_path: str) -> dict:
     best_idx  = int(predictions.argsort()[-1])
     best_info = labels[str(best_idx)]
     best_conf = float(predictions[best_idx])
+    top_predictions = []
+    for idx in predictions.argsort()[-5:][::-1]:
+        info = labels[str(int(idx))]
+        top_predictions.append(
+            {
+                "breed": info["breed"],
+                "species": info["species"],
+                "confidence": round(float(predictions[idx]) * 100, 2),
+            }
+        )
 
     return {
         "breed": best_info["breed"],
         "species": best_info["species"],
         "confidence": round(best_conf * 100, 2),
-        "low_confidence": best_conf < 0.45,
+        "low_confidence": best_conf < 0.80,
+        "top_predictions": top_predictions,
     }
 
 
@@ -88,4 +99,3 @@ def predict_health(image_path: str) -> dict:
         "confidence": round(best_conf * 100, 2),
         "low_confidence": best_conf < 0.50,
     }
-

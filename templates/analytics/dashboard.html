@@ -60,7 +60,7 @@
                 </div>
             </div>
             <h2 class="fw-bold mb-0">{{ total_vaccinations|add:total_medical }}</h2>
-            <small class="text-muted">Vaccinations & visits</small>
+            <small class="text-muted">Vaccinations, visits & {{ open_reminders }} open reminders</small>
         </div>
     </div>
 </div>
@@ -155,7 +155,101 @@
     </div>
 </div>
 
+<!-- ── Service Bookings ──────────────────────────────────────────────── -->
+<div class="chart-card mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="chart-card-title mb-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="var(--primary-color)" viewBox="0 0 16 16"><path d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.293l2.646-2.647a.5.5 0 0 1 .708 0z"/><path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5V2zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1H4z"/></svg>
+            My Service Bookings
+        </div>
+        <a href="{% url 'advisory:service_finder' %}" class="text-primary text-decoration-none small fw-semibold">Book New</a>
+    </div>
+    {% if recent_bookings %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="border-0 small text-uppercase py-3">Service / Doctor</th>
+                        <th class="border-0 small text-uppercase py-3">Date & Time</th>
+                        <th class="border-0 small text-uppercase py-3">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for booking in recent_bookings %}
+                    <tr>
+                        <td class="py-3">
+                            <div class="fw-bold">
+                                {% if booking.pet_service %}
+                                    {{ booking.pet_service.name }}
+                                {% else %}
+                                    Dr. {{ booking.vet_doctor.name }}
+                                {% endif %}
+                            </div>
+                            <small class="text-muted">
+                                {% if booking.pet_service %}
+                                    {{ booking.pet_service.get_service_type_display }}
+                                {% else %}
+                                    {{ booking.vet_doctor.get_specialization_display }}
+                                {% endif %}
+                            </small>
+                        </td>
+                        <td class="py-3">
+                            <div>{{ booking.booking_date|date:"M d, Y" }}</div>
+                            <small class="text-muted">{{ booking.booking_time|time:"h:i A" }}</small>
+                        </td>
+                        <td class="py-3">
+                            {% if booking.status == 'confirmed' %}
+                                <span class="badge bg-success-subtle text-success rounded-pill px-3">Confirmed</span>
+                            {% elif booking.status == 'pending' %}
+                                <span class="badge bg-warning-subtle text-warning rounded-pill px-3">Pending</span>
+                            {% elif booking.status == 'cancelled' %}
+                                <span class="badge bg-danger-subtle text-danger rounded-pill px-3">Cancelled</span>
+                            {% else %}
+                                <span class="badge bg-secondary-subtle text-secondary rounded-pill px-3">{{ booking.status|title }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state py-4 text-center">
+            <p class="text-muted mb-0">You haven't booked any services yet.</p>
+            <a href="{% url 'advisory:service_finder' %}" class="btn btn-sm btn-outline-primary mt-3">Explore Services</a>
+        </div>
+    {% endif %}
+</div>
+
 <!-- ── Quick Pet Preview ──────────────────────────────────────────────── -->
+<!-- Smart Reminders -->
+<div class="chart-card mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="chart-card-title mb-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#3B82F6" viewBox="0 0 16 16"><path d="M8 3.5a.5.5 0 0 1 .5.5v3.25l2.1 1.26a.5.5 0 0 1-.515.858l-2.35-1.41A.5.5 0 0 1 7.5 7.53V4a.5.5 0 0 1 .5-.5z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm6.5-8A6.5 6.5 0 1 1 1.5 8a6.5 6.5 0 0 1 13 0z"/></svg>
+            Smart Reminders
+        </div>
+        <a href="{% url 'records:reminders' %}" class="text-primary text-decoration-none small fw-semibold">Manage</a>
+    </div>
+    {% if upcoming_reminders %}
+        <div class="row g-3">
+            {% for reminder in upcoming_reminders %}
+            <div class="col-md-6 col-xl">
+                <div class="bg-light rounded-3 p-3 h-100">
+                    <div class="text-muted small">{{ reminder.pet.name }} - {{ reminder.get_reminder_type_display }}</div>
+                    <div class="fw-bold">{{ reminder.title }}</div>
+                    <div class="small {% if reminder.is_overdue %}text-danger{% else %}text-primary{% endif %}">
+                        Due {{ reminder.due_date|date:"M d, Y" }}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-muted small mb-0">No open reminders. Add grooming, training, vaccination, or follow-up reminders.</p>
+    {% endif %}
+</div>
+
 {% if pets %}
 <div class="chart-card">
     <div class="d-flex justify-content-between align-items-center mb-3">

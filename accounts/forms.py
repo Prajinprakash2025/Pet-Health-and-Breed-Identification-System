@@ -25,6 +25,12 @@ class RegistrationForm(UserCreationForm):
         for field in self.fields:
             self.fields[field].widget.attrs.update({'class': 'form-control'})
 
+    def clean_email(self):
+        email = self.cleaned_data["email"].strip().lower()
+        if User.objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError("An account with this email already exists. Please sign in instead.")
+        return email
+
     def save(self, commit: bool = True):
         user = super().save(commit=False)
         user.email = self.cleaned_data["email"]

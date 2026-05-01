@@ -1,252 +1,1043 @@
 {% extends "admin/base_admin.html" %}
 
-
 {% block content %}
-<div class="row admin-layout">
-    <!-- Sidebar -->
-    <div class="col-lg-3 mb-4">
-        <div class="glass-card admin-sidebar-card">
-            <h6 class="fw-bold text-uppercase small mb-3">Admin panel</h6>
-            <ul class="list-unstyled mb-0 admin-sidebar">
-                <li class="admin-nav-item" data-target="#admin-overview">Overview</li>
-                <li class="admin-nav-item" data-target="#admin-users">Users</li>
-                <li class="admin-nav-item" data-target="#admin-reports">Reports</li>
-                <li class="admin-nav-item" data-target="#admin-dataset">Dataset &amp; Training</li>
-            </ul>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     PANEL 1 — OVERVIEW
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="admin-panel active" id="panel-overview">
+
+  <!-- Stat cards row -->
+  <div class="row g-3 mb-4">
+    <div class="col-xl-3 col-sm-6">
+      <div class="a-stat">
+        <div class="a-stat-icon" style="background:rgba(59,130,246,.1);">
+          <svg width="22" height="22" fill="#3b82f6" viewBox="0 0 16 16"><path d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1h8zm-7.978-1A.261.261 0 0 1 7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.76 1.457.76 1.72l-.008.002H7.022zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM6.936 9.28a5.88 5.88 0 0 0-1.23-.247A7.35 7.35 0 0 0 5 9c-4 0-5 3-5 4 0 .667.333 1 1 1h4.216A2.238 2.238 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816zM4.92 10A5.493 5.493 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275zM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0zm3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg>
         </div>
+        <div>
+          <div class="a-stat-label">Total Users</div>
+          <div class="a-stat-value">{{ total_users }}</div>
+          <div class="a-stat-sub">{{ active_users }} active · {{ blocked_users }} blocked</div>
+        </div>
+      </div>
     </div>
-
-    <!-- Main content -->
-    <div class="col-lg-9">
-        <!-- Small metric strip -->
-        <div class="row g-3 mb-3 admin-panel" id="admin-overview">
-            <div class="col-md-4">
-                <div class="admin-metric-card">
-                    <span class="metric-label">Model status</span>
-                    {% if model_exists %}
-                        <span class="metric-value text-success">Ready</span>
-                        <span class="metric-sub">{{ model_path }}</span>
-                    {% else %}
-                        <span class="metric-value text-danger">Not trained</span>
-                        <span class="metric-sub">Upload data &amp; train</span>
-                    {% endif %}
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="admin-metric-card">
-                    <span class="metric-label">Datasets</span>
-                    <span class="metric-value">{{ datasets|length }}</span>
-                    <span class="metric-sub">uploaded folders</span>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="admin-metric-card">
-                    <span class="metric-label">Latest dataset</span>
-                    {% if latest_dataset %}
-                        <span class="metric-value">{{ latest_dataset }}</span>
-                        <span class="metric-sub">used for training</span>
-                    {% else %}
-                        <span class="metric-value">None</span>
-                        <span class="metric-sub">upload a ZIP first</span>
-                    {% endif %}
-                </div>
-            </div>
+    <div class="col-xl-3 col-sm-6">
+      <div class="a-stat">
+        <div class="a-stat-icon" style="background:rgba(13,148,136,.1);">
+          <svg width="22" height="22" fill="#0d9488" viewBox="0 0 16 16"><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zM4.053 4.276a.5.5 0 0 1 .67-.223l2 1a.5.5 0 0 1 0 .894l-2 1a.5.5 0 1 1-.448-.894L5.763 5.5 4.276 4.947a.5.5 0 0 1-.223-.671zm7.894 0a.5.5 0 0 1-.223.67L10.237 5.5l1.487.553a.5.5 0 1 1-.448.894l-2-1a.5.5 0 0 1 0-.894l2-1a.5.5 0 0 1 .671.223zM4 10.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5z"/></svg>
         </div>
-
-        <!-- Users panel -->
-        <div class="glass-card mb-3 admin-panel d-none" id="admin-users">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h4 class="fw-bold mb-0">Users</h4>
-                <span class="badge bg-light text-muted small">{{ users|length }} total</span>
-            </div>
-            <p class="text-muted small">
-                View all accounts and quickly block or unblock users if needed.
-            </p>
-            <div class="table-responsive mt-3">
-                <table class="table align-middle mb-0 small">
-                    <thead>
-                    <tr class="text-muted">
-                        <th scope="col">Username</th>
-                        <th scope="col">Email</th>
-                        <th scope="col" class="text-center">Role</th>
-                        <th scope="col" class="text-center">Status</th>
-                        <th scope="col" class="text-end">Actions</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {% for u in users %}
-                        <tr>
-                            <td>
-                                <strong>{{ u.username }}</strong>
-                            </td>
-                            <td>{{ u.email|default:"-" }}</td>
-                            <td class="text-center">
-                                {% if u.is_superuser %}
-                                    <span class="badge bg-danger-subtle text-danger">Superuser</span>
-                                {% elif u.is_staff %}
-                                    <span class="badge bg-primary-subtle text-primary">Staff</span>
-                                {% else %}
-                                    <span class="badge bg-light text-muted">User</span>
-                                {% endif %}
-                            </td>
-                            <td class="text-center">
-                                {% if u.is_active %}
-                                    <span class="badge bg-success-subtle text-success">Active</span>
-                                {% else %}
-                                    <span class="badge bg-secondary-subtle text-secondary">Blocked</span>
-                                {% endif %}
-                            </td>
-                            <td class="text-end">
-                                {% if u != request.user %}
-                                    {% if u.is_active %}
-                                        <form method="post" class="d-inline">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="block_user_id" value="{{ u.id }}">
-                                            <button type="submit" class="btn btn-outline-danger btn-xs">Block</button>
-                                        </form>
-                                    {% else %}
-                                        <form method="post" class="d-inline">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="unblock_user_id" value="{{ u.id }}">
-                                            <button type="submit" class="btn btn-outline-success btn-xs">Unblock</button>
-                                        </form>
-                                    {% endif %}
-                                {% else %}
-                                    <span class="text-muted">You</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                    {% empty %}
-                        <tr>
-                            <td colspan="5" class="text-center text-muted py-4">
-                                No users found.
-                            </td>
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+        <div>
+          <div class="a-stat-label">Total Pets</div>
+          <div class="a-stat-value">{{ total_pets }}</div>
+          <div class="a-stat-sub">🐕 {{ total_dogs }} dogs · 🐈 {{ total_cats }} cats</div>
         </div>
-
-        <!-- Reports panel (placeholder) -->
-        <div class="glass-card mb-3 admin-panel d-none" id="admin-reports">
-            <h4 class="fw-bold mb-2">Reports</h4>
-            <p class="text-muted small mb-0">
-                Here you could show user-reported issues, flagged images and audit logs for admin review in the future.
-            </p>
-        </div>
-
-        <!-- Dataset & Training panel -->
-        <div class="glass-card mb-3 admin-panel d-none" id="admin-dataset">
-            <h4 class="fw-bold mb-3">Dataset &amp; Training</h4>
-            <p class="text-muted small mb-4">
-                Upload a ZIP dataset with subfolders for each class (e.g. <code>GoldenRetriever/</code>, <code>Siamese/</code>).
-                The server will extract it and train a simple CNN model used by the breed prediction API.
-            </p>
-
-            <div class="row g-3 mb-4">
-                <div class="col-md-4">
-                    <div class="bg-light rounded-3 p-3 h-100">
-                        <h6 class="text-muted text-uppercase small fw-semibold mb-2">Current model</h6>
-                        {% if model_exists %}
-                            <p class="mb-1"><strong>{{ model_path }}</strong></p>
-                            <p class="text-muted small mb-0">Used by the AI breed identifier.</p>
-                        {% else %}
-                            <p class="text-muted small mb-0">No model trained yet.</p>
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="bg-light rounded-3 p-3 h-100">
-                        <h6 class="text-muted text-uppercase small fw-semibold mb-2">Latest dataset</h6>
-                        {% if latest_dataset %}
-                            <p class="mb-1"><strong>{{ latest_dataset }}</strong></p>
-                            {% if dataset_stats %}
-                                <p class="text-muted small mb-2">{{ dataset_stats|length }} breeds detected ({{ total_images }} images total).</p>
-                                <div class="mt-2" style="max-height: 100px; overflow-y: auto;">
-                                    {% for breed, count in dataset_stats.items %}
-{{ breed }} ({{ count }})
-                                    {% endfor %}
-                                </div>
-                            {% else %}
-                                <p class="text-muted small mb-0">Used when you start training.</p>
-                            {% endif %}
-                        {% else %}
-                            <p class="text-muted small mb-0">No dataset uploaded yet.</p>
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="bg-light rounded-3 p-3 h-100">
-                        <h6 class="text-muted text-uppercase small fw-semibold mb-2">Datasets</h6>
-                        {% if datasets %}
-                            <ul class="text-muted small mb-0">
-                                {% for ds in datasets %}
-                                    <li>{{ ds }}</li>
-                                {% endfor %}
-                            </ul>
-                        {% else %}
-                            <p class="text-muted small mb-0">None yet.</p>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-
-            <div class="row g-4">
-                <div class="col-md-6">
-                    <h5 class="fw-bold mb-2">1. Upload dataset (ZIP)</h5>
-                    <form method="post" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        <div class="mb-3">
-                            <input type="file" name="dataset_zip" accept=".zip" class="form-control">
-                        </div>
-                        <button type="submit" class="btn btn-secondary btn-sm">Upload &amp; extract</button>
-                    </form>
-                    <p class="text-muted small mt-2 mb-0">
-                        Expected structure inside ZIP: <code>dataset_root/&lt;class_name&gt;/image1.jpg</code>, etc.
-                    </p>
-                </div>
-                <div class="col-md-6">
-                    <h5 class="fw-bold mb-2">2. Train CNN model</h5>
-                    <form method="post">
-                        {% csrf_token %}
-                        <input type="hidden" name="train_model" value="1">
-                        <button type="submit" class="btn btn-primary btn-sm" {% if not latest_dataset %}disabled{% endif %}>
-                            Start training
-                        </button>
-                    </form>
-                    <p class="text-muted small mt-2 mb-0">
-                        Trains on the latest uploaded dataset (80% train / 20% validation) and updates the model used by predictions.
-                    </p>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
+    <div class="col-xl-3 col-sm-6">
+      <div class="a-stat">
+        <div class="a-stat-icon" style="background:rgba(168,85,247,.1);">
+          <svg width="22" height="22" fill="#a855f7" viewBox="0 0 16 16"><path d="M11.251.068a.5.5 0 0 1 .227.58L9.677 6.5H13a.5.5 0 0 1 .364.843l-8 8.5a.5.5 0 0 1-.842-.49L6.323 9.5H3a.5.5 0 0 1-.364-.843l8-8.5a.5.5 0 0 1 .615-.09z"/></svg>
+        </div>
+        <div>
+          <div class="a-stat-label">AI Predictions</div>
+          <div class="a-stat-value">{{ total_predictions }}</div>
+          <div class="a-stat-sub">{{ total_assessments }} health scans</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+      <div class="a-stat">
+        <div class="a-stat-icon" style="background:rgba(34,197,94,.1);">
+          <svg width="22" height="22" fill="#22c55e" viewBox="0 0 16 16"><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.25-11.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0z"/></svg>
+        </div>
+        <div>
+          <div class="a-stat-label">Doctors</div>
+          <div class="a-stat-value">{{ total_doctors }}</div>
+          <div class="a-stat-sub">{{ available_doctors }} available</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Second row: more stats -->
+  <div class="row g-3 mb-4">
+    <div class="col-xl-3 col-sm-6">
+      <div class="a-stat">
+        <div class="a-stat-icon" style="background:rgba(249,115,22,.1);">
+          <svg width="22" height="22" fill="#f97316" viewBox="0 0 16 16"><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/></svg>
+        </div>
+        <div>
+          <div class="a-stat-label">High Risk Alerts</div>
+          <div class="a-stat-value text-danger">{{ high_risk_count }}</div>
+          <div class="a-stat-sub">pets need attention</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+      <div class="a-stat">
+        <div class="a-stat-icon" style="background:rgba(14,165,233,.1);">
+          <svg width="22" height="22" fill="#0ea5e9" viewBox="0 0 16 16"><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/></svg>
+        </div>
+        <div>
+          <div class="a-stat-label">Vaccinations</div>
+          <div class="a-stat-value">{{ total_vaccinations }}</div>
+          <div class="a-stat-sub">{{ total_medical }} medical records</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+      <div class="a-stat">
+        <div class="a-stat-icon" style="background:rgba(236,72,153,.1);">
+          <svg width="22" height="22" fill="#ec4899" viewBox="0 0 16 16"><path d="M5.338 1.59a61.44 61.44 0 0 0-2.837.856.481.481 0 0 0-.328.39c-.554 4.157.726 7.19 2.253 9.188a10.725 10.725 0 0 0 2.287 2.233c.346.244.652.42.893.533.12.057.218.095.293.118a.55.55 0 0 0 .101.025.615.615 0 0 0 .1-.025c.076-.023.174-.061.294-.118.24-.113.547-.29.893-.533a10.726 10.726 0 0 0 2.287-2.233c1.527-1.997 2.807-5.031 2.253-9.188a.48.48 0 0 0-.328-.39c-.651-.213-1.75-.56-2.837-.855C9.552 1.29 8.531 1.067 8 1.067c-.53 0-1.552.223-2.662.524z"/></svg>
+        </div>
+        <div>
+          <div class="a-stat-label">Staff Users</div>
+          <div class="a-stat-value">{{ staff_users }}</div>
+          <div class="a-stat-sub">with admin access</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+      <div class="a-stat">
+        <div class="a-stat-icon" style="background:rgba(99,102,241,.1);">
+          <svg width="22" height="22" fill="#6366f1" viewBox="0 0 16 16"><path d="M10.5 8.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/><path d="M2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4H2zm.5 2a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1zm9 2.5a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0z"/></svg>
+        </div>
+        <div>
+          <div class="a-stat-label">Model Status</div>
+          {% if model_exists %}
+            <div class="a-stat-value text-success" style="font-size:1.2rem;">Ready</div>
+          {% else %}
+            <div class="a-stat-value text-danger" style="font-size:1.2rem;">Not Trained</div>
+          {% endif %}
+          <div class="a-stat-sub">AI breed model</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts row -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-6">
+      <div class="a-card">
+        <div class="a-card-title">🐾 Species Distribution</div>
+        <div class="chart-box"><canvas id="speciesChart"></canvas></div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="a-card">
+        <div class="a-card-title">🏥 Health Risk Distribution</div>
+        <div class="chart-box"><canvas id="healthChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent activity -->
+  <div class="row g-3">
+    <div class="col-md-6">
+      <div class="a-card">
+        <div class="a-card-title">👥 Recent Users</div>
+        <div class="a-card-sub">Latest registered users</div>
+        <div class="table-responsive">
+          <table class="a-table">
+            <thead><tr><th>User</th><th>Email</th><th>Joined</th><th>Role</th></tr></thead>
+            <tbody>
+            {% for u in recent_users %}
+              <tr>
+                <td><strong>{{ u.username }}</strong></td>
+                <td>{{ u.email|default:"-" }}</td>
+                <td>{{ u.date_joined|date:"M d, Y" }}</td>
+                <td>
+                  {% if u.is_superuser %}<span class="role-badge badge-superuser">Superuser</span>
+                  {% elif u.is_staff %}<span class="role-badge badge-staff">Staff</span>
+                  {% else %}<span class="role-badge badge-user">User</span>{% endif %}
+                </td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4" class="text-center text-muted py-3">No users yet.</td></tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="a-card">
+        <div class="a-card-title">🔬 Recent Predictions</div>
+        <div class="a-card-sub">Latest breed identifications</div>
+        <div class="table-responsive">
+          <table class="a-table">
+            <thead><tr><th>Pet</th><th>Owner</th><th>Breed</th><th>Confidence</th></tr></thead>
+            <tbody>
+            {% for p in recent_predictions_all %}
+              <tr>
+                <td><strong>{{ p.pet.name }}</strong></td>
+                <td>{{ p.pet.owner.username }}</td>
+                <td>{{ p.predicted_breed }}</td>
+                <td><span class="badge bg-primary-subtle text-primary">{{ p.confidence }}%</span></td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4" class="text-center text-muted py-3">No predictions yet.</td></tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
+<!-- ═══════════════════════════════════════════════════════════════════════
+     PANEL 2 — USER MANAGEMENT
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="admin-panel" id="panel-users">
+
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+      <h5 class="fw-bold mb-1">User Management</h5>
+      <p class="text-muted small mb-0">View user details, manage roles and access.</p>
+    </div>
+    <div class="d-flex gap-2 align-items-center">
+      <span class="badge bg-primary-subtle text-primary px-3 py-2" style="border-radius:999px;">{{ total_users }} total</span>
+      <span class="badge bg-success-subtle text-success px-3 py-2" style="border-radius:999px;">{{ active_users }} active</span>
+      <span class="badge bg-danger-subtle text-danger px-3 py-2" style="border-radius:999px;">{{ blocked_users }} blocked</span>
+      <input type="text" id="userSearch" class="admin-search" placeholder="Search users...">
+    </div>
+  </div>
+
+  <div class="a-card">
+    <div class="table-responsive">
+      <table class="a-table">
+        <thead>
+        <tr>
+          <th>User</th>
+          <th>Email</th>
+          <th>Name</th>
+          <th class="text-center">Role</th>
+          <th class="text-center">Status</th>
+          <th>Joined</th>
+          <th class="text-end">Actions</th>
+        </tr>
+        </thead>
+        <tbody id="userTableBody">
+        {% for u in users %}
+          <tr>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#0d9488,#818cf8);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;flex-shrink:0;">
+                  {{ u.username|make_list|first|upper }}
+                </div>
+                <strong>{{ u.username }}</strong>
+              </div>
+            </td>
+            <td>{{ u.email|default:"-" }}</td>
+            <td>{{ u.first_name }} {{ u.last_name }}</td>
+            <td class="text-center">
+              {% if u.is_superuser %}<span class="role-badge badge-superuser">Superuser</span>
+              {% elif u.is_staff %}<span class="role-badge badge-staff">Staff</span>
+              {% else %}<span class="role-badge badge-user">User</span>{% endif %}
+            </td>
+            <td class="text-center">
+              {% if u.is_active %}<span class="status-badge-a badge-active">Active</span>
+              {% else %}<span class="status-badge-a badge-blocked">Blocked</span>{% endif %}
+            </td>
+            <td style="white-space:nowrap;">{{ u.date_joined|date:"M d, Y" }}</td>
+            <td class="text-end" style="white-space:nowrap;">
+              {% if u != request.user and not u.is_superuser %}
+                <!-- Block / Unblock -->
+                {% if u.is_active %}
+                  <form method="post" class="d-inline"><input type="hidden" name="block_user_id" value="{{ u.id }}">{% csrf_token %}
+                    <button class="btn-action btn btn-outline-danger" title="Block user">Block</button>
+                  </form>
+                {% else %}
+                  <form method="post" class="d-inline"><input type="hidden" name="unblock_user_id" value="{{ u.id }}">{% csrf_token %}
+                    <button class="btn-action btn btn-outline-success" title="Unblock user">Unblock</button>
+                  </form>
+                {% endif %}
+                <!-- Promote / Demote -->
+                {% if u.is_staff %}
+                  <form method="post" class="d-inline"><input type="hidden" name="demote_user_id" value="{{ u.id }}">{% csrf_token %}
+                    <button class="btn-action btn btn-outline-warning" title="Remove staff role">Demote</button>
+                  </form>
+                {% else %}
+                  <form method="post" class="d-inline"><input type="hidden" name="promote_user_id" value="{{ u.id }}">{% csrf_token %}
+                    <button class="btn-action btn btn-outline-primary" title="Make staff">Promote</button>
+                  </form>
+                {% endif %}
+                <!-- Delete -->
+                <form method="post" class="d-inline" onsubmit="return confirm('Are you sure you want to delete {{ u.username }}? This cannot be undone.');">
+                  <input type="hidden" name="delete_user_id" value="{{ u.id }}">{% csrf_token %}
+                  <button class="btn-action btn btn-outline-danger" title="Delete user">✕</button>
+                </form>
+              {% elif u == request.user %}
+                <span class="text-muted small">You</span>
+              {% elif u.is_superuser %}
+                <span class="text-muted small">Protected</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7" class="text-center text-muted py-4">No users found.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     PANEL 3 — DOCTORS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="admin-panel" id="panel-doctors">
+
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+      <h5 class="fw-bold mb-1">Pet Doctors Management</h5>
+      <p class="text-muted small mb-0">Add, edit and manage veterinary doctors.</p>
+    </div>
+    <div class="d-flex gap-2 align-items-center">
+      <span class="badge bg-success-subtle text-success px-3 py-2" style="border-radius:999px;">{{ total_doctors }} doctors</span>
+      <span class="badge bg-primary-subtle text-primary px-3 py-2" style="border-radius:999px;">{{ available_doctors }} available</span>
+      <input type="text" id="doctorSearch" class="admin-search" placeholder="Search doctors...">
+    </div>
+  </div>
+
+  <!-- Add Doctor Form -->
+  <div class="a-card mb-4">
+    <div class="a-card-title">➕ Add New Doctor</div>
+    <div class="a-card-sub">Fill in the details below to register a new veterinary doctor.</div>
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <input type="hidden" name="add_doctor" value="1">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="admin-form-label">Full Name *</label>
+          <input type="text" name="doctor_name" class="admin-form-control" placeholder="Dr. John Smith" required>
+        </div>
+        <div class="col-md-4">
+          <label class="admin-form-label">Specialization</label>
+          <select name="doctor_specialization" class="admin-form-control">
+            {% for value, label in specialization_choices %}
+              <option value="{{ value }}">{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="admin-form-label">Experience (Years)</label>
+          <input type="number" name="doctor_experience" class="admin-form-control" placeholder="5" min="0" value="0">
+        </div>
+        <div class="col-md-4">
+          <label class="admin-form-label">Phone</label>
+          <input type="text" name="doctor_phone" class="admin-form-control" placeholder="+91 98765 43210">
+        </div>
+        <div class="col-md-4">
+          <label class="admin-form-label">Email</label>
+          <input type="email" name="doctor_email" class="admin-form-control" placeholder="doctor@clinic.com">
+        </div>
+        <div class="col-md-4">
+          <label class="admin-form-label">Clinic Name</label>
+          <input type="text" name="doctor_clinic" class="admin-form-control" placeholder="PetCare Veterinary Hospital">
+        </div>
+        <div class="col-md-8">
+          <label class="admin-form-label">Address</label>
+          <input type="text" name="doctor_address" class="admin-form-control" placeholder="123 Main Street, City">
+        </div>
+        <div class="col-md-4">
+          <label class="admin-form-label">Photo</label>
+          <input type="file" name="doctor_photo" class="admin-form-control" accept="image/*">
+        </div>
+        <div class="col-md-4">
+          <div class="form-check mt-4">
+            <input type="checkbox" name="doctor_available" class="form-check-input" id="docAvailable" checked>
+            <label class="form-check-label" for="docAvailable">Available for appointments</label>
+          </div>
+        </div>
+        <div class="col-md-8 d-flex justify-content-end align-items-end">
+          <button type="submit" class="btn btn-primary px-4" style="border-radius:10px;">
+            <svg width="16" height="16" fill="currentColor" class="me-1" viewBox="0 0 16 16"><path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/></svg>
+            Add Doctor
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Doctor Listing -->
+  {% if doctors %}
+  <div class="row g-3">
+    {% for doc in doctors %}
+    <div class="col-xl-4 col-md-6 doctor-card-item">
+      <div class="doctor-card p-4">
+        <div class="d-flex align-items-start gap-3 mb-3">
+          {% if doc.photo %}
+            <img src="{{ doc.photo.url }}" alt="{{ doc.name }}" class="doctor-photo">
+          {% else %}
+            <div class="doctor-placeholder">
+              <svg width="28" height="28" fill="currentColor" viewBox="0 0 16 16"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0Zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4Zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10Z"/></svg>
+            </div>
+          {% endif %}
+          <div class="flex-grow-1">
+            <h6 class="fw-bold mb-0" style="font-size:.95rem;">Dr. {{ doc.name }}</h6>
+            <span class="badge bg-primary-subtle text-primary mt-1" style="border-radius:999px;font-size:.7rem;">
+              {{ doc.get_specialization_display }}
+            </span>
+          </div>
+          {% if doc.is_available %}
+            <span class="status-badge-a badge-available" style="font-size:.65rem;">Available</span>
+          {% else %}
+            <span class="status-badge-a badge-unavailable" style="font-size:.65rem;">Unavailable</span>
+          {% endif %}
+        </div>
+
+        <div class="mb-3" style="font-size:.82rem;color:#64748b;">
+          {% if doc.clinic_name %}<div class="mb-1">🏥 {{ doc.clinic_name }}</div>{% endif %}
+          {% if doc.phone %}<div class="mb-1">📞 {{ doc.phone }}</div>{% endif %}
+          {% if doc.email %}<div class="mb-1">📧 {{ doc.email }}</div>{% endif %}
+          {% if doc.address %}<div class="mb-1">📍 {{ doc.address }}</div>{% endif %}
+          {% if doc.experience_years %}<div>⏱️ {{ doc.experience_years }} years experience</div>{% endif %}
+        </div>
+
+        <div class="d-flex gap-2 flex-wrap">
+          <!-- Toggle availability -->
+          <form method="post" class="d-inline">{% csrf_token %}
+            <input type="hidden" name="toggle_doctor_id" value="{{ doc.id }}">
+            <button class="btn-action btn {% if doc.is_available %}btn-outline-warning{% else %}btn-outline-success{% endif %}" style="font-size:.7rem;">
+              {% if doc.is_available %}Mark Unavailable{% else %}Mark Available{% endif %}
+            </button>
+          </form>
+          <!-- Edit (opens modal) -->
+          <button class="btn-action btn btn-outline-primary" style="font-size:.7rem;" data-bs-toggle="modal" data-bs-target="#editDocModal{{ doc.id }}">Edit</button>
+          <!-- Delete -->
+          <form method="post" class="d-inline" onsubmit="return confirm('Delete Dr. {{ doc.name }}?');">{% csrf_token %}
+            <input type="hidden" name="delete_doctor_id" value="{{ doc.id }}">
+            <button class="btn-action btn btn-outline-danger" style="font-size:.7rem;">Delete</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Doctor Modal -->
+    <div class="modal fade" id="editDocModal{{ doc.id }}" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content" style="border-radius:16px;border:none;">
+          <div class="modal-header border-0 pb-0">
+            <h5 class="modal-title fw-bold">Edit Dr. {{ doc.name }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <form method="post" enctype="multipart/form-data">
+              {% csrf_token %}
+              <input type="hidden" name="edit_doctor_id" value="{{ doc.id }}">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="admin-form-label">Full Name *</label>
+                  <input type="text" name="doctor_name" class="admin-form-control" value="{{ doc.name }}" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="admin-form-label">Specialization</label>
+                  <select name="doctor_specialization" class="admin-form-control">
+                    {% for value, label in specialization_choices %}
+                      <option value="{{ value }}" {% if doc.specialization == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <label class="admin-form-label">Phone</label>
+                  <input type="text" name="doctor_phone" class="admin-form-control" value="{{ doc.phone }}">
+                </div>
+                <div class="col-md-4">
+                  <label class="admin-form-label">Email</label>
+                  <input type="email" name="doctor_email" class="admin-form-control" value="{{ doc.email }}">
+                </div>
+                <div class="col-md-4">
+                  <label class="admin-form-label">Experience (Years)</label>
+                  <input type="number" name="doctor_experience" class="admin-form-control" value="{{ doc.experience_years }}" min="0">
+                </div>
+                <div class="col-md-6">
+                  <label class="admin-form-label">Clinic Name</label>
+                  <input type="text" name="doctor_clinic" class="admin-form-control" value="{{ doc.clinic_name }}">
+                </div>
+                <div class="col-md-6">
+                  <label class="admin-form-label">Photo (leave blank to keep current)</label>
+                  <input type="file" name="doctor_photo" class="admin-form-control" accept="image/*">
+                </div>
+                <div class="col-12">
+                  <label class="admin-form-label">Address</label>
+                  <input type="text" name="doctor_address" class="admin-form-control" value="{{ doc.address }}">
+                </div>
+                <div class="col-md-6">
+                  <div class="form-check">
+                    <input type="checkbox" name="doctor_available" class="form-check-input" id="editDocAvail{{ doc.id }}" {% if doc.is_available %}checked{% endif %}>
+                    <label class="form-check-label" for="editDocAvail{{ doc.id }}">Available for appointments</label>
+                  </div>
+                </div>
+                <div class="col-md-6 d-flex justify-content-end">
+                  <button type="submit" class="btn btn-primary px-4" style="border-radius:10px;">Save Changes</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+    <div class="a-card text-center py-5">
+      <div style="font-size:3rem;opacity:.3;margin-bottom:1rem;">🩺</div>
+      <h6 class="text-muted">No doctors added yet</h6>
+      <p class="text-muted small">Use the form above to add your first veterinary doctor.</p>
+    </div>
+  {% endif %}
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     PANEL 6 — PET SERVICES
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="admin-panel" id="panel-services">
+
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+      <h5 class="fw-bold mb-1">Pet Services Management</h5>
+      <p class="text-muted small mb-0">Manage clinics, groomers, trainers and pharmacies.</p>
+    </div>
+    <div class="d-flex gap-2 align-items-center">
+      <span class="badge bg-primary-subtle text-primary px-3 py-2" style="border-radius:999px;">{{ services|length }} services</span>
+      <input type="text" id="serviceSearch" class="admin-search" placeholder="Search services...">
+    </div>
+  </div>
+
+  <!-- Add Service Form -->
+  <div class="a-card mb-4">
+    <div class="a-card-title">➕ Add New Service</div>
+    <div class="a-card-sub">Register a new pet-related service or business.</div>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="add_service" value="1">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="admin-form-label">Service Name *</label>
+          <input type="text" name="service_name" class="admin-form-control" placeholder="Happy Paws Grooming" required>
+        </div>
+        <div class="col-md-4">
+          <label class="admin-form-label">Service Type</label>
+          <select name="service_type" class="admin-form-control">
+            {% for value, label in service_type_choices %}
+              <option value="{{ value }}">{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="admin-form-label">City</label>
+          <input type="text" name="service_city" class="admin-form-control" placeholder="New York">
+        </div>
+        <div class="col-md-4">
+          <label class="admin-form-label">Phone</label>
+          <input type="text" name="service_phone" class="admin-form-control" placeholder="+1 234 567 890">
+        </div>
+        <div class="col-md-4">
+          <label class="admin-form-label">Email</label>
+          <input type="email" name="service_email" class="admin-form-control" placeholder="info@service.com">
+        </div>
+        <div class="col-md-4">
+          <label class="admin-form-label">Website (URL)</label>
+          <input type="url" name="service_website" class="admin-form-control" placeholder="https://example.com">
+        </div>
+        <div class="col-md-8">
+          <label class="admin-form-label">Address</label>
+          <input type="text" name="service_address" class="admin-form-control" placeholder="456 Pet Lane, City">
+        </div>
+        <div class="col-md-4">
+          <label class="admin-form-label">Opening Hours</label>
+          <input type="text" name="service_hours" class="admin-form-control" placeholder="9 AM - 6 PM">
+        </div>
+        <div class="col-12">
+          <label class="admin-form-label">Notes / Description</label>
+          <textarea name="service_notes" class="admin-form-control" rows="2" placeholder="Specializes in large breeds..."></textarea>
+        </div>
+        <div class="col-md-6">
+          <div class="form-check mt-2">
+            <input type="checkbox" name="service_active" class="form-check-input" id="serviceActive" checked>
+            <label class="form-check-label" for="serviceActive">Active / Visible on site</label>
+          </div>
+        </div>
+        <div class="col-md-6 d-flex justify-content-end">
+          <button type="submit" class="btn btn-primary px-4" style="border-radius:10px;">Add Service</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Service Listing -->
+  <div class="a-card">
+    <div class="table-responsive">
+      <table class="a-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>City</th>
+            <th>Phone</th>
+            <th class="text-center">Status</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="serviceTableBody">
+          {% for srv in services %}
+          <tr class="service-row-item">
+            <td><strong>{{ srv.name }}</strong></td>
+            <td><span class="badge bg-secondary-subtle text-secondary">{{ srv.get_service_type_display }}</span></td>
+            <td>{{ srv.city|default:"-" }}</td>
+            <td>{{ srv.phone|default:"-" }}</td>
+            <td class="text-center">
+              {% if srv.is_active %}<span class="status-badge-a badge-active">Active</span>
+              {% else %}<span class="status-badge-a badge-blocked">Inactive</span>{% endif %}
+            </td>
+            <td class="text-end">
+              <div class="d-flex gap-2 justify-content-end">
+                <form method="post">{% csrf_token %}
+                  <input type="hidden" name="toggle_service_id" value="{{ srv.id }}">
+                  <button class="btn-action btn {% if srv.is_active %}btn-outline-warning{% else %}btn-outline-success{% endif %}" title="Toggle status">
+                    {% if srv.is_active %}Pause{% else %}Activate{% endif %}
+                  </button>
+                </form>
+                <button class="btn-action btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editSrvModal{{ srv.id }}">Edit</button>
+                <form method="post" onsubmit="return confirm('Delete {{ srv.name }}?');">{% csrf_token %}
+                  <input type="hidden" name="delete_service_id" value="{{ srv.id }}">
+                  <button class="btn-action btn btn-outline-danger">✕</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Edit Service Modal -->
+          <div class="modal fade" id="editSrvModal{{ srv.id }}" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+              <div class="modal-content" style="border-radius:16px;border:none;">
+                <div class="modal-header border-0 pb-0">
+                  <h5 class="modal-title fw-bold">Edit Service: {{ srv.name }}</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                  <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="edit_service_id" value="{{ srv.id }}">
+                    <div class="row g-3">
+                      <div class="col-md-6">
+                        <label class="admin-form-label">Service Name *</label>
+                        <input type="text" name="service_name" class="admin-form-control" value="{{ srv.name }}" required>
+                      </div>
+                      <div class="col-md-6">
+                        <label class="admin-form-label">Service Type</label>
+                        <select name="service_type" class="admin-form-control">
+                          {% for value, label in service_type_choices %}
+                            <option value="{{ value }}" {% if srv.service_type == value %}selected{% endif %}>{{ label }}</option>
+                          {% endfor %}
+                        </select>
+                      </div>
+                      <div class="col-md-4">
+                        <label class="admin-form-label">City</label>
+                        <input type="text" name="service_city" class="admin-form-control" value="{{ srv.city }}">
+                      </div>
+                      <div class="col-md-4">
+                        <label class="admin-form-label">Phone</label>
+                        <input type="text" name="service_phone" class="admin-form-control" value="{{ srv.phone }}">
+                      </div>
+                      <div class="col-md-4">
+                        <label class="admin-form-label">Email</label>
+                        <input type="email" name="service_email" class="admin-form-control" value="{{ srv.email }}">
+                      </div>
+                      <div class="col-md-6">
+                        <label class="admin-form-label">Website</label>
+                        <input type="url" name="service_website" class="admin-form-control" value="{{ srv.website }}">
+                      </div>
+                      <div class="col-md-6">
+                        <label class="admin-form-label">Opening Hours</label>
+                        <input type="text" name="service_hours" class="admin-form-control" value="{{ srv.opening_hours }}">
+                      </div>
+                      <div class="col-12">
+                        <label class="admin-form-label">Address</label>
+                        <input type="text" name="service_address" class="admin-form-control" value="{{ srv.address }}">
+                      </div>
+                      <div class="col-12">
+                        <label class="admin-form-label">Notes</label>
+                        <textarea name="service_notes" class="admin-form-control" rows="3">{{ srv.notes }}</textarea>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="form-check">
+                          <input type="checkbox" name="service_active" class="form-check-input" id="editSrvActive{{ srv.id }}" {% if srv.is_active %}checked{% endif %}>
+                          <label class="form-check-label" for="editSrvActive{{ srv.id }}">Active</label>
+                        </div>
+                      </div>
+                      <div class="col-md-6 d-flex justify-content-end">
+                        <button type="submit" class="btn btn-primary px-4" style="border-radius:10px;">Save Changes</button>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% empty %}
+          <tr><td colspan="6" class="text-center text-muted py-4">No services found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     PANEL 4 — REPORTS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="admin-panel" id="panel-reports">
+
+  <h5 class="fw-bold mb-1">Platform Reports</h5>
+  <p class="text-muted small mb-4">Detailed insights across all users and platform activity.</p>
+
+  <!-- Per-user breakdown -->
+  <div class="a-card mb-4">
+    <div class="a-card-title">📊 User Activity Breakdown</div>
+    <div class="a-card-sub">Pets and activity per user</div>
+    <div class="table-responsive">
+      <table class="a-table">
+        <thead>
+        <tr>
+          <th>User</th>
+          <th>Email</th>
+          <th class="text-center">Pets</th>
+          <th class="text-center">Role</th>
+          <th class="text-center">Status</th>
+          <th>Joined</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for u in user_stats %}
+        <tr>
+          <td><strong>{{ u.username }}</strong></td>
+          <td>{{ u.email|default:"-" }}</td>
+          <td class="text-center"><span class="badge bg-primary-subtle text-primary">{{ u.pet_count }}</span></td>
+          <td class="text-center">
+            {% if u.is_superuser %}<span class="role-badge badge-superuser">Superuser</span>
+            {% elif u.is_staff %}<span class="role-badge badge-staff">Staff</span>
+            {% else %}<span class="role-badge badge-user">User</span>{% endif %}
+          </td>
+          <td class="text-center">
+            {% if u.is_active %}<span class="status-badge-a badge-active">Active</span>
+            {% else %}<span class="status-badge-a badge-blocked">Blocked</span>{% endif %}
+          </td>
+          <td>{{ u.date_joined|date:"M d, Y" }}</td>
+        </tr>
+        {% empty %}
+          <tr><td colspan="6" class="text-center text-muted py-3">No users yet.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Health risk breakdown -->
+  <div class="a-card">
+    <div class="a-card-title">⚠️ High & Medium Risk Assessments</div>
+    <div class="a-card-sub">Pets that need attention based on health scans</div>
+    <div class="table-responsive">
+      <table class="a-table">
+        <thead>
+        <tr>
+          <th>Pet</th>
+          <th>Owner</th>
+          <th class="text-center">Risk Level</th>
+          <th>Notes</th>
+          <th>Date</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for a in risk_assessments %}
+        <tr>
+          <td><strong>{{ a.pet.name }}</strong> ({{ a.pet.species }})</td>
+          <td>{{ a.pet.owner.username }}</td>
+          <td class="text-center">
+            {% if a.overall_risk_level == "high" %}
+              <span class="badge bg-danger-subtle text-danger px-3">High</span>
+            {% else %}
+              <span class="badge bg-warning-subtle text-warning px-3">Medium</span>
+            {% endif %}
+          </td>
+          <td style="max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ a.notes|default:"-"|truncatewords:10 }}</td>
+          <td>{{ a.assessment_date|date:"M d, Y" }}</td>
+        </tr>
+        {% empty %}
+          <tr><td colspan="5" class="text-center text-muted py-3">No high/medium risk assessments found. 🎉</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     PANEL 7 — SERVICE BOOKINGS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="admin-panel" id="panel-bookings">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+      <h5 class="fw-bold mb-1">Service Booking Requests</h5>
+      <p class="text-muted small mb-0">Manage and update status for all pet service and vet appointments.</p>
+    </div>
+  </div>
+
+  <div class="a-card">
+    <div class="table-responsive">
+      <table class="a-table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Service / Doctor</th>
+            <th>Date & Time</th>
+            <th class="text-center">Status</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for booking in all_bookings %}
+          <tr>
+            <td>
+              <div class="fw-bold">{{ booking.user.username }}</div>
+              <small class="text-muted">{{ booking.user.email|default:"" }}</small>
+            </td>
+            <td>
+              <div class="fw-bold">
+                {% if booking.pet_service %}{{ booking.pet_service.name }}{% else %}Dr. {{ booking.vet_doctor.name }}{% endif %}
+              </div>
+              <small class="text-muted">
+                {% if booking.pet_service %}{{ booking.pet_service.get_service_type_display }}{% else %}{{ booking.vet_doctor.get_specialization_display }}{% endif %}
+              </small>
+            </td>
+            <td>
+              <div>{{ booking.booking_date|date:"M d, Y" }}</div>
+              <small class="text-muted">{{ booking.booking_time|time:"h:i A" }}</small>
+            </td>
+            <td class="text-center">
+              {% if booking.status == 'confirmed' %}
+                <span class="badge bg-success-subtle text-success rounded-pill px-3">Confirmed</span>
+              {% elif booking.status == 'pending' %}
+                <span class="badge bg-warning-subtle text-warning rounded-pill px-3">Pending</span>
+              {% elif booking.status == 'cancelled' %}
+                <span class="badge bg-danger-subtle text-danger rounded-pill px-3">Cancelled</span>
+              {% elif booking.status == 'completed' %}
+                <span class="badge bg-primary-subtle text-primary rounded-pill px-3">Completed</span>
+              {% else %}
+                <span class="badge bg-secondary-subtle text-secondary rounded-pill px-3">{{ booking.status|title }}</span>
+              {% endif %}
+            </td>
+            <td class="text-end">
+              <div class="dropdown d-inline-block">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                  Change Status
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="border-radius:12px;">
+                  <li>
+                    <form method="post">{% csrf_token %}
+                      <input type="hidden" name="update_booking_status" value="1">
+                      <input type="hidden" name="booking_id" value="{{ booking.id }}">
+                      <input type="hidden" name="status" value="confirmed">
+                      <button type="submit" class="dropdown-item text-success small">Confirm Booking</button>
+                    </form>
+                  </li>
+                  <li>
+                    <form method="post">{% csrf_token %}
+                      <input type="hidden" name="update_booking_status" value="1">
+                      <input type="hidden" name="booking_id" value="{{ booking.id }}">
+                      <input type="hidden" name="status" value="completed">
+                      <button type="submit" class="dropdown-item text-primary small">Mark Completed</button>
+                    </form>
+                  </li>
+                  <li>
+                    <form method="post">{% csrf_token %}
+                      <input type="hidden" name="update_booking_status" value="1">
+                      <input type="hidden" name="booking_id" value="{{ booking.id }}">
+                      <input type="hidden" name="status" value="cancelled">
+                      <button type="submit" class="dropdown-item text-danger small">Cancel Booking</button>
+                    </form>
+                  </li>
+                </ul>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="5" class="text-center text-muted py-4">No booking requests found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     PANEL 5 — DATASET & TRAINING
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="admin-panel" id="panel-ml">
+
+  <h5 class="fw-bold mb-1">Dataset & Model Training</h5>
+  <p class="text-muted small mb-4">Upload image datasets and train the breed classification CNN model.</p>
+
+  <!-- ML stat cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <div class="a-stat">
+        <div class="a-stat-icon" style="background:rgba(34,197,94,.1);">
+          <svg width="22" height="22" fill="#22c55e" viewBox="0 0 16 16"><path d="M10.5 8.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/><path d="M2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4H2zm.5 2a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1zm9 2.5a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0z"/></svg>
+        </div>
+        <div>
+          <div class="a-stat-label">Model Status</div>
+          {% if model_exists %}
+            <div class="a-stat-value text-success" style="font-size:1.2rem;">Ready</div>
+          {% else %}
+            <div class="a-stat-value text-danger" style="font-size:1.2rem;">Not Trained</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="a-stat">
+        <div class="a-stat-icon" style="background:rgba(59,130,246,.1);">
+          <svg width="22" height="22" fill="#3b82f6" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/></svg>
+        </div>
+        <div>
+          <div class="a-stat-label">Datasets</div>
+          <div class="a-stat-value">{{ datasets|length }}</div>
+          <div class="a-stat-sub">uploaded folders</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="a-stat">
+        <div class="a-stat-icon" style="background:rgba(168,85,247,.1);">
+          <svg width="22" height="22" fill="#a855f7" viewBox="0 0 16 16"><path d="M9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a1.99 1.99 0 0 1 .342-1.31L.5 3.5A2 2 0 0 1 2.5 1.5h3a2 2 0 0 1 1.6.8L8.828 4h5.344c-.066-1.112-2.5-1-2.5-1l-.844 .5H9.828z"/></svg>
+        </div>
+        <div>
+          <div class="a-stat-label">Latest Dataset</div>
+          {% if latest_dataset %}
+            <div class="a-stat-value" style="font-size:1rem;">{{ latest_dataset }}</div>
+            <div class="a-stat-sub">{{ total_images }} images</div>
+          {% else %}
+            <div class="a-stat-value text-muted" style="font-size:1rem;">None</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dataset breeds detail -->
+  {% if dataset_stats_display %}
+  <div class="a-card mb-4">
+    <div class="a-card-title">📁 Dataset Classes</div>
+    <div class="a-card-sub">{{ dataset_stats_display|length }} breeds detected in latest dataset</div>
+    <div style="max-height:120px;overflow-y:auto;">
+      {% for breed, count in dataset_stats_display.items %}
+        <span class="breed-pill">{{ breed }} <span>({{ count }})</span></span>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Upload & Train -->
+  <div class="row g-4">
+    <div class="col-md-6">
+      <div class="a-card h-100">
+        <div class="a-card-title">📤 1. Upload Dataset (ZIP)</div>
+        <div class="a-card-sub">ZIP file with subfolders per class: <code>breed_name/images</code></div>
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="mb-3">
+            <input type="file" name="dataset_zip" accept=".zip" class="admin-form-control">
+          </div>
+          <button type="submit" class="btn btn-primary px-4" style="border-radius:10px;">Upload & Extract</button>
+        </form>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="a-card h-100">
+        <div class="a-card-title">🧠 2. Train CNN Model</div>
+        <div class="a-card-sub">80/20 train-val split on latest dataset</div>
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="train_model" value="1">
+          <button type="submit" class="btn btn-primary px-4" style="border-radius:10px;" {% if not latest_dataset %}disabled{% endif %}>
+            Start Training
+          </button>
+        </form>
+        <p class="text-muted small mt-2 mb-0">
+          {% if not latest_dataset %}Upload a dataset first to enable training.{% else %}Ready to train on "{{ latest_dataset }}".{% endif %}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  {% if datasets %}
+  <div class="a-card mt-4">
+    <div class="a-card-title">📦 All Datasets</div>
+    <ul class="mb-0" style="font-size:.85rem;">
+      {% for ds in datasets %}
+        <li>{{ ds }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     CHART.JS INITIALIZATION
+     ═══════════════════════════════════════════════════════════════════════ -->
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const navItems = document.querySelectorAll('.admin-nav-item');
-        const panels = document.querySelectorAll('.admin-panel');
-
-        function showPanel(id) {
-            panels.forEach(p => {
-                p.classList.toggle('d-none', p.id !== id);
-            });
+document.addEventListener('DOMContentLoaded', function() {
+  // Species Distribution Pie
+  const speciesCtx = document.getElementById('speciesChart');
+  if (speciesCtx) {
+    new Chart(speciesCtx, {
+      type: 'doughnut',
+      data: {
+        labels: {{ species_labels|safe }},
+        datasets: [{
+          data: {{ species_counts|safe }},
+          backgroundColor: ['#0d9488', '#818cf8', '#f97316', '#ec4899', '#22c55e'],
+          borderWidth: 0,
+          hoverOffset: 8,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true, font: { size: 12, family: 'Inter' } } }
         }
-
-        navItems.forEach(item => {
-            item.addEventListener('click', function () {
-                navItems.forEach(i => i.classList.remove('active'));
-                this.classList.add('active');
-                const target = this.getAttribute('data-target').replace('#', '');
-                showPanel(target);
-            });
-        });
-
-        // Default to Dataset & Training
-        showPanel('admin-dataset');
-        document.querySelector('[data-target="#admin-dataset"]').classList.add('active');
+      }
     });
+  }
+
+  // Health Risk Doughnut
+  const healthCtx = document.getElementById('healthChart');
+  if (healthCtx) {
+    new Chart(healthCtx, {
+      type: 'doughnut',
+      data: {
+        labels: {{ health_labels|safe }},
+        datasets: [{
+          data: {{ health_counts|safe }},
+          backgroundColor: ['#22c55e', '#eab308', '#ef4444'],
+          borderWidth: 0,
+          hoverOffset: 8,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true, font: { size: 12, family: 'Inter' } } }
+        }
+      }
+    });
+  }
+});
 </script>
+
 {% endblock %}

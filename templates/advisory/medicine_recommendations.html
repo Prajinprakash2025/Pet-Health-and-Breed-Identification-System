@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+<div>
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <h1 class="fw-bold mb-1">Medicine Recommendations</h1>
+            <p class="text-muted mb-0">General medicine guidance mapped to common pet conditions.</p>
+        </div>
+        <a href="{% url 'advisory:advisory_home' %}" class="btn btn-outline-secondary">Advisory</a>
+    </div>
+
+    <div class="chart-card mb-4">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label fw-semibold small text-uppercase">Species</label>
+                <select name="species" class="form-control">
+                    <option value="">All species</option>
+                    {% for value, label in species_choices %}
+                        <option value="{{ value }}" {% if species == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-5">
+                <label class="form-label fw-semibold small text-uppercase">Condition or medicine</label>
+                <input type="search" name="condition" value="{{ condition }}" class="form-control" placeholder="Example: allergy, fungal, parasite">
+            </div>
+            <div class="col-md-3">
+                <button class="btn btn-primary w-100" type="submit">Search</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="row g-3">
+        {% for medicine in medicines %}
+        <div class="col-md-6 col-xl-4">
+            <div class="chart-card">
+                <div class="d-flex justify-content-between gap-2 mb-2">
+                    <span class="badge bg-primary-subtle text-primary">{{ medicine.get_species_display }}</span>
+                    <span class="text-muted small">{{ medicine.condition_name }}</span>
+                </div>
+                <h5 class="fw-bold">{{ medicine.medicine_name }}</h5>
+                <div class="small mb-3">{{ medicine.dosage_guidance|linebreaks }}</div>
+                {% if medicine.administration_notes %}
+                    <div class="bg-light rounded-3 p-3 small mb-3">
+                        <strong>Notes:</strong> {{ medicine.administration_notes }}
+                    </div>
+                {% endif %}
+                {% if medicine.warnings %}
+                    <div class="alert alert-warning small mb-0">{{ medicine.warnings }}</div>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="chart-card">
+                <p class="text-muted mb-0">No medicine recommendations match this search. Add approved recommendations in the admin panel.</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="alert alert-danger mt-4">
+        Do not self-medicate pets. Use these recommendations as conversation starters with a veterinarian, especially for dosage and prescription decisions.
+    </div>
+</div>
+</div>
+{% endblock %}

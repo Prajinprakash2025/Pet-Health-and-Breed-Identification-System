@@ -11,6 +11,11 @@
         Medical Records
     </h1>
     <p class="section-subtitle">Vaccination records and medical visit history for all your pets</p>
+    <div class="d-flex flex-wrap gap-2 mt-3">
+        <a class="btn btn-primary" href="{% url 'records:add_vaccination' %}">Add Vaccination</a>
+        <a class="btn btn-secondary" href="{% url 'records:add_medical' %}">Add Medical Record</a>
+        <a class="btn btn-outline-secondary" href="{% url 'records:reminders' %}">Manage Reminders</a>
+    </div>
 </div>
 
 <!-- ── Summary Cards ──────────────────────────────────────────────────── -->
@@ -85,6 +90,7 @@
     <div class="empty-state">
         <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" viewBox="0 0 16 16"><path d="M9.5 0a.5.5 0 0 1 .5.5.5.5 0 0 0 .5.5z"/></svg>
         <p>No vaccination records yet.</p>
+        <a class="btn btn-primary btn-sm" href="{% url 'records:add_vaccination' %}">Add Vaccination</a>
     </div>
     {% endif %}
 </div>
@@ -102,6 +108,7 @@
                     <th>Clinic</th>
                     <th>Diagnosis</th>
                     <th>Treatment</th>
+                    <th>Prescription</th>
                     <th>Follow-up</th>
                 </tr>
             </thead>
@@ -113,6 +120,7 @@
                     <td class="text-muted">{{ rec.clinic_name|default:"—" }}</td>
                     <td>{{ rec.diagnosis|truncatewords:10 }}</td>
                     <td class="text-muted">{{ rec.treatment|truncatewords:8|default:"—" }}</td>
+                    <td class="text-muted">{{ rec.prescription|truncatewords:8|default:"—" }}</td>
                     <td class="text-muted">{{ rec.follow_up_date|date:"M d, Y"|default:"—" }}</td>
                 </tr>
                 {% endfor %}
@@ -123,6 +131,7 @@
     <div class="empty-state">
         <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14z"/></svg>
         <p>No medical visit records yet.</p>
+        <a class="btn btn-primary btn-sm" href="{% url 'records:add_medical' %}">Add Medical Record</a>
     </div>
     {% endif %}
 </div>

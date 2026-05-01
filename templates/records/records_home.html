@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="py-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <h1 class="fw-bold mb-1">Vaccination & Medical Records</h1>
+            <p class="text-muted mb-0">Track vaccination history, treatment logs, prescriptions, and follow-up dates.</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-primary" href="{% url 'records:add_vaccination' %}">Add Vaccination</a>
+            <a class="btn btn-secondary" href="{% url 'records:add_medical' %}">Add Medical Record</a>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="stat-card">
+                <span class="text-muted small fw-medium text-uppercase">Vaccination Records</span>
+                <h3 class="fw-bold mb-0">{{ vaccinations|length }}</h3>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card">
+                <span class="text-muted small fw-medium text-uppercase">Medical Visits</span>
+                <h3 class="fw-bold mb-0">{{ medical_records|length }}</h3>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card">
+                <span class="text-muted small fw-medium text-uppercase">Open Reminders</span>
+                <h3 class="fw-bold mb-0">{{ upcoming_count }}</h3>
+                {% if overdue_count %}<small class="text-danger">{{ overdue_count }} overdue</small>{% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="chart-card mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0">Smart Reminders</h5>
+            <a href="{% url 'records:reminders' %}" class="text-primary text-decoration-none small fw-semibold">Manage reminders</a>
+        </div>
+        {% if reminders %}
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                    <tr><th>Pet</th><th>Reminder</th><th>Type</th><th>Due</th><th>Status</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for reminder in reminders %}
+                    <tr>
+                        <td><strong>{{ reminder.pet.name }}</strong></td>
+                        <td>{{ reminder.title }}</td>
+                        <td>{{ reminder.get_reminder_type_display }}</td>
+                        <td>{{ reminder.due_date|date:"M d, Y" }}</td>
+                        <td>
+                            {% if reminder.is_completed %}
+                                <span class="status-badge completed">Completed</span>
+                            {% elif reminder.is_overdue %}
+                                <span class="status-badge missed">Overdue</span>
+                            {% else %}
+                                <span class="status-badge scheduled">Upcoming</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-muted mb-0">No reminders yet. Add reminders for grooming, training, vaccination, or follow-up care.</p>
+        {% endif %}
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="chart-card">
+                <h5 class="fw-bold mb-3">Vaccination History</h5>
+                {% if vaccinations %}
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                            <tr><th>Pet</th><th>Vaccine</th><th>Scheduled</th><th>Administered</th><th>Status</th></tr>
+                            </thead>
+                            <tbody>
+                            {% for record in vaccinations %}
+                            <tr>
+                                <td><strong>{{ record.pet.name }}</strong></td>
+                                <td>{{ record.vaccine_name }}</td>
+                                <td>{{ record.scheduled_date|date:"M d, Y"|default:"-" }}</td>
+                                <td>{{ record.administered_date|date:"M d, Y"|default:"-" }}</td>
+                                <td><span class="status-badge {{ record.status }}">{{ record.get_status_display }}</span></td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">No vaccination records yet.</p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="chart-card">
+                <h5 class="fw-bold mb-3">Treatment Logs & Prescriptions</h5>
+                {% if medical_records %}
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                            <tr><th>Pet</th><th>Visit</th><th>Clinic</th><th>Diagnosis</th><th>Follow-up</th></tr>
+                            </thead>
+                            <tbody>
+                            {% for record in medical_records %}
+                            <tr>
+                                <td><strong>{{ record.pet.name }}</strong></td>
+                                <td>{{ record.visit_date|date:"M d, Y" }}</td>
+                                <td>{{ record.clinic_name|default:"-" }}</td>
+                                <td>{{ record.diagnosis|truncatewords:8 }}</td>
+                                <td>{{ record.follow_up_date|date:"M d, Y"|default:"-" }}</td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">No treatment records yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

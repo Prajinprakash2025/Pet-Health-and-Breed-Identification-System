@@ -1,4 +1,5 @@
 import random
+import time
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
@@ -87,7 +88,7 @@ def pet_add_view(request):
             return redirect("pets:pet_detail", pet_id=pet.id)
     else:
         form = PetForm()
-    return render(request, "pets/pet_form.html", {"form": form})
+    return render(request, "pets/pet_form.html", {"form": form, "active_section": "add_pet"})
 
 
 @login_required
@@ -101,7 +102,7 @@ def pet_edit_view(request, pet_id):
             return redirect("pets:pet_detail", pet_id=pet.id)
     else:
         form = PetForm(instance=pet)
-    return render(request, "pets/pet_form.html", {"form": form, "pet": pet})
+    return render(request, "pets/pet_form.html", {"form": form, "pet": pet, "active_section": "my_pets"})
 
 
 @require_POST
@@ -114,29 +115,64 @@ def run_breed_prediction_view(request, pet_id):
         return redirect("pets:pet_detail", pet_id=pet.id)
 
     # ── Real ML Model Inference ────────────────────────────────────────────
+    started_at = time.perf_counter()
     try:
         from .ml_predictor import predict_breed
         breed_result = predict_breed(pet.image.path)
         predicted_breed = breed_result["breed"]
         species = breed_result["species"]
         confidence = breed_result["confidence"]
-        model_version = "1.0.0-mobilenetv2"
+        low_confidence = breed_result.get("low_confidence", confidence < 80)
+        top_predictions = breed_result.get("top_predictions", [])
+        model_version = "1.0.0-efficientnetb0"
     except Exception as e:
         messages.warning(request, f"AI model error ({e}).")
         predicted_breed = "Unknown"
         species = pet.species
         confidence = 0.0
+        low_confidence = True
+        top_predictions = []
         model_version = "0.1.0-fallback"
+
+    elapsed = time.perf_counter() - started_at
+    print(
+        "[breed-predict] "
+        f"pet_id={pet.id} result={predicted_breed} "
+        f"confidence={confidence:.1f}% elapsed={elapsed:.2f}s"
+    )
 
     BreedPrediction.objects.create(
         pet=pet,
-        predicted_breed=predicted_breed,
+        predicted_breed=(
+            f"Uncertain ({predicted_breed})"
+            if low_confidence and predicted_breed != "Unknown"
+            else predicted_breed
+        ),
         species=species,
         confidence=confidence,
         model_version=model_version,
     )
 
-    messages.success(request, f"AI identified {pet.name} as a {predicted_breed} ({confidence:.1f}% confidence).")
+    if predicted_breed == "Unknown":
+        messages.warning(request, f"AI could not identify {pet.name}'s breed from this image.")
+    elif low_confidence:
+        alternatives = ", ".join(
+            f"{item['breed']} {item['confidence']:.1f}%"
+            for item in top_predictions[:3]
+        )
+        messages.warning(
+            request,
+            (
+                f"AI is not confident for {pet.name}. Closest trained match: "
+                f"{predicted_breed} ({confidence:.1f}%)."
+                + (f" Top options: {alternatives}." if alternatives else "")
+            ),
+        )
+    else:
+        if not pet.breed:
+            pet.breed = predicted_breed
+            pet.save(update_fields=["breed"])
+        messages.success(request, f"AI identified {pet.name} as a {predicted_breed} ({confidence:.1f}% confidence).")
     return redirect("pets:pet_detail", pet_id=pet.id)
 
 

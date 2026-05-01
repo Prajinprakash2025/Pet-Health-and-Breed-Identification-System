@@ -1,8 +1,8 @@
-{% extends "base.html" %}
+{% extends "analytics/dashboard_base.html" %}
 {% load static %}
 
-{% block content %}
-<div class="row justify-content-center py-4">
+{% block dashboard_content %}
+<div class="row justify-content-center">
     <div class="col-lg-10">
         <div class="glass-card">
             <div class="row g-4 align-items-start">
@@ -91,7 +91,7 @@
                             <button type="submit" class="btn btn-primary">
                                 {% if pet %}Save Changes{% else %}Create Pet Profile{% endif %}
                             </button>
-                            <a href="{% if pet %}{% url 'pets:pet_detail' pet.id %}{% else %}{% url 'pets:pet_list' %}{% endif %}"
+                            <a href="{% if pet %}{% url 'pets:pet_detail' pet.id %}{% else %}{% url 'analytics:my_pets_section' %}{% endif %}"
                                class="btn btn-outline-secondary">
                                 Cancel
                             </a>

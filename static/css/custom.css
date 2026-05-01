@@ -648,6 +648,11 @@ body.has-dashboard-sidebar .footer {
   color: white;
 }
 
+.sidebar-add-btn.active {
+  background: linear-gradient(135deg, #14b8a6, #0d9488);
+  box-shadow: 0 0 0 3px rgba(94, 234, 212, 0.18), 0 6px 20px rgba(13, 148, 136, 0.45);
+}
+
 /* ── Main Content ───────────────────────────────────────────────────────── */
 .dashboard-main {
   flex: 1;

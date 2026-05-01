@@ -8,7 +8,9 @@ from django.conf.urls.static import static
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("accounts/", include(("accounts.urls", "accounts"), namespace="accounts")),
+    path("advisory/", include("advisory.urls", namespace="advisory")),
     path("pets/", include("pets.urls", namespace="pets")),
+    path("records/", include("records.urls", namespace="records")),
     path(
         "",
         TemplateView.as_view(template_name="home.html"),

@@ -1,7 +1,7 @@
 from django.contrib import messages
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.views import LoginView, LogoutView
+from django.contrib.auth.views import LoginView
 from django.shortcuts import redirect, render
 from django.urls import reverse, reverse_lazy
 
@@ -37,8 +37,10 @@ class AdminLoginView(LoginView):
         return reverse("accounts:profile")
 
 
-class UserLogoutView(LogoutView):
-    next_page = reverse_lazy("home")
+def logout_user(request):
+    logout(request)
+    messages.info(request, "You have been logged out successfully.")
+    return redirect("home")
 
 
 def register(request):

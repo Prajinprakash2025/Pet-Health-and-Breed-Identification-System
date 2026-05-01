@@ -1,52 +1,432 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <title>PetCare AI - Admin</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    {% load static %}
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+  <meta charset="utf-8">
+  <title>PetCare AI – Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% load static %}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --primary: #0d9488;
+      --primary-light: #5eead4;
+      --sidebar-bg: linear-gradient(195deg, #0f172a 0%, #1e293b 60%, #0f172a 100%);
+    }
+
+    * { box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; overflow: hidden; margin: 0; background: #f8fafc; }
+
+    .admin-shell { display: flex; height: 100vh; width: 100vw; overflow: hidden; }
+
+    /* ── Sidebar ── */
+    .admin-sidebar {
+      width: 250px; min-width: 250px;
+      background: var(--sidebar-bg);
+      display: flex; flex-direction: column;
+      padding: 1.25rem 0.85rem;
+      height: 100vh; overflow-y: auto; z-index: 100;
+    }
+    .admin-sidebar::-webkit-scrollbar { width: 3px; }
+    .admin-sidebar::-webkit-scrollbar-thumb { background: rgba(148,163,184,.25); border-radius: 999px; }
+
+    .admin-brand {
+      display: flex; align-items: center; gap: 0.6rem;
+      padding: 0.4rem 0.5rem 1rem; text-decoration: none;
+    }
+    .admin-brand-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: linear-gradient(135deg, #0d9488, #818cf8);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 12px rgba(13,148,136,.4); flex-shrink: 0;
+    }
+    .admin-brand-text { font-weight: 700; font-size: .9rem; color: #f1f5f9; line-height: 1.2; }
+    .admin-brand-sub  { font-size: .68rem; color: #64748b; text-transform: uppercase; letter-spacing: .06em; }
+
+    .admin-divider { border-color: rgba(148,163,184,.12); margin: .5rem 0; }
+
+    .admin-section-label {
+      font-size: .65rem; text-transform: uppercase; letter-spacing: .1em;
+      color: #475569; padding: .5rem .5rem .25rem; font-weight: 600;
+    }
+
+    .admin-nav-link {
+      display: flex; align-items: center; gap: .65rem;
+      padding: .6rem .75rem; border-radius: 9px;
+      color: #94a3b8; text-decoration: none;
+      font-size: .84rem; font-weight: 500;
+      transition: all .18s ease;
+      border-left: 3px solid transparent;
+      cursor: pointer; margin-bottom: 2px;
+    }
+    .admin-nav-link:hover  { background: rgba(148,163,184,.1); color: #e2e8f0; border-left-color: rgba(13,148,136,.4); }
+    .admin-nav-link.active { background: rgba(13,148,136,.15); color: #5eead4; border-left-color: #0d9488; font-weight: 600; }
+    .admin-nav-link svg    { opacity: .65; transition: opacity .18s; flex-shrink: 0; }
+    .admin-nav-link:hover svg, .admin-nav-link.active svg { opacity: 1; }
+
+    .admin-sidebar-bottom { margin-top: auto; padding-top: .75rem; }
+    .admin-back-btn {
+      display: flex; align-items: center; gap: .5rem;
+      padding: .6rem .75rem; border-radius: 9px;
+      color: #64748b; text-decoration: none; font-size: .82rem;
+      transition: all .18s ease;
+    }
+    .admin-back-btn:hover { color: #94a3b8; background: rgba(148,163,184,.08); }
+
+    /* ── Main area ── */
+    .admin-main {
+      flex: 1; min-width: 0;
+      display: flex; flex-direction: column;
+      height: 100vh; overflow: hidden; background: #f8fafc;
+    }
+
+    /* ── Top bar ── */
+    .admin-topbar {
+      background: white; border-bottom: 1px solid #e2e8f0;
+      padding: .75rem 1.75rem;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0; box-shadow: 0 1px 3px rgba(0,0,0,.04);
+    }
+    .admin-topbar-title { font-weight: 700; font-size: 1.1rem; color: #1e293b; }
+    .admin-topbar-sub   { font-size: .78rem; color: #64748b; }
+
+    /* ── Scrollable content ── */
+    .admin-content {
+      flex: 1; overflow-y: auto; padding: 1.75rem;
+    }
+    .admin-content::-webkit-scrollbar { width: 5px; }
+    .admin-content::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+
+    /* ── Panels ── */
+    .admin-panel { display: none; }
+    .admin-panel.active { display: block; }
+
+    /* ── Stat cards ── */
+    .a-stat {
+      background: white; border-radius: 14px; padding: 1.25rem 1.4rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,.05), 0 4px 12px rgba(0,0,0,.04);
+      border: 1px solid rgba(0,0,0,.04);
+      display: flex; align-items: center; gap: 1rem;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .a-stat:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.08); }
+    .a-stat-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .a-stat-label { font-size: .72rem; text-transform: uppercase; letter-spacing: .07em; color: #64748b; font-weight: 600; }
+    .a-stat-value { font-size: 1.6rem; font-weight: 800; color: #1e293b; line-height: 1.1; }
+    .a-stat-sub   { font-size: .75rem; color: #94a3b8; }
+
+    /* ── Section card ── */
+    .a-card {
+      background: white; border-radius: 14px; padding: 1.4rem 1.6rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,.05), 0 4px 12px rgba(0,0,0,.04);
+      border: 1px solid rgba(0,0,0,.04); margin-bottom: 1.25rem;
+    }
+    .a-card-title { font-weight: 700; font-size: 1rem; color: #1e293b; margin-bottom: .1rem; }
+    .a-card-sub   { font-size: .8rem; color: #94a3b8; margin-bottom: 1rem; }
+
+    /* ── Table ── */
+    .a-table { width: 100%; border-collapse: collapse; }
+    .a-table thead th {
+      background: #f8fafc; padding: .65rem 1rem;
+      font-size: .72rem; text-transform: uppercase; letter-spacing: .07em;
+      color: #64748b; font-weight: 600; border-bottom: 2px solid #e2e8f0;
+      white-space: nowrap;
+    }
+    .a-table tbody td {
+      padding: .75rem 1rem; font-size: .85rem;
+      border-bottom: 1px solid #f1f5f9; color: #1e293b; vertical-align: middle;
+    }
+    .a-table tbody tr:hover { background: #f8fafc; }
+    .a-table tbody tr:last-child td { border-bottom: none; }
+
+    /* ── Role / status badges ── */
+    .badge-superuser { background: rgba(239,68,68,.1);  color: #dc2626; }
+    .badge-staff     { background: rgba(59,130,246,.1); color: #2563eb; }
+    .badge-user      { background: rgba(100,116,139,.1);color: #475569; }
+    .badge-active    { background: rgba(34,197,94,.1);  color: #16a34a; }
+    .badge-blocked   { background: rgba(239,68,68,.1);  color: #dc2626; }
+    .badge-available { background: rgba(34,197,94,.1);  color: #16a34a; }
+    .badge-unavailable { background: rgba(239,68,68,.1); color: #dc2626; }
+    .role-badge, .status-badge-a {
+      display: inline-flex; align-items: center; gap: .25rem;
+      padding: .25rem .65rem; border-radius: 999px;
+      font-size: .72rem; font-weight: 600;
+    }
+
+    /* ── Action buttons ── */
+    .btn-action {
+      padding: .25rem .6rem; font-size: .7rem; border-radius: 999px;
+      font-weight: 600; border: 1px solid; transition: all .15s ease;
+      text-transform: uppercase; letter-spacing: .03em;
+    }
+    .btn-action:hover { transform: translateY(-1px); }
+
+    /* ── Search box ── */
+    .admin-search {
+      border-radius: 8px; border: 1px solid #e2e8f0;
+      padding: .5rem .85rem; font-size: .85rem; width: 260px;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .admin-search:focus { border-color: #0d9488; box-shadow: 0 0 0 3px rgba(13,148,136,.15); outline: none; }
+
+    /* ── Chart container ── */
+    .chart-box { position: relative; height: 240px; }
+
+    /* ── Doctor card ── */
+    .doctor-card {
+      background: white; border-radius: 14px;
+      border: 1px solid rgba(0,0,0,.04);
+      box-shadow: 0 1px 3px rgba(0,0,0,.05), 0 4px 12px rgba(0,0,0,.04);
+      overflow: hidden; transition: transform .2s, box-shadow .2s;
+    }
+    .doctor-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,.1); }
+    .doctor-photo {
+      width: 72px; height: 72px; border-radius: 50%;
+      object-fit: cover; border: 3px solid #f1f5f9;
+    }
+    .doctor-placeholder {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: linear-gradient(135deg, rgba(13,148,136,.1), rgba(129,140,248,.1));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; color: #94a3b8;
+    }
+
+    /* ── Form styling ── */
+    .admin-form-control {
+      border-radius: 8px; border: 1px solid #e2e8f0;
+      padding: .5rem .75rem; font-size: .85rem; width: 100%;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .admin-form-control:focus { border-color: #0d9488; box-shadow: 0 0 0 3px rgba(13,148,136,.15); outline: none; }
+    .admin-form-label { font-size: .75rem; font-weight: 600; color: #475569; text-transform: uppercase; letter-spacing: .05em; margin-bottom: .3rem; }
+
+    /* ── Breed pill ── */
+    .breed-pill {
+      display: inline-flex; align-items: center; gap: .3rem;
+      background: #f1f5f9; border-radius: 999px;
+      padding: .2rem .65rem; font-size: .75rem; color: #475569; margin: .15rem;
+    }
+    .breed-pill span { font-weight: 600; color: #0d9488; }
+
+    /* ── Mobile ── */
+    @media (max-width: 767px) {
+      .admin-sidebar { position: fixed; left: 0; top: 0; transform: translateX(-100%); transition: transform .3s; z-index: 1050; }
+      .admin-sidebar.open { transform: translateX(0); }
+      .admin-topbar-title { font-size: .95rem; }
+      .admin-content { padding: 1rem; }
+    }
+  </style>
 </head>
 <body>
-<nav class="navbar navbar-expand-lg navbar-light sticky-top py-3">
-    <div class="container-fluid px-4">
-        <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'home' %}">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
-                 class="bi bi-heart-fill text-primary" viewBox="0 0 16 16">
-                <path fill-rule="evenodd"
-                      d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z"/>
-            </svg>
-            <span>PetCare AI Admin</span>
-        </a>
-        <div class="ms-auto d-flex align-items-center gap-3">
-            <a href="{% url 'analytics:ml_admin_dashboard' %}" class="nav-link small text-uppercase fw-semibold">
-                ML Dashboard
-            </a>
-            <a href="{% url 'accounts:profile' %}" class="nav-link small">Back to user view</a>
-            <a href="{% url 'accounts:logout' %}" class="btn btn-outline-danger btn-sm">Logout</a>
-        </div>
+{% load static %}
+
+<div class="admin-shell">
+
+  <!-- ── Sidebar ─────────────────────────────────────────────────────── -->
+  <aside class="admin-sidebar" id="adminSidebar">
+
+    <a href="{% url 'home' %}" class="admin-brand">
+      <div class="admin-brand-icon">
+        <svg width="18" height="18" fill="white" viewBox="0 0 16 16">
+          <path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z"/>
+        </svg>
+      </div>
+      <div>
+        <div class="admin-brand-text">PetCare AI</div>
+        <div class="admin-brand-sub">Admin Panel</div>
+      </div>
+    </a>
+
+    <hr class="admin-divider">
+
+    <div class="admin-section-label">Main</div>
+    <nav>
+      <a class="admin-nav-link active" data-panel="overview" href="#">
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M0 1.5A1.5 1.5 0 0 1 1.5 0h2A1.5 1.5 0 0 1 5 1.5v2A1.5 1.5 0 0 1 3.5 5h-2A1.5 1.5 0 0 1 0 3.5v-2zM1.5 1a.5.5 0 0 0-.5.5v2a.5.5 0 0 0 .5.5h2a.5.5 0 0 0 .5-.5v-2a.5.5 0 0 0-.5-.5h-2zM0 8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V8zm1 3v2a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2H1zm14-1V8a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v2h14zM2 8.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0 4a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5z"/>
+        </svg>
+        Overview
+      </a>
+      <a class="admin-nav-link" data-panel="users" href="#">
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1h8zm-7.978-1A.261.261 0 0 1 7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002-.014.002H7.022zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM6.936 9.28a5.88 5.88 0 0 0-1.23-.247A7.35 7.35 0 0 0 5 9c-4 0-5 3-5 4 0 .667.333 1 1 1h4.216A2.238 2.238 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816zM4.92 10A5.493 5.493 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275zM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0zm3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/>
+        </svg>
+        User Management
+      </a>
+      <a class="admin-nav-link" data-panel="doctors" href="#">
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.25-11.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0z"/>
+        </svg>
+        Doctors
+      </a>
+      <a class="admin-nav-link" data-panel="services" href="#">
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z"/>
+        </svg>
+        Pet Services
+      </a>
+      <a class="admin-nav-link" data-panel="reports" href="#">
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h13zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13z"/>
+          <path d="M3 8.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5zm0-5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5v-1z"/>
+        </svg>
+        Reports
+      </a>
+      <a class="admin-nav-link" data-panel="bookings" href="#">
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.293l2.646-2.647a.5.5 0 0 1 .708 0z"/><path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5V2zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1H4z"/></svg>
+        Service Bookings
+      </a>
+    </nav>
+
+    <hr class="admin-divider">
+    <div class="admin-section-label">AI / ML</div>
+    <nav>
+      <a class="admin-nav-link" data-panel="ml" href="#">
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M6 12.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5ZM3 8.062C3 6.76 4.235 5.765 5.53 5.886a26.58 26.58 0 0 0 4.94 0C11.765 5.765 13 6.76 13 8.062v1.157a.933.933 0 0 1-.765.935c-.845.147-2.34.346-4.235.346-1.895 0-3.39-.2-4.235-.346A.933.933 0 0 1 3 9.219V8.062Z"/>
+          <path d="M8 1a2.5 2.5 0 0 1 2.5 2.5V4h-5v-.5A2.5 2.5 0 0 1 8 1Zm3.5 3v-.5a3.5 3.5 0 1 0-7 0V4H1v10h14V4H11.5ZM2 5h12v8H2V5Z"/>
+        </svg>
+        Dataset & Training
+      </a>
+    </nav>
+
+    <div class="admin-sidebar-bottom">
+      <hr class="admin-divider">
+      <a href="{% url 'analytics:dashboard' %}" class="admin-back-btn">
+        <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+          <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+        </svg>
+        Back to Dashboard
+      </a>
+      <a href="{% url 'accounts:logout' %}" class="admin-back-btn text-danger">
+        <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+          <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0v2z"/>
+          <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/>
+        </svg>
+        Logout
+      </a>
     </div>
-</nav>
+  </aside>
 
-<main class="container-fluid" style="padding-top: 2rem; padding-bottom: 3rem;">
-    {% if messages %}
-        <div class="row justify-content-center mb-3">
-            <div class="col-xl-8 col-lg-10">
-                {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm border-0" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
-    {% endif %}
+  <!-- ── Main ─────────────────────────────────────────────────────────── -->
+  <div class="admin-main">
 
-    {% block content %}{% endblock %}
-</main>
+    <!-- Top bar -->
+    <div class="admin-topbar">
+      <div>
+        <div class="admin-topbar-title" id="topbarTitle">Overview</div>
+        <div class="admin-topbar-sub">PetCare AI Administration</div>
+      </div>
+      <div class="d-flex align-items-center gap-3">
+        {% if messages %}
+          <div id="toastArea" style="position:fixed;top:1rem;right:1rem;z-index:9999;min-width:280px;">
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow border-0 mb-2" role="alert" style="border-radius:12px;">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+        <span class="badge bg-danger-subtle text-danger fw-semibold px-3 py-2" style="border-radius:999px;font-size:.75rem;">
+          <svg width="12" height="12" fill="currentColor" class="me-1" viewBox="0 0 16 16">
+            <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
+          </svg>
+          Admin
+        </span>
+        <span class="text-muted small">{{ request.user.username }}</span>
+        <!-- Mobile toggle -->
+        <button class="btn btn-sm btn-outline-secondary d-md-none" id="sidebarToggle">☰</button>
+      </div>
+    </div>
+
+    <!-- Scrollable content -->
+    <div class="admin-content">
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Panel switching
+  const navLinks = document.querySelectorAll('.admin-nav-link[data-panel]');
+  const panels   = document.querySelectorAll('.admin-panel');
+  const titles   = { overview:'Overview', users:'User Management', doctors:'Doctors', services:'Pet Services', bookings:'Service Bookings', reports:'Reports', ml:'Dataset & Training' };
+
+  navLinks.forEach(link => {
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      const panel = link.dataset.panel;
+      navLinks.forEach(l => l.classList.remove('active'));
+      link.classList.add('active');
+      panels.forEach(p => p.id === 'panel-' + panel ? p.classList.add('active') : p.classList.remove('active'));
+      document.getElementById('topbarTitle').textContent = titles[panel] || '';
+      
+      // Update URL without reloading
+      const url = new URL(window.location);
+      url.searchParams.set('panel', panel);
+      window.history.pushState({}, '', url);
+    });
+  });
+
+  // Auto-switch to panel from URL query param on load
+  const urlParams = new URLSearchParams(window.location.search);
+  const targetPanel = urlParams.get('panel');
+  if (targetPanel && titles[targetPanel]) {
+    const targetLink = document.querySelector(`.admin-nav-link[data-panel="${targetPanel}"]`);
+    if (targetLink) {
+        navLinks.forEach(l => l.classList.remove('active'));
+        targetLink.classList.add('active');
+        panels.forEach(p => p.id === 'panel-' + targetPanel ? p.classList.add('active') : p.classList.remove('active'));
+        document.getElementById('topbarTitle').textContent = titles[targetPanel] || '';
+    }
+  }
+
+  // Mobile sidebar
+  document.getElementById('sidebarToggle')?.addEventListener('click', () => {
+    document.getElementById('adminSidebar').classList.toggle('open');
+  });
+
+  // User search
+  const searchInput = document.getElementById('userSearch');
+  if (searchInput) {
+    searchInput.addEventListener('input', function () {
+      const q = this.value.toLowerCase();
+      document.querySelectorAll('#userTableBody tr').forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+      });
+    });
+  }
+
+  // Doctor search
+  const docSearch = document.getElementById('doctorSearch');
+  if (docSearch) {
+    docSearch.addEventListener('input', function () {
+      const q = this.value.toLowerCase();
+      document.querySelectorAll('.doctor-card-item').forEach(card => {
+        card.style.display = card.textContent.toLowerCase().includes(q) ? '' : 'none';
+      });
+    });
+  }
+
+  // Service search
+  const srvSearch = document.getElementById('serviceSearch');
+  if (srvSearch) {
+    srvSearch.addEventListener('input', function () {
+      const q = this.value.toLowerCase();
+      document.querySelectorAll('.service-row-item').forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+      });
+    });
+  }
+</script>
 </body>
 </html>
-

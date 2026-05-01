@@ -64,7 +64,11 @@
                     <button type="submit" class="btn btn-primary w-100 mt-2">Login</button>
                 </form>
 
-                <div class="mt-4 text-center">
+                <div class="mt-3 text-center">
+                    <a href="{% url 'accounts:password_reset' %}" class="auth-link small">Forgot login password?</a>
+                </div>
+
+                <div class="mt-3 text-center">
                     <small class="text-muted">
                         Don't have an account?
                         <a href="{% url 'accounts:register' %}" class="auth-link">Create one now</a>

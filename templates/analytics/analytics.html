@@ -18,7 +18,7 @@
     <div class="col-lg-5">
         <div class="chart-card">
             <div class="chart-card-title">🍩 Species Distribution</div>
-            {% if species_labels %}
+            {% if has_species_data %}
                 <div class="chart-large">
                     <canvas id="speciesChart"></canvas>
                 </div>
@@ -34,7 +34,7 @@
     <div class="col-lg-7">
         <div class="chart-card">
             <div class="chart-card-title">📊 Breed Identification Results</div>
-            {% if breed_labels %}
+            {% if has_breed_data %}
                 <div class="chart-large">
                     <canvas id="breedChart"></canvas>
                 </div>
@@ -53,7 +53,7 @@
     <div class="col-lg-6">
         <div class="chart-card">
             <div class="chart-card-title">🩺 Health Risk Distribution</div>
-            {% if health_labels %}
+            {% if has_health_data %}
                 <div class="chart-large">
                     <canvas id="healthChart"></canvas>
                 </div>
@@ -69,7 +69,7 @@
     <div class="col-lg-6">
         <div class="chart-card">
             <div class="chart-card-title">💉 Vaccination Compliance</div>
-            {% if vax_labels %}
+            {% if has_vax_data %}
                 <div class="chart-large">
                     <canvas id="vaxChart"></canvas>
                 </div>
@@ -78,6 +78,45 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" viewBox="0 0 16 16"><path d="M9.5 0a.5.5 0 0 1 .5.5.5.5 0 0 0 .5.5z"/></svg>
                     <p>No vaccination records yet. Add vaccination records to see compliance data.</p>
                 </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-4">
+        <div class="chart-card">
+            <div class="chart-card-title">Disease Occurrence</div>
+            {% if has_disease_data %}
+                <div class="chart-large">
+                    <canvas id="diseaseChart"></canvas>
+                </div>
+            {% else %}
+                <div class="empty-state"><p>No disease occurrence data yet.</p></div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="chart-card">
+            <div class="chart-card-title">Age-wise Health Trends</div>
+            {% if has_age_data %}
+                <div class="chart-large">
+                    <canvas id="ageChart"></canvas>
+                </div>
+            {% else %}
+                <div class="empty-state"><p>Add pet birth dates and health scans to see age trends.</p></div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="chart-card">
+            <div class="chart-card-title">Clinic Visit Statistics</div>
+            {% if has_clinic_data %}
+                <div class="chart-large">
+                    <canvas id="clinicChart"></canvas>
+                </div>
+            {% else %}
+                <div class="empty-state"><p>No clinic visit records yet.</p></div>
             {% endif %}
         </div>
     </div>
@@ -121,6 +160,30 @@ new Chart(document.getElementById('vaxChart'), {
     type: 'doughnut',
     data: { labels: {{ vax_labels|safe }}, datasets: [{ data: {{ vax_counts|safe }}, backgroundColor: [GREEN, BLUE, RED], borderWidth: 0, hoverOffset: 10 }] },
     options: { cutout: '55%', plugins: { legend: { position: 'bottom', labels: { padding: 16 } } }, responsive: true, maintainAspectRatio: false }
+});
+{% endif %}
+
+{% if has_disease_data %}
+new Chart(document.getElementById('diseaseChart'), {
+    type: 'bar',
+    data: { labels: {{ disease_labels|safe }}, datasets: [{ label: 'Occurrences', data: {{ disease_counts|safe }}, backgroundColor: PALETTE, borderRadius: 8 }] },
+    options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { ticks: { stepSize: 1 } }, y: { grid: { display: false } } }, responsive: true, maintainAspectRatio: false }
+});
+{% endif %}
+
+{% if has_age_data %}
+new Chart(document.getElementById('ageChart'), {
+    type: 'line',
+    data: { labels: {{ age_labels|safe }}, datasets: [{ label: 'Health scans', data: {{ age_counts|safe }}, borderColor: TEAL, backgroundColor: 'rgba(13,148,136,.12)', fill: true, tension: .35, pointRadius: 4 }] },
+    options: { plugins: { legend: { display: false } }, scales: { y: { ticks: { stepSize: 1 } } }, responsive: true, maintainAspectRatio: false }
+});
+{% endif %}
+
+{% if has_clinic_data %}
+new Chart(document.getElementById('clinicChart'), {
+    type: 'bar',
+    data: { labels: {{ clinic_labels|safe }}, datasets: [{ label: 'Visits', data: {{ clinic_counts|safe }}, backgroundColor: BLUE, borderRadius: 8 }] },
+    options: { plugins: { legend: { display: false } }, scales: { y: { ticks: { stepSize: 1 } }, x: { grid: { display: false } } }, responsive: true, maintainAspectRatio: false }
 });
 {% endif %}
 </script>

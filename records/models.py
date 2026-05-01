@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 from pets.models import Pet
 
 
@@ -40,3 +41,32 @@ class MedicalRecord(models.Model):
 
     def __str__(self) -> str:
         return f"Medical record for {self.pet} on {self.visit_date:%Y-%m-%d}"
+
+
+class Reminder(models.Model):
+    REMINDER_TYPE_CHOICES = [
+        ("vaccination", "Vaccination"),
+        ("grooming", "Grooming"),
+        ("training", "Training"),
+        ("medical", "Medical visit"),
+        ("follow_up", "Follow-up"),
+        ("custom", "Custom"),
+    ]
+
+    pet = models.ForeignKey(Pet, on_delete=models.CASCADE, related_name="reminders")
+    title = models.CharField(max_length=160)
+    reminder_type = models.CharField(max_length=30, choices=REMINDER_TYPE_CHOICES, default="custom")
+    due_date = models.DateField()
+    notes = models.TextField(blank=True)
+    is_completed = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["is_completed", "due_date", "title"]
+
+    @property
+    def is_overdue(self) -> bool:
+        return not self.is_completed and self.due_date < timezone.localdate()
+
+    def __str__(self) -> str:
+        return f"{self.title} for {self.pet} on {self.due_date:%Y-%m-%d}"
