@@ -10,7 +10,7 @@ def staff_required(view_func):
     )(view_func)
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse
 from django.conf import settings
@@ -21,7 +21,15 @@ import json
 
 from pets.models import Pet, BreedPrediction, HealthAssessment
 from records.models import VaccinationRecord, MedicalRecord, Reminder
-from advisory.models import CareAdvisory, DiseaseInfo, MedicineRecommendation, PetService, VetDoctor, ServiceBooking
+from advisory.models import (
+    CareAdvisory,
+    DiseaseInfo,
+    MedicineRecommendation,
+    PetService,
+    ServiceBooking,
+    VaccinationScheduleTemplate,
+    VetDoctor,
+)
 
 
 def _condition_from_assessment_notes(notes):
@@ -336,6 +344,99 @@ def my_pets_section_view(request):
         "pets": pets,
     }
     return render(request, "analytics/my_pets.html", context)
+
+
+@login_required
+def advisory_section_view(request):
+    """Dashboard-shell veterinary advisory page."""
+    species = request.GET.get("species", "").strip()
+    category = request.GET.get("category", "").strip()
+
+    advisories = CareAdvisory.objects.filter(is_active=True)
+    vaccines = VaccinationScheduleTemplate.objects.all()
+
+    if species in {"dog", "cat"}:
+        advisories = advisories.filter(Q(species=species) | Q(species="both"))
+        vaccines = vaccines.filter(species=species)
+    if category:
+        advisories = advisories.filter(category=category)
+
+    context = {
+        "advisories": advisories,
+        "vaccines": vaccines.order_by("species", "recommended_age_weeks", "vaccine_name"),
+        "species": species,
+        "category": category,
+        "species_choices": [("dog", "Dog"), ("cat", "Cat")],
+        "category_choices": CareAdvisory.CATEGORY_CHOICES,
+        "active_section": "advisory",
+        "dashboard_mode": True,
+    }
+    return render(request, "advisory/advisory_home_dashboard.html", context)
+
+
+@login_required
+def medicine_section_view(request):
+    """Dashboard-shell medicine recommendations page."""
+    species = request.GET.get("species", "").strip()
+    condition = request.GET.get("condition", "").strip()
+
+    medicines = MedicineRecommendation.objects.filter(is_active=True)
+    if species in {"dog", "cat"}:
+        medicines = medicines.filter(Q(species=species) | Q(species="both"))
+    if condition:
+        medicines = medicines.filter(
+            Q(condition_name__icontains=condition)
+            | Q(medicine_name__icontains=condition)
+            | Q(dosage_guidance__icontains=condition)
+        )
+
+    context = {
+        "medicines": medicines,
+        "species": species,
+        "condition": condition,
+        "species_choices": [("dog", "Dog"), ("cat", "Cat")],
+        "active_section": "advisory",
+        "dashboard_mode": True,
+    }
+    return render(request, "advisory/medicine_recommendations_dashboard.html", context)
+
+
+@login_required
+def services_section_view(request):
+    """Dashboard-shell service finder page."""
+    query = request.GET.get("q", "").strip()
+    service_type = request.GET.get("type", "").strip()
+
+    services = PetService.objects.filter(is_active=True)
+    if service_type:
+        services = services.filter(service_type=service_type)
+    if query:
+        services = services.filter(
+            Q(name__icontains=query)
+            | Q(city__icontains=query)
+            | Q(address__icontains=query)
+            | Q(notes__icontains=query)
+        )
+
+    doctors = VetDoctor.objects.filter(is_available=True)
+    if query:
+        doctors = doctors.filter(
+            Q(name__icontains=query)
+            | Q(clinic_name__icontains=query)
+            | Q(address__icontains=query)
+            | Q(specialization__icontains=query)
+        )
+
+    context = {
+        "services": services,
+        "doctors": doctors,
+        "query": query,
+        "service_type": service_type,
+        "service_type_choices": PetService.SERVICE_TYPE_CHOICES,
+        "active_section": "services",
+        "dashboard_mode": True,
+    }
+    return render(request, "advisory/service_finder_dashboard.html", context)
 
 
 @staff_required

@@ -1,7 +1,6 @@
-{% extends "base.html" %}
+{% extends "analytics/dashboard_base.html" %}
 
-{% block content %}
-<div class="container py-5">
+{% block dashboard_content %}
 <!-- Section Header -->
 <div class="section-header">
     <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
@@ -14,7 +13,7 @@
             </h1>
             <p class="section-subtitle">Manage your pets, run breed identification, and check health assessments</p>
         </div>
-        <a href="{% url 'pets:pet_add' %}" class="btn btn-primary rounded-pill px-4 shadow-sm d-flex align-items-center gap-2" style="white-space: nowrap;">
+        <a href="{% url 'analytics:dashboard_pet_add' %}" class="btn btn-primary rounded-pill px-4 shadow-sm d-flex align-items-center gap-2" style="white-space: nowrap;">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                 <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z"/>
             </svg>
@@ -69,5 +68,4 @@
     </div>
 </div>
 {% endif %}
-</div>
 {% endblock %}

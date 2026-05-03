@@ -18,6 +18,16 @@ body {
   min-height: 100vh;
 }
 
+html,
+body {
+  overflow-x: hidden;
+}
+
+body > main {
+  flex: 1 0 auto;
+  width: 100%;
+}
+
 /* Navbar */
 .navbar {
   background: var(--glass-bg) !important;
@@ -61,10 +71,10 @@ body {
 }
 
 /* Main Content Area */
-main.container {
+body > main.container {
   flex: 1;
   padding-top: 2rem;
-  padding-bottom: 4rem;
+  padding-bottom: 3rem;
 }
 
 /* Auth Pages */
@@ -153,6 +163,31 @@ main.container {
   text-decoration: underline;
 }
 
+.auth-hint {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 1rem;
+}
+
+.otp-input {
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: 0.4rem;
+  text-align: center;
+}
+
+.reset-success-icon {
+  width: 76px;
+  height: 76px;
+  border-radius: 999px;
+  background: #ccfbf1;
+  color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* Alerts */
 .alert {
   border-radius: 12px;
@@ -168,22 +203,36 @@ main.container {
 
 /* Footer */
 .footer {
-  background-color: #111827;
-  padding: 2rem 0;
+  background-color: #ffffff;
+  border-top: 1px solid #e2e8f0;
   margin-top: auto;
+  padding: 2.5rem 0 1.5rem;
 }
 
 .footer .text-muted {
-  color: #e5e7eb !important;
+  color: #64748b !important;
 }
 
 .footer a.text-muted {
-  color: #d1d5db !important;
+  color: #475569 !important;
 }
 
 .footer a.text-muted:hover,
 .footer a.hover-primary:hover {
-  color: #f9fafb !important;
+  color: var(--primary-color) !important;
+}
+
+.footer-divider {
+  border-color: #cbd5e1;
+  margin: 1.5rem 0 1.25rem;
+  opacity: 1;
+}
+
+.footer-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
 }
 
 /* Cards & Containers */
@@ -946,6 +995,21 @@ body.has-dashboard-sidebar .footer {
 
 /* ── Mobile Responsive ──────────────────────────────────────────────────── */
 @media (max-width: 991.98px) {
+  body > main.container {
+    padding-top: 1.25rem;
+    padding-bottom: 2rem;
+  }
+
+  .footer-bottom {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .otp-input {
+    font-size: 1.45rem;
+    letter-spacing: 0.25rem;
+  }
+
   .dashboard-sidebar {
     position: fixed;
     left: 0;

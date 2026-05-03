@@ -1,0 +1,99 @@
+<div>
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <h1 class="fw-bold mb-1">Veterinary Advisory</h1>
+            <p class="text-muted mb-0">Vaccination schedules, diet plans, grooming, hygiene, parasite prevention, and treatment guidance.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% if dashboard_mode %}{% url 'analytics:medicine_section' %}{% else %}{% url 'advisory:medicine_recommendations' %}{% endif %}" class="btn btn-primary">Medicines</a>
+            <a href="{% if dashboard_mode %}{% url 'analytics:services_section' %}{% else %}{% url 'advisory:service_finder' %}{% endif %}" class="btn btn-secondary">Find Services</a>
+        </div>
+    </div>
+
+    <div class="chart-card mb-4">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label fw-semibold small text-uppercase">Species</label>
+                <select name="species" class="form-control">
+                    <option value="">All species</option>
+                    {% for value, label in species_choices %}
+                        <option value="{{ value }}" {% if species == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-5">
+                <label class="form-label fw-semibold small text-uppercase">Advisory Type</label>
+                <select name="category" class="form-control">
+                    <option value="">All advisory types</option>
+                    {% for value, label in category_choices %}
+                        <option value="{{ value }}" {% if category == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button class="btn btn-primary w-100" type="submit">Filter</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-7">
+            <div class="chart-card">
+                <h5 class="fw-bold mb-3">Care Advisory Records</h5>
+                {% if advisories %}
+                    <div class="row g-3">
+                    {% for item in advisories %}
+                        <div class="col-md-6">
+                            <div class="border rounded-3 p-3 h-100">
+                                <div class="d-flex justify-content-between gap-2 mb-2">
+                                    <span class="badge bg-primary-subtle text-primary">{{ item.get_category_display }}</span>
+                                    <span class="text-muted small">{{ item.get_species_display }}</span>
+                                </div>
+                                <h6 class="fw-bold">{{ item.title }}</h6>
+                                {% if item.short_summary %}<p class="text-muted small mb-2">{{ item.short_summary }}</p>{% endif %}
+                                <div class="small">{{ item.recommendation|linebreaks }}</div>
+                                {% if item.when_to_apply %}
+                                    <div class="mt-2 small text-muted"><strong>When:</strong> {{ item.when_to_apply }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">No advisory records match this filter. Add records in the admin panel.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="chart-card">
+                <h5 class="fw-bold mb-3">Vaccination Schedule Templates</h5>
+                {% if vaccines %}
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                            <tr><th>Species</th><th>Vaccine</th><th>Age</th><th>Booster</th></tr>
+                            </thead>
+                            <tbody>
+                            {% for vaccine in vaccines %}
+                            <tr>
+                                <td>{{ vaccine.get_species_display }}</td>
+                                <td><strong>{{ vaccine.vaccine_name }}</strong><div class="text-muted small">{{ vaccine.notes|truncatewords:10 }}</div></td>
+                                <td>{{ vaccine.recommended_age_weeks }} weeks</td>
+                                <td>{% if vaccine.repeat_interval_weeks %}Every {{ vaccine.repeat_interval_weeks }} weeks{% else %}-{% endif %}</td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">No vaccination schedule templates yet. Add them in the admin panel.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="alert alert-warning">
+        Advisory content is educational support only. For diagnosis, prescriptions, or urgent symptoms, consult a licensed veterinarian.
+    </div>
+</div>

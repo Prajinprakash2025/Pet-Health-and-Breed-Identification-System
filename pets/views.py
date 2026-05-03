@@ -60,7 +60,7 @@ def _calculate_overall_risk(assessment: HealthAssessment) -> str:
 @login_required
 def pet_list_view(request):
     pets = Pet.objects.filter(owner=request.user)
-    return render(request, "pets/pet_list.html", {"pets": pets})
+    return render(request, "pets/pet_list.html", {"pets": pets, "active_section": "my_pets"})
 
 
 @login_required
@@ -72,12 +72,14 @@ def pet_detail_view(request, pet_id):
         "pet": pet,
         "breed_prediction": breed_prediction,
         "health_assessment": health_assessment,
+        "active_section": "my_pets",
     }
     return render(request, "pets/pet_detail.html", context)
 
 
 @login_required
 def pet_add_view(request):
+    dashboard_mode = request.path.startswith("/dashboard/")
     if request.method == "POST":
         form = PetForm(request.POST, request.FILES)
         if form.is_valid():
@@ -85,14 +87,22 @@ def pet_add_view(request):
             pet.owner = request.user
             pet.save()
             messages.success(request, f"{pet.name} has been added to your pets.")
+            if dashboard_mode:
+                return redirect("analytics:my_pets_section")
             return redirect("pets:pet_detail", pet_id=pet.id)
     else:
         form = PetForm()
-    return render(request, "pets/pet_form.html", {"form": form, "active_section": "add_pet"})
+    template_name = "pets/pet_form_dashboard.html" if dashboard_mode else "pets/pet_form.html"
+    return render(
+        request,
+        template_name,
+        {"form": form, "active_section": "add_pet", "dashboard_mode": dashboard_mode},
+    )
 
 
 @login_required
 def pet_edit_view(request, pet_id):
+    dashboard_mode = request.path.startswith("/dashboard/")
     pet = get_object_or_404(Pet, id=pet_id, owner=request.user)
     if request.method == "POST":
         form = PetForm(request.POST, request.FILES, instance=pet)
@@ -102,7 +112,12 @@ def pet_edit_view(request, pet_id):
             return redirect("pets:pet_detail", pet_id=pet.id)
     else:
         form = PetForm(instance=pet)
-    return render(request, "pets/pet_form.html", {"form": form, "pet": pet, "active_section": "my_pets"})
+    template_name = "pets/pet_form_dashboard.html" if dashboard_mode else "pets/pet_form.html"
+    return render(
+        request,
+        template_name,
+        {"form": form, "pet": pet, "active_section": "my_pets", "dashboard_mode": dashboard_mode},
+    )
 
 
 @require_POST
@@ -180,7 +195,11 @@ def run_breed_prediction_view(request, pet_id):
 def health_scan_view(request, pet_id):
     pet = get_object_or_404(Pet, id=pet_id, owner=request.user)
     assessment = pet.health_assessments.first()
-    return render(request, "pets/health_scan.html", {"pet": pet, "health_assessment": assessment})
+    return render(
+        request,
+        "pets/health_scan.html",
+        {"pet": pet, "health_assessment": assessment, "active_section": "my_pets"},
+    )
 
 
 @require_POST
