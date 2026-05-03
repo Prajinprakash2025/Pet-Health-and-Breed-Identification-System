@@ -1,0 +1,127 @@
+{% extends "analytics/dashboard_base.html" %}
+
+{% block dashboard_content %}
+<div class="section-header d-flex flex-wrap align-items-start justify-content-between gap-3">
+    <div>
+        <h1 class="section-title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="var(--primary-color)" viewBox="0 0 16 16">
+                <path d="M4 .5a.5.5 0 0 0-1 0V1H2a2 2 0 0 0-2 2v1h16V3a2 2 0 0 0-2-2h-1V.5a.5.5 0 0 0-1 0V1H4V.5zM16 14V5H0v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2zm-4.146-5.146-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L8.5 10.793l2.646-2.647a.5.5 0 0 1 .708.708z"/>
+            </svg>
+            My Bookings
+        </h1>
+        <p class="section-subtitle">Track your service and doctor appointment requests.</p>
+    </div>
+    <a href="{% url 'analytics:services_section' %}" class="btn btn-primary rounded-pill px-4">
+        Book New
+    </a>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-xl-3">
+        <div class="stat-card" style="border-left: 4px solid var(--primary-color);">
+            <span class="text-muted small fw-medium text-uppercase">Total</span>
+            <h2 class="fw-bold mb-0">{{ total_bookings }}</h2>
+            <small class="text-muted">All booking requests</small>
+        </div>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="stat-card" style="border-left: 4px solid #EAB308;">
+            <span class="text-muted small fw-medium text-uppercase">Pending</span>
+            <h2 class="fw-bold mb-0">{{ pending_bookings }}</h2>
+            <small class="text-muted">Waiting for approval</small>
+        </div>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="stat-card" style="border-left: 4px solid #22C55E;">
+            <span class="text-muted small fw-medium text-uppercase">Confirmed</span>
+            <h2 class="fw-bold mb-0">{{ confirmed_bookings }}</h2>
+            <small class="text-muted">Accepted appointments</small>
+        </div>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="stat-card" style="border-left: 4px solid #3B82F6;">
+            <span class="text-muted small fw-medium text-uppercase">Completed</span>
+            <h2 class="fw-bold mb-0">{{ completed_bookings }}</h2>
+            <small class="text-muted">Finished visits</small>
+        </div>
+    </div>
+</div>
+
+<div class="chart-card">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+        <div class="chart-card-title mb-0">Booking Requests</div>
+        <a href="{% url 'analytics:services_section' %}" class="text-primary text-decoration-none small fw-semibold">Find Services</a>
+    </div>
+
+    {% if bookings %}
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Service / Doctor</th>
+                        <th>Date & Time</th>
+                        <th>Status</th>
+                        <th>Notes</th>
+                        <th>Requested</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for booking in bookings %}
+                    <tr>
+                        <td>
+                            <div class="fw-bold">
+                                {% if booking.pet_service %}
+                                    {{ booking.pet_service.name }}
+                                {% elif booking.vet_doctor %}
+                                    Dr. {{ booking.vet_doctor.name }}
+                                {% else %}
+                                    Service unavailable
+                                {% endif %}
+                            </div>
+                            <small class="text-muted">
+                                {% if booking.pet_service %}
+                                    {{ booking.pet_service.get_service_type_display }}
+                                {% elif booking.vet_doctor %}
+                                    {{ booking.vet_doctor.get_specialization_display }}
+                                {% else %}
+                                    Removed service
+                                {% endif %}
+                            </small>
+                        </td>
+                        <td>
+                            <div>{{ booking.booking_date|date:"M d, Y" }}</div>
+                            <small class="text-muted">{{ booking.booking_time|time:"h:i A" }}</small>
+                        </td>
+                        <td>
+                            {% if booking.status == "confirmed" %}
+                                <span class="badge bg-success-subtle text-success rounded-pill px-3">Confirmed</span>
+                            {% elif booking.status == "pending" %}
+                                <span class="badge bg-warning-subtle text-warning rounded-pill px-3">Pending</span>
+                            {% elif booking.status == "cancelled" %}
+                                <span class="badge bg-danger-subtle text-danger rounded-pill px-3">Cancelled</span>
+                            {% elif booking.status == "completed" %}
+                                <span class="badge bg-primary-subtle text-primary rounded-pill px-3">Completed</span>
+                            {% else %}
+                                <span class="badge bg-secondary-subtle text-secondary rounded-pill px-3">{{ booking.status|title }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="text-muted">{{ booking.notes|default:"No notes"|truncatechars:42 }}</span>
+                        </td>
+                        <td>
+                            <span class="text-muted">{{ booking.created_at|date:"M d, Y" }}</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state py-5 text-center">
+            <h5 class="fw-bold mb-2">No bookings yet</h5>
+            <p class="text-muted mb-3">Book a nearby service or doctor appointment, then track the status here.</p>
+            <a href="{% url 'analytics:services_section' %}" class="btn btn-primary rounded-pill px-4">Find Services</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -162,7 +162,10 @@
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="var(--primary-color)" viewBox="0 0 16 16"><path d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.293l2.646-2.647a.5.5 0 0 1 .708 0z"/><path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5V2zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1H4z"/></svg>
             My Service Bookings
         </div>
-        <a href="{% url 'advisory:service_finder' %}" class="text-primary text-decoration-none small fw-semibold">Book New</a>
+        <div class="d-flex gap-3">
+            <a href="{% url 'analytics:bookings_section' %}" class="text-primary text-decoration-none small fw-semibold">View All</a>
+            <a href="{% url 'analytics:services_section' %}" class="text-primary text-decoration-none small fw-semibold">Book New</a>
+        </div>
     </div>
     {% if recent_bookings %}
         <div class="table-responsive">
@@ -216,7 +219,7 @@
     {% else %}
         <div class="empty-state py-4 text-center">
             <p class="text-muted mb-0">You haven't booked any services yet.</p>
-            <a href="{% url 'advisory:service_finder' %}" class="btn btn-sm btn-outline-primary mt-3">Explore Services</a>
+            <a href="{% url 'analytics:services_section' %}" class="btn btn-sm btn-outline-primary mt-3">Explore Services</a>
         </div>
     {% endif %}
 </div>

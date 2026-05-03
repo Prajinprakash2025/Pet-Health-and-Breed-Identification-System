@@ -801,15 +801,15 @@
           {% for booking in all_bookings %}
           <tr>
             <td>
-              <div class="fw-bold">{{ booking.user.username }}</div>
-              <small class="text-muted">{{ booking.user.email|default:"" }}</small>
+              <div class="fw-bold">{{ booking.user.get_full_name|default:booking.user.email }}</div>
+              <small class="text-muted">{{ booking.user.email|default:"No email" }}</small>
             </td>
             <td>
               <div class="fw-bold">
-                {% if booking.pet_service %}{{ booking.pet_service.name }}{% else %}Dr. {{ booking.vet_doctor.name }}{% endif %}
+                {% if booking.pet_service %}{{ booking.pet_service.name }}{% elif booking.vet_doctor %}Dr. {{ booking.vet_doctor.name }}{% else %}Service unavailable{% endif %}
               </div>
               <small class="text-muted">
-                {% if booking.pet_service %}{{ booking.pet_service.get_service_type_display }}{% else %}{{ booking.vet_doctor.get_specialization_display }}{% endif %}
+                {% if booking.pet_service %}{{ booking.pet_service.get_service_type_display }}{% elif booking.vet_doctor %}{{ booking.vet_doctor.get_specialization_display }}{% else %}Removed service{% endif %}
               </small>
             </td>
             <td>

@@ -87,6 +87,9 @@
   <div class="modal-dialog modal-dialog-centered">
     <form action="{% url 'advisory:book_service' %}" method="post" class="modal-content border-0 shadow-lg rounded-4">
       {% csrf_token %}
+      {% if dashboard_mode %}
+      <input type="hidden" name="next" value="{% url 'analytics:bookings_section' %}">
+      {% endif %}
       <input type="hidden" name="service_id" id="modal_service_id">
       <input type="hidden" name="doctor_id" id="modal_doctor_id">
       <div class="modal-header border-0 pb-0">

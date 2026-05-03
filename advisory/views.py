@@ -11,6 +11,14 @@ from .models import (
 )
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.utils.http import url_has_allowed_host_and_scheme
+
+
+def _booking_redirect_url(request):
+    next_url = request.POST.get("next", "")
+    if url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+        return next_url
+    return "advisory:service_finder"
 
 
 @login_required
@@ -111,7 +119,7 @@ def book_service(request):
 
         if not date or not time:
             messages.error(request, "Please select both date and time for your booking.")
-            return redirect("advisory:service_finder")
+            return redirect(_booking_redirect_url(request))
 
         booking = ServiceBooking(
             user=request.user,
@@ -126,6 +134,6 @@ def book_service(request):
         
         booking.save()
         messages.success(request, "Your booking request has been submitted successfully! You can track its status in your dashboard.")
-        return redirect("advisory:service_finder")
+        return redirect(_booking_redirect_url(request))
     
     return redirect("advisory:service_finder")

@@ -439,6 +439,26 @@ def services_section_view(request):
     return render(request, "advisory/service_finder_dashboard.html", context)
 
 
+@login_required
+def bookings_section_view(request):
+    """Dedicated user booking history page."""
+    bookings = (
+        ServiceBooking.objects.filter(user=request.user)
+        .select_related("pet_service", "vet_doctor")
+        .order_by("-booking_date", "-booking_time", "-created_at")
+    )
+
+    context = {
+        "active_section": "bookings",
+        "bookings": bookings,
+        "total_bookings": bookings.count(),
+        "pending_bookings": bookings.filter(status="pending").count(),
+        "confirmed_bookings": bookings.filter(status="confirmed").count(),
+        "completed_bookings": bookings.filter(status="completed").count(),
+    }
+    return render(request, "analytics/bookings.html", context)
+
+
 @staff_required
 def ml_admin_dashboard(request):
     base_dir = Path(settings.BASE_DIR)
@@ -718,7 +738,8 @@ def ml_admin_dashboard(request):
                 booking = ServiceBooking.objects.get(pk=booking_id)
                 booking.status = new_status
                 booking.save()
-                messages.success(request, f"Booking for {booking.user.username} updated to {new_status}.")
+                user_label = booking.user.email or booking.user.get_full_name() or str(booking.user.pk)
+                messages.success(request, f"Booking for {user_label} updated to {new_status}.")
             except ServiceBooking.DoesNotExist:
                 messages.error(request, "Booking not found.")
             return redirect(reverse("analytics:ml_admin_dashboard") + "?panel=bookings")

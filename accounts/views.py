@@ -39,28 +39,11 @@ class UserLoginView(LoginView):
     template_name = "accounts/login.html"
     form_class = LoginForm
 
-
-class AdminLoginView(LoginView):
-    """
-    Separate login entry point for admins/staff.
-
-    Uses the same form and template as the normal login,
-    but after successful login sends staff to the ML admin dashboard,
-    and non-staff users to their profile.
-    """
-
-    template_name = "accounts/login.html"
-    form_class = LoginForm
-
     def get_success_url(self):
         user = self.request.user
-        # Staff or superuser users go to the ML admin dashboard.
         if user.is_staff or user.is_superuser:
             return reverse("analytics:ml_admin_dashboard")
-
-        # Non-staff: still allow login but show a small message
-        messages.info(self.request, "You are logged in as a regular user.")
-        return reverse("accounts:profile")
+        return super().get_success_url()
 
 
 def logout_user(request):

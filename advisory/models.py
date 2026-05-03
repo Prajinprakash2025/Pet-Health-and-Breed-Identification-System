@@ -202,5 +202,11 @@ class ServiceBooking(models.Model):
         ordering = ["-booking_date", "-booking_time"]
 
     def __str__(self) -> str:
-        service_name = self.pet_service.name if self.pet_service else f"Dr. {self.vet_doctor.name}"
-        return f"Booking by {self.user.username} for {service_name} on {self.booking_date}"
+        if self.pet_service:
+            service_name = self.pet_service.name
+        elif self.vet_doctor:
+            service_name = f"Dr. {self.vet_doctor.name}"
+        else:
+            service_name = "removed service"
+        user_label = self.user.email or self.user.get_full_name() or str(self.user.pk)
+        return f"Booking by {user_label} for {service_name} on {self.booking_date}"

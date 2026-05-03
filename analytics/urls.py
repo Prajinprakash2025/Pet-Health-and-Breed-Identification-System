@@ -14,5 +14,6 @@ urlpatterns = [
     path("advisory/", views.advisory_section_view, name="advisory_section"),
     path("medicines/", views.medicine_section_view, name="medicine_section"),
     path("services/", views.services_section_view, name="services_section"),
+    path("bookings/", views.bookings_section_view, name="bookings_section"),
     path("ml-admin/", views.ml_admin_dashboard, name="ml_admin_dashboard"),
 ]
