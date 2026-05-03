@@ -15,11 +15,11 @@
                         <div class="bg-white p-1 rounded-circle shadow-sm">
                             <div class="rounded-circle d-flex align-items-center justify-content-center text-white" 
                                  style="width: 100px; height: 100px; background: linear-gradient(135deg, #0d9488, #818cf8); font-size: 40px; font-weight: 700;">
-                                {{ request.user.username|make_list|first|upper }}
+                                {{ request.user.email|make_list|first|upper }}
                             </div>
                         </div>
                         <div class="mb-2 pb-1">
-                            <h2 class="fw-bold text-white mb-0" style="text-shadow: 0 2px 4px rgba(0,0,0,0.1);">{{ request.user.username }}</h2>
+                            <h2 class="fw-bold text-white mb-0" style="text-shadow: 0 2px 4px rgba(0,0,0,0.1);">{{ request.user.get_full_name|default:request.user.email }}</h2>
                             <span class="badge bg-white bg-opacity-25 text-white rounded-pill px-3 py-2 small fw-medium mt-2">PetCare Member</span>
                         </div>
                         <div class="ms-auto mb-2">
@@ -83,9 +83,9 @@
                                             <div class="bg-primary bg-opacity-10 text-primary p-2 rounded-3">
                                                 <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3Zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/></svg>
                                             </div>
-                                            <small class="text-muted text-uppercase fw-bold ls-1">Username</small>
+                                            <small class="text-muted text-uppercase fw-bold ls-1">Name</small>
                                         </div>
-                                        <p class="h6 fw-bold mb-0 ps-1">{{ request.user.username }}</p>
+                                        <p class="h6 fw-bold mb-0 ps-1">{{ request.user.get_full_name|default:"Not provided" }}</p>
                                     </div>
                                 </div>
                                 <div class="col-sm-6">

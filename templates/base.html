@@ -97,9 +97,9 @@
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown">
                              <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold" style="width: 34px; height: 34px; font-size: 13px;">
-                                {{ user.username|make_list|first|upper }}
+                                {{ user.email|make_list|first|upper }}
                             </div>
-                            <span class="d-none d-xl-inline text-dark">{{ user.username }}</span>
+                            <span class="d-none d-xl-inline text-dark">{{ user.get_full_name|default:user.email }}</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2 p-2 rounded-3">
                             <li><a class="dropdown-item rounded-2 py-2" href="{% url 'accounts:profile' %}">My Profile</a></li>

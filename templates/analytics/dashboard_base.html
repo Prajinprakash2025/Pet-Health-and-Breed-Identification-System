@@ -21,10 +21,10 @@
         <!-- User Greeting -->
         <div class="sidebar-user">
             <div class="sidebar-avatar">
-                {{ user.username|make_list|first|upper }}
+                {{ user.email|make_list|first|upper }}
             </div>
             <div>
-                <div class="sidebar-username">{{ user.username }}</div>
+                <div class="sidebar-username">{{ user.get_full_name|default:user.email }}</div>
                 <div class="sidebar-role">Pet Owner</div>
             </div>
         </div>

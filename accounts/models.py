@@ -14,4 +14,4 @@ class UserProfile(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
-        return f"Profile for {self.user.username}"
+        return f"Profile for {self.user.email}"
