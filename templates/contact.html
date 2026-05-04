@@ -18,28 +18,28 @@
         <!-- Form Section -->
         <div class="col-lg-7 p-5">
             <h3 class="fw-bold mb-4">Send us a Message</h3>
-            <form action="#" method="POST" class="needs-validation" novalidate>
+            <form action="{% url 'contact' %}" method="POST" class="needs-validation">
                 {% csrf_token %}
                 <div class="row g-4">
                     <div class="col-md-6">
                         <label for="firstName" class="form-label fw-medium text-secondary">First Name</label>
-                        <input type="text" class="form-control bg-light border-0" id="firstName" placeholder="John" required>
+                        <input type="text" name="first_name" class="form-control bg-light border-0" id="firstName" placeholder="John" required>
                     </div>
                     <div class="col-md-6">
                         <label for="lastName" class="form-label fw-medium text-secondary">Last Name</label>
-                        <input type="text" class="form-control bg-light border-0" id="lastName" placeholder="Doe" required>
+                        <input type="text" name="last_name" class="form-control bg-light border-0" id="lastName" placeholder="Doe" required>
                     </div>
                     <div class="col-12">
                         <label for="email" class="form-label fw-medium text-secondary">Email Address</label>
-                        <input type="email" class="form-control bg-light border-0" id="email" placeholder="john@example.com" required>
+                        <input type="email" name="email" class="form-control bg-light border-0" id="email" placeholder="john@example.com" required>
                     </div>
                     <div class="col-12">
                         <label for="subject" class="form-label fw-medium text-secondary">Subject</label>
-                        <input type="text" class="form-control bg-light border-0" id="subject" placeholder="How can we help?" required>
+                        <input type="text" name="subject" class="form-control bg-light border-0" id="subject" placeholder="How can we help?" required>
                     </div>
                     <div class="col-12">
                         <label for="message" class="form-label fw-medium text-secondary">Message</label>
-                        <textarea class="form-control bg-light border-0" id="message" rows="4" placeholder="Enter your message here..." required></textarea>
+                        <textarea name="message" class="form-control bg-light border-0" id="message" rows="4" placeholder="Enter your message here..." required></textarea>
                     </div>
                     <div class="col-12 mt-4 pt-2">
                         <button type="submit" class="btn btn-primary btn-lg rounded-pill px-5 shadow-sm text-uppercase tracking-wider">Send Message</button>

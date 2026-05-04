@@ -173,6 +173,7 @@
                 <thead class="bg-light">
                     <tr>
                         <th class="border-0 small text-uppercase py-3">Service / Doctor</th>
+                        <th class="border-0 small text-uppercase py-3">Pet</th>
                         <th class="border-0 small text-uppercase py-3">Date & Time</th>
                         <th class="border-0 small text-uppercase py-3">Status</th>
                     </tr>
@@ -197,6 +198,14 @@
                             </small>
                         </td>
                         <td class="py-3">
+                            {% if booking.pet %}
+                                <div class="fw-bold">{{ booking.pet.name }}</div>
+                                <small class="text-muted">{{ booking.pet.get_species_display }}</small>
+                            {% else %}
+                                <span class="text-muted small">Not specified</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-3">
                             <div>{{ booking.booking_date|date:"M d, Y" }}</div>
                             <small class="text-muted">{{ booking.booking_time|time:"h:i A" }}</small>
                         </td>
@@ -209,6 +218,12 @@
                                 <span class="badge bg-danger-subtle text-danger rounded-pill px-3">Cancelled</span>
                             {% else %}
                                 <span class="badge bg-secondary-subtle text-secondary rounded-pill px-3">{{ booking.status|title }}</span>
+                            {% endif %}
+                            
+                            {% if booking.admin_notes %}
+                                <div class="mt-1 small {% if booking.status == 'cancelled' %}text-danger{% else %}text-muted{% endif %}" style="font-size: 0.7rem;">
+                                    {{ booking.admin_notes|truncatechars:25 }}
+                                </div>
                             {% endif %}
                         </td>
                     </tr>

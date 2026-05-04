@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<!-- Leaflet CSS & JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="text-center mb-4">
+                <div class="d-inline-flex align-items-center justify-content-center bg-danger bg-opacity-10 text-danger rounded-circle p-3 mb-3 shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 16 16"><path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/></svg>
+                </div>
+                <h2 class="fw-bold">Report a Missing Pet</h2>
+                <p class="text-muted">Notify the community instantly. Provide clear photos and accurate last-seen details to help bring your pet home safely.</p>
+            </div>
+
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden" style="background: rgba(255, 255, 255, 0.95);">
+                <div class="card-body p-4 p-md-5">
+                    <form method="POST" enctype="multipart/form-data" class="needs-validation">
+                        {% csrf_token %}
+                        
+                        <div class="row g-4">
+                            <!-- Left Column: Pet Details -->
+                            <div class="col-md-6 border-end-md pe-md-4">
+                                <h5 class="fw-bold text-dark border-bottom pb-2 mb-3"><i class="bi bi-info-circle me-2 text-primary"></i>1. Pet Information</h5>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small text-uppercase text-muted mb-1">Link to existing profile</label>
+                                    <div class="input-group shadow-sm rounded-3 overflow-hidden">
+                                        <span class="input-group-text bg-light border-0"><svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.5 1.5A.5.5 0 0 0 1 2v4.8a2.5 2.5 0 0 0 2.5 2.5h9.793l-3.347 3.346a.5.5 0 0 0 .708.708l4.2-4.2a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 8.3H3.5A1.5 1.5 0 0 1 2 6.8V2a.5.5 0 0 0-.5-.5z"/></svg></span>
+                                        {{ form.pet }}
+                                    </div>
+                                    <div class="form-text" style="font-size: 0.75rem;">Select to auto-fill details below.</div>
+                                </div>
+                                
+                                <div class="row g-2 mb-3">
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase text-muted mb-1">Name <span class="text-danger">*</span></label>
+                                        {{ form.pet_name }}
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase text-muted mb-1">Species <span class="text-danger">*</span></label>
+                                        {{ form.species }}
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small text-uppercase text-muted mb-1">Breed (if known)</label>
+                                    {{ form.breed }}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small text-uppercase text-muted mb-1">Recent Photo <span class="text-danger">*</span></label>
+                                    {{ form.photo }}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small text-uppercase text-muted mb-1">Description & Marks</label>
+                                    {{ form.description }}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small text-uppercase text-muted mb-1">Contact Phone <span class="text-danger">*</span></label>
+                                    {{ form.contact_phone }}
+                                </div>
+                            </div>
+
+                            <!-- Right Column: Location & Time -->
+                            <div class="col-md-6 ps-md-4">
+                                <h5 class="fw-bold text-dark border-bottom pb-2 mb-3"><i class="bi bi-geo-alt me-2 text-danger"></i>2. Last Seen Details</h5>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small text-uppercase text-muted mb-1">Date & Time <span class="text-danger">*</span></label>
+                                    {{ form.last_seen_date }}
+                                </div>
+
+                                <div class="mb-2">
+                                    <label class="form-label fw-bold small text-uppercase text-muted mb-1">Map Location <span class="text-danger">*</span></label>
+                                    <!-- Leaflet Map Container -->
+                                    <div id="location-map" class="rounded-3 shadow-sm mb-2" style="height: 220px; width: 100%; border: 1px solid #e2e8f0; z-index: 1;"></div>
+                                    
+                                    <div class="d-flex gap-2 mb-2">
+                                        <button type="button" id="btn-current-location" class="btn btn-outline-primary btn-sm rounded-pill d-flex align-items-center gap-1">
+                                            <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/></svg>
+                                            Use Current Location
+                                        </button>
+                                        <span id="map-status" class="text-muted small d-flex align-items-center ms-2" style="font-size: 0.8rem;"></span>
+                                    </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold small text-uppercase text-muted mb-1">Address Text <span class="text-danger">*</span></label>
+                                    {{ form.last_seen_location }}
+                                    {{ form.last_seen_lat }}
+                                    {{ form.last_seen_lng }}
+                                    <div class="form-text" style="font-size: 0.75rem;">Click on the map to auto-fill.</div>
+                                </div>
+
+                                <div class="d-grid gap-2 mt-auto">
+                                    <button type="submit" class="btn btn-danger btn-lg rounded-pill fw-bold py-2 shadow hover-lift transition-all">Publish Missing Alert</button>
+                                    <a href="{% url 'pets:missing_pets_list' %}" class="btn btn-light rounded-pill py-2 text-muted fw-semibold hover-lift">Cancel</a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Auto-fill Data -->
+{{ pets_json|json_script:"pets-data" }}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // --- Pet Auto-fill Logic ---
+        const petSelect = document.querySelector('select[name="pet"]');
+        const nameInput = document.querySelector('input[name="pet_name"]');
+        const speciesSelect = document.querySelector('select[name="species"]');
+        const breedInput = document.querySelector('input[name="breed"]');
+        
+        // Add styling classes to inputs generated by Django form
+        document.querySelectorAll('input.form-control, select.form-control, textarea.form-control').forEach(el => {
+            el.classList.add('bg-light', 'border-0', 'py-2', 'px-2');
+            el.style.boxShadow = 'inset 0 1px 3px rgba(0,0,0,0.05)';
+            el.style.transition = 'all 0.2s ease-in-out';
+            
+            el.addEventListener('focus', function() {
+                this.classList.remove('bg-light', 'border-0');
+                this.classList.add('bg-white', 'border', 'border-primary');
+                this.style.boxShadow = '0 0 0 0.25rem rgba(13, 148, 136, 0.25)';
+            });
+            el.addEventListener('blur', function() {
+                this.classList.add('bg-light', 'border-0');
+                this.classList.remove('bg-white', 'border', 'border-primary');
+                this.style.boxShadow = 'inset 0 1px 3px rgba(0,0,0,0.05)';
+            });
+        });
+
+        if (petSelect) {
+            const petsData = JSON.parse(document.getElementById('pets-data').textContent);
+            
+            petSelect.addEventListener('change', function() {
+                const petId = this.value;
+                if (petId && petsData[petId]) {
+                    const pet = petsData[petId];
+                    if (nameInput) nameInput.value = pet.name || '';
+                    if (speciesSelect) speciesSelect.value = pet.species || '';
+                    if (breedInput) breedInput.value = pet.breed || '';
+                    
+                    // Trigger visual feedback (pulse)
+                    [nameInput, speciesSelect, breedInput].forEach(el => {
+                        if(el) {
+                            el.classList.remove('bg-light');
+                            el.classList.add('bg-success', 'bg-opacity-10');
+                            setTimeout(() => {
+                                el.classList.remove('bg-success', 'bg-opacity-10');
+                                el.classList.add('bg-light');
+                            }, 500);
+                        }
+                    });
+                }
+            });
+        }
+
+        // --- Leaflet Map Logic ---
+        const mapContainer = document.getElementById('location-map');
+        const locationInput = document.querySelector('input[name="last_seen_location"]');
+        const latInput = document.querySelector('input[name="last_seen_lat"]');
+        const lngInput = document.querySelector('input[name="last_seen_lng"]');
+        const btnCurrentLocation = document.getElementById('btn-current-location');
+        const mapStatus = document.getElementById('map-status');
+
+        if (mapContainer && locationInput) {
+            // Default center (can be somewhere generic like a major city or geographic center)
+            const defaultLat = 37.7749;
+            const defaultLng = -122.4194;
+            
+            const map = L.map('location-map').setView([defaultLat, defaultLng], 12);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            let marker = null;
+
+            function setMarkerAndAddress(lat, lng, fetchAddress = true) {
+                if (marker) {
+                    marker.setLatLng([lat, lng]);
+                } else {
+                    marker = L.marker([lat, lng]).addTo(map);
+                }
+                map.setView([lat, lng], 15);
+                
+                if (latInput) latInput.value = lat;
+                if (lngInput) lngInput.value = lng;
+
+                if (fetchAddress) {
+                    mapStatus.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span> Fetching address...';
+                    
+                    // Reverse Geocoding using Nominatim
+                    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data && data.display_name) {
+                                // Simplify the address to look cleaner
+                                const parts = [data.address.road, data.address.suburb, data.address.city, data.address.state].filter(Boolean);
+                                const readableAddress = parts.length > 0 ? parts.join(', ') : data.display_name;
+                                
+                                locationInput.value = readableAddress;
+                                mapStatus.innerHTML = '<span class="text-success"><i class="bi bi-check-circle-fill"></i> Address found</span>';
+                                
+                                // Pulse effect
+                                locationInput.classList.remove('bg-light');
+                                locationInput.classList.add('bg-success', 'bg-opacity-10');
+                                setTimeout(() => {
+                                    locationInput.classList.remove('bg-success', 'bg-opacity-10');
+                                    locationInput.classList.add('bg-light');
+                                    mapStatus.innerHTML = '';
+                                }, 2000);
+                            } else {
+                                mapStatus.innerHTML = '<span class="text-warning">Could not resolve address</span>';
+                            }
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            mapStatus.innerHTML = '<span class="text-danger">Error fetching address</span>';
+                        });
+                }
+            }
+
+            // Click on map to drop pin
+            map.on('click', function(e) {
+                setMarkerAndAddress(e.latlng.lat, e.latlng.lng);
+            });
+
+            // Geolocation Button
+            if (btnCurrentLocation) {
+                btnCurrentLocation.addEventListener('click', function() {
+                    if (navigator.geolocation) {
+                        btnCurrentLocation.disabled = true;
+                        mapStatus.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span> Locating...';
+                        
+                        navigator.geolocation.getCurrentPosition(
+                            function(position) {
+                                btnCurrentLocation.disabled = false;
+                                setMarkerAndAddress(position.coords.latitude, position.coords.longitude);
+                            },
+                            function(error) {
+                                btnCurrentLocation.disabled = false;
+                                mapStatus.innerHTML = '<span class="text-danger"><i class="bi bi-exclamation-triangle-fill"></i> Location access denied or unavailable</span>';
+                                console.error("Geolocation error:", error);
+                            },
+                            { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+                        );
+                    } else {
+                        mapStatus.innerHTML = '<span class="text-danger">Geolocation not supported by browser</span>';
+                    }
+                });
+            }
+            
+            // Fix Leaflet map sizing issue when rendering in hidden/dynamic containers initially
+            setTimeout(() => { map.invalidateSize(); }, 500);
+        }
+    });
+</script>
+
+<style>
+    .hover-lift { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .hover-lift:hover { transform: translateY(-2px); box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important; }
+    .tracking-wider { letter-spacing: 0.05em; }
+</style>
+{% endblock %}

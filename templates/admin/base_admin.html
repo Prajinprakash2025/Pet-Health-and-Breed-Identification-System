@@ -214,6 +214,14 @@
     }
     .breed-pill span { font-weight: 600; color: #0d9488; }
 
+    /* ── Animations ── */
+    @keyframes pulse {
+      0% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.7; transform: scale(0.95); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    .animate-pulse { animation: pulse 2s infinite ease-in-out; }
+
     /* ── Mobile ── */
     @media (max-width: 767px) {
       .admin-sidebar { position: fixed; left: 0; top: 0; transform: translateX(-100%); transition: transform .3s; z-index: 1050; }
@@ -282,6 +290,12 @@
         <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
           <path d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.293l2.646-2.647a.5.5 0 0 1 .708 0z"/><path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5V2zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1H4z"/></svg>
         Service Bookings
+      </a>
+      <a class="admin-nav-link" data-panel="contacts" href="#">
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2zm13 2.383-4.758 2.855L15 11.114v-5.73zm-.034 6.878L9.271 8.82 8 9.583 6.728 8.82l-5.694 3.44A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.739zM1 11.114l4.758-2.876L1 5.383v5.73z"/>
+        </svg>
+        Contact Requests
       </a>
     </nav>
 
@@ -359,7 +373,16 @@
   // Panel switching
   const navLinks = document.querySelectorAll('.admin-nav-link[data-panel]');
   const panels   = document.querySelectorAll('.admin-panel');
-  const titles   = { overview:'Overview', users:'User Management', doctors:'Doctors', services:'Pet Services', bookings:'Service Bookings', reports:'Reports', ml:'Dataset & Training' };
+  const titles   = { 
+    overview:'Overview', 
+    users:'User Management', 
+    doctors:'Doctors', 
+    services:'Pet Services', 
+    bookings:'Service Bookings', 
+    contacts:'Contact Requests',
+    reports:'Reports', 
+    ml:'Dataset & Training' 
+  };
 
   navLinks.forEach(link => {
     link.addEventListener('click', e => {

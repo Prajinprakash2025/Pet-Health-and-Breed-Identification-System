@@ -946,6 +946,45 @@ body.has-dashboard-sidebar .footer {
   border-color: var(--primary-color);
 }
 
+/* ── View Button (Teal) ── */
+.pet-action-view {
+  color: #0d9488;
+  background: rgba(13, 148, 136, 0.08);
+  border-color: rgba(13, 148, 136, 0.25);
+}
+
+.pet-action-view:hover {
+  background: #0d9488;
+  color: white;
+  border-color: #0d9488;
+}
+
+/* ── Identify Button (Indigo) ── */
+.pet-action-identify {
+  color: #6366f1;
+  background: rgba(99, 102, 241, 0.08);
+  border-color: rgba(99, 102, 241, 0.25);
+}
+
+.pet-action-identify:hover {
+  background: #6366f1;
+  color: white;
+  border-color: #6366f1;
+}
+
+/* ── Health Button (Emerald) ── */
+.pet-action-health {
+  color: #16a34a;
+  background: rgba(22, 163, 74, 0.08);
+  border-color: rgba(22, 163, 74, 0.25);
+}
+
+.pet-action-health:hover {
+  background: #16a34a;
+  color: white;
+  border-color: #16a34a;
+}
+
 /* ── Empty State ────────────────────────────────────────────────────────── */
 .empty-state {
   text-align: center;

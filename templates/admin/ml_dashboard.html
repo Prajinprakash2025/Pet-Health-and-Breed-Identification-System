@@ -791,6 +791,7 @@
         <thead>
           <tr>
             <th>User</th>
+            <th>Pet</th>
             <th>Service / Doctor</th>
             <th>Date & Time</th>
             <th class="text-center">Status</th>
@@ -803,6 +804,14 @@
             <td>
               <div class="fw-bold">{{ booking.user.get_full_name|default:booking.user.email }}</div>
               <small class="text-muted">{{ booking.user.email|default:"No email" }}</small>
+            </td>
+            <td>
+              {% if booking.pet %}
+                <div class="fw-bold">{{ booking.pet.name }}</div>
+                <small class="text-muted">{{ booking.pet.get_species_display }}{% if booking.pet.breed %} · {{ booking.pet.breed }}{% endif %}</small>
+              {% else %}
+                <span class="text-muted small">Not specified</span>
+              {% endif %}
             </td>
             <td>
               <div class="fw-bold">
@@ -836,28 +845,22 @@
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="border-radius:12px;">
                   <li>
-                    <form method="post">{% csrf_token %}
-                      <input type="hidden" name="update_booking_status" value="1">
-                      <input type="hidden" name="booking_id" value="{{ booking.id }}">
-                      <input type="hidden" name="status" value="confirmed">
-                      <button type="submit" class="dropdown-item text-success small">Confirm Booking</button>
-                    </form>
+                    <button type="button" class="dropdown-item text-success small" 
+                      onclick="openStatusModal('{{ booking.id }}', 'confirmed', 'Confirm Booking', 'Booking for {{ booking.user.email|escapejs }}')">
+                      Confirm Booking
+                    </button>
                   </li>
                   <li>
-                    <form method="post">{% csrf_token %}
-                      <input type="hidden" name="update_booking_status" value="1">
-                      <input type="hidden" name="booking_id" value="{{ booking.id }}">
-                      <input type="hidden" name="status" value="completed">
-                      <button type="submit" class="dropdown-item text-primary small">Mark Completed</button>
-                    </form>
+                    <button type="button" class="dropdown-item text-primary small"
+                      onclick="openStatusModal('{{ booking.id }}', 'completed', 'Mark Completed', 'Booking for {{ booking.user.email|escapejs }}')">
+                      Mark Completed
+                    </button>
                   </li>
                   <li>
-                    <form method="post">{% csrf_token %}
-                      <input type="hidden" name="update_booking_status" value="1">
-                      <input type="hidden" name="booking_id" value="{{ booking.id }}">
-                      <input type="hidden" name="status" value="cancelled">
-                      <button type="submit" class="dropdown-item text-danger small">Cancel Booking</button>
-                    </form>
+                    <button type="button" class="dropdown-item text-danger small"
+                      onclick="openStatusModal('{{ booking.id }}', 'cancelled', 'Cancel Booking', 'Booking for {{ booking.user.email|escapejs }}')">
+                      Cancel Booking
+                    </button>
                   </li>
                 </ul>
               </div>
@@ -865,6 +868,127 @@
           </tr>
           {% empty %}
           <tr><td colspan="5" class="text-center text-muted py-4">No booking requests found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     PANEL 8 — CONTACT REQUESTS
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="admin-panel" id="panel-contacts">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+      <h5 class="fw-bold mb-1">User Inquiries & Contacts</h5>
+      <p class="text-muted small mb-0">Manage messages from the contact form.</p>
+    </div>
+  </div>
+
+  <div class="a-card">
+    <div class="table-responsive">
+      <table class="a-table">
+        <thead>
+          <tr>
+            <th>From</th>
+            <th>Email / Phone</th>
+            <th>Message</th>
+            <th class="text-center">Status</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for msg in contact_messages %}
+          <tr>
+            <td>
+              <div class="fw-bold">{{ msg.first_name }} {{ msg.last_name }}</div>
+              <small class="text-muted">{{ msg.created_at|date:"M d, Y" }}</small>
+            </td>
+            <td>
+              <div>{{ msg.email }}</div>
+              <small class="text-muted">{{ msg.phone|default:"-" }}</small>
+            </td>
+            <td>
+              <div style="max-width:300px; font-size: 0.8rem; line-height: 1.4;">
+                <strong>{{ msg.subject }}</strong><br>
+                <span class="text-muted">{{ msg.message|truncatewords:20 }}</span>
+              </div>
+            </td>
+            <td class="text-center">
+              {% if msg.is_read %}
+                <span class="badge bg-success-subtle text-success rounded-pill px-3">Read</span>
+              {% else %}
+                <span class="badge bg-danger-subtle text-danger rounded-pill px-3 animate-pulse">Unread</span>
+              {% endif %}
+            </td>
+            <td class="text-end">
+              <div class="d-flex gap-2 justify-content-end">
+                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#viewMsgModal{{ msg.id }}" style="border-radius:10px;">View</button>
+                <form method="post">
+                  {% csrf_token %}
+                  <input type="hidden" name="toggle_message_read" value="1">
+                  <input type="hidden" name="message_id" value="{{ msg.id }}">
+                  <button type="submit" class="btn btn-sm {% if msg.is_read %}btn-outline-secondary{% else %}btn-outline-success{% endif %}" style="border-radius:10px;">
+                    {% if msg.is_read %}Mark Unread{% else %}Mark Read{% endif %}
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+
+          <!-- View Message Modal -->
+          <div class="modal fade" id="viewMsgModal{{ msg.id }}" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content shadow-lg" style="border-radius:20px; border:none;">
+                <div class="modal-header border-0 bg-light py-3">
+                  <h5 class="modal-title fw-bold">Message from {{ msg.first_name }}</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                  <div class="mb-4">
+                    <label class="admin-form-label text-primary">Subject</label>
+                    <div class="h5 fw-bold text-dark">{{ msg.subject }}</div>
+                  </div>
+                  <div class="row g-3 mb-4">
+                    <div class="col-6">
+                      <label class="admin-form-label">Full Name</label>
+                      <div class="fw-semibold text-dark">{{ msg.first_name }} {{ msg.last_name }}</div>
+                    </div>
+                    <div class="col-6 text-end">
+                      <label class="admin-form-label">Received At</label>
+                      <div class="text-muted small">{{ msg.created_at|date:"M d, Y H:i" }}</div>
+                    </div>
+                  </div>
+                  <div class="p-3 bg-light rounded-4 mb-4">
+                    <label class="admin-form-label mb-2">Contact Details</label>
+                    <div class="d-flex flex-column gap-1">
+                      <div class="d-flex align-items-center gap-2">
+                        <svg width="14" height="14" fill="currentColor" class="text-primary" viewBox="0 0 16 16"><path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2zm13 2.383-4.758 2.855L15 11.114v-5.73zm-.034 6.878L9.271 8.82 8 9.583 6.728 8.82l-5.694 3.44A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.739zM1 11.114l4.758-2.876L1 5.383v5.73z"/></svg>
+                        <span class="small">{{ msg.email }}</span>
+                      </div>
+                      <div class="d-flex align-items-center gap-2">
+                        <svg width="14" height="14" fill="currentColor" class="text-primary" viewBox="0 0 16 16"><path d="M11 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h6zM5 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H5z"/><path d="M8 14a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>
+                        <span class="small">{{ msg.phone|default:"Not provided" }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="mb-0">
+                    <label class="admin-form-label text-primary mb-2">Message Content</label>
+                    <div class="p-4 bg-white border rounded-4 shadow-sm" style="white-space: pre-wrap; font-size: 0.95rem; color: #334155; min-height: 120px;">{{ msg.message }}</div>
+                  </div>
+                </div>
+                <div class="modal-footer border-0 p-4 pt-0">
+                   <button type="button" class="btn btn-primary w-100 py-2 fw-bold shadow-sm" data-bs-dismiss="modal" style="border-radius:12px;">Close Message</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% empty %}
+          <tr><td colspan="5" class="text-center text-muted py-5">
+            <div class="mb-2"><svg width="40" height="40" fill="#e2e8f0" viewBox="0 0 16 16"><path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2zm13 2.383-4.758 2.855L15 11.114v-5.73zm-.034 6.878L9.271 8.82 8 9.583 6.728 8.82l-5.694 3.44A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.739zM1 11.114l4.758-2.876L1 5.383v5.73z"/></svg></div>
+            No contact messages yet.
+          </td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -1038,6 +1162,77 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 });
+<!-- ── Booking Status Update Modal ─────────────────────────────────────── -->
+<div class="modal fade" id="statusUpdateModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content shadow border-0" style="border-radius:20px; overflow:hidden;">
+      <div class="modal-header border-0 bg-light py-3">
+        <h5 class="modal-title fw-bold" id="statusModalTitle">Update Status</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="update_booking_status" value="1">
+        <input type="hidden" id="modal_booking_id" name="booking_id">
+        <input type="hidden" id="modal_status" name="status">
+        
+        <div class="modal-body p-4">
+          <p id="statusModalSubtitle" class="text-muted small mb-3"></p>
+          <div class="mb-3">
+            <label class="form-label fw-bold small text-uppercase" id="notesLabel">Admin Notes / Reason</label>
+            <textarea name="admin_notes" id="admin_notes_input" class="form-control" rows="4" 
+              placeholder="Provide a reason for cancellation or general feedback..."></textarea>
+          </div>
+          <div class="alert alert-info py-2 small mb-0">
+            <svg width="14" height="14" fill="currentColor" class="me-1" viewBox="0 0 16 16"><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/></svg>
+            These notes will be visible to the user.
+          </div>
+        </div>
+        <div class="modal-footer border-0 p-4 pt-0 d-flex gap-2">
+          <button type="button" class="btn btn-light rounded-pill px-4 flex-grow-1" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" id="statusSubmitBtn" class="btn btn-primary rounded-pill px-4 flex-grow-1">Update Status</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+function openStatusModal(bookingId, status, title, subtitle) {
+    document.getElementById('modal_booking_id').value = bookingId;
+    document.getElementById('modal_status').value = status;
+    document.getElementById('statusModalTitle').innerText = title;
+    document.getElementById('statusModalSubtitle').innerText = subtitle;
+    
+    const submitBtn = document.getElementById('statusSubmitBtn');
+    const notesLabel = document.getElementById('notesLabel');
+    const notesInput = document.getElementById('admin_notes_input');
+    
+    // Customize UI based on status
+    if (status === 'cancelled') {
+        submitBtn.className = 'btn btn-danger rounded-pill px-4 flex-grow-1';
+        notesLabel.innerText = 'Cancellation Reason *';
+        notesInput.placeholder = 'Why is this booking being cancelled? (e.g., Doctor unavailable, Conflict in schedule)';
+        notesInput.required = true;
+    } else if (status === 'confirmed') {
+        submitBtn.className = 'btn btn-success rounded-pill px-4 flex-grow-1';
+        notesLabel.innerText = 'Feedback for User (Optional)';
+        notesInput.placeholder = 'e.g., Please bring your pet\'s vaccination card.';
+        notesInput.required = false;
+    } else {
+        submitBtn.className = 'btn btn-primary rounded-pill px-4 flex-grow-1';
+        notesLabel.innerText = 'Notes (Optional)';
+        notesInput.placeholder = 'Any notes about the completed service...';
+        notesInput.required = false;
+    }
+    
+    // Clear input
+    notesInput.value = '';
+    
+    // Open modal
+    const modal = new bootstrap.Modal(document.getElementById('statusUpdateModal'));
+    modal.show();
+}
 </script>
 
 {% endblock %}

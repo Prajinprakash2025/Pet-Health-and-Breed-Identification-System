@@ -67,3 +67,42 @@ class HealthAssessment(models.Model):
 
     def __str__(self) -> str:
         return f"Health assessment for {self.pet} on {self.assessment_date:%Y-%m-%d}"
+
+
+class MissingPet(models.Model):
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="missing_pets")
+    pet = models.ForeignKey(Pet, on_delete=models.SET_NULL, null=True, blank=True, related_name="missing_reports")
+    pet_name = models.CharField(max_length=100)
+    species = models.CharField(max_length=20, choices=Pet.SPECIES_CHOICES)
+    breed = models.CharField(max_length=100, blank=True)
+    description = models.TextField()
+    last_seen_location = models.CharField(max_length=255)
+    last_seen_lat = models.FloatField(null=True, blank=True)
+    last_seen_lng = models.FloatField(null=True, blank=True)
+    last_seen_date = models.DateTimeField()
+    photo = models.ImageField(upload_to="missing_pets/")
+    contact_phone = models.CharField(max_length=20)
+    is_found = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"MISSING: {self.pet_name} ({self.last_seen_location})"
+
+
+class PetSighting(models.Model):
+    missing_pet = models.ForeignKey(MissingPet, on_delete=models.CASCADE, related_name="sightings")
+    sighting_location = models.CharField(max_length=255)
+    sighting_date = models.DateTimeField()
+    description = models.TextField()
+    photo = models.ImageField(upload_to="sightings/", null=True, blank=True)
+    contact_info = models.CharField(max_length=255, help_text="Contact of the person who saw the pet")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Sighting for {self.missing_pet.pet_name} at {self.sighting_location}"

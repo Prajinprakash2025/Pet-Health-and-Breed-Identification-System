@@ -29,6 +29,7 @@ from advisory.models import (
     ServiceBooking,
     VaccinationScheduleTemplate,
     VetDoctor,
+    ContactMessage,
 )
 
 
@@ -427,6 +428,8 @@ def services_section_view(request):
             | Q(specialization__icontains=query)
         )
 
+    user_pets = Pet.objects.filter(owner=request.user)
+
     context = {
         "services": services,
         "doctors": doctors,
@@ -435,6 +438,7 @@ def services_section_view(request):
         "service_type_choices": PetService.SERVICE_TYPE_CHOICES,
         "active_section": "services",
         "dashboard_mode": True,
+        "user_pets": user_pets,
     }
     return render(request, "advisory/service_finder_dashboard.html", context)
 
@@ -734,15 +738,31 @@ def ml_admin_dashboard(request):
         if "update_booking_status" in request.POST:
             booking_id = request.POST.get("booking_id")
             new_status = request.POST.get("status")
+            admin_notes = request.POST.get("admin_notes", "").strip()
             try:
                 booking = ServiceBooking.objects.get(pk=booking_id)
                 booking.status = new_status
+                if admin_notes:
+                    booking.admin_notes = admin_notes
                 booking.save()
                 user_label = booking.user.email or booking.user.get_full_name() or str(booking.user.pk)
                 messages.success(request, f"Booking for {user_label} updated to {new_status}.")
             except ServiceBooking.DoesNotExist:
                 messages.error(request, "Booking not found.")
             return redirect(reverse("analytics:ml_admin_dashboard") + "?panel=bookings")
+
+        # ── Contact: Toggle Read Status ────────────────────────────────────
+        if "toggle_message_read" in request.POST:
+            msg_id = request.POST.get("message_id")
+            try:
+                msg = ContactMessage.objects.get(pk=msg_id)
+                msg.is_read = not msg.is_read
+                msg.save()
+                status = "read" if msg.is_read else "unread"
+                messages.success(request, f"Message from {msg.first_name} marked as {status}.")
+            except ContactMessage.DoesNotExist:
+                messages.error(request, "Message not found.")
+            return redirect(reverse("analytics:ml_admin_dashboard") + "?panel=contacts")
 
         # ── Training trigger ───────────────────────────────────────────────
         if "train_model" in request.POST:
@@ -849,6 +869,7 @@ def ml_admin_dashboard(request):
         "doctors": doctors,
         "services": services,
         "all_bookings": all_bookings,
+        "contact_messages": ContactMessage.objects.all(),
         "booking_status_choices": booking_status_choices,
         "specialization_choices": specialization_choices,
         "service_type_choices": service_type_choices,

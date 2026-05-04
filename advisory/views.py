@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
+from pets.models import Pet
 
 from .models import (
     CareAdvisory,
@@ -89,13 +90,19 @@ def service_finder(request):
         )
 
     doctors = VetDoctor.objects.filter(is_available=True)
-    if query:
+    if service_type and service_type != "vet":
+        # If a specific non-vet service is selected, don't show doctors
+        doctors = doctors.none()
+    
+    if query and doctors.exists():
         doctors = doctors.filter(
             Q(name__icontains=query)
             | Q(clinic_name__icontains=query)
             | Q(address__icontains=query)
             | Q(specialization__icontains=query)
         )
+
+    user_pets = Pet.objects.filter(owner=request.user) if request.user.is_authenticated else Pet.objects.none()
 
     context = {
         "services": services,
@@ -104,6 +111,7 @@ def service_finder(request):
         "service_type": service_type,
         "service_type_choices": PetService.SERVICE_TYPE_CHOICES,
         "active_section": "services",
+        "user_pets": user_pets,
     }
     return render(request, "advisory/service_finder.html", context)
 
@@ -113,6 +121,7 @@ def book_service(request):
     if request.method == "POST":
         service_id = request.POST.get("service_id")
         doctor_id = request.POST.get("doctor_id")
+        pet_id = request.POST.get("pet_id")
         date = request.POST.get("date")
         time = request.POST.get("time")
         notes = request.POST.get("notes", "")
@@ -127,6 +136,8 @@ def book_service(request):
             booking_time=time,
             notes=notes
         )
+        if pet_id:
+            booking.pet_id = pet_id
         if service_id:
             booking.pet_service_id = service_id
         if doctor_id:
@@ -137,3 +148,28 @@ def book_service(request):
         return redirect(_booking_redirect_url(request))
     
     return redirect("advisory:service_finder")
+
+
+def contact(request):
+    if request.method == "POST":
+        first_name = request.POST.get("first_name")
+        last_name = request.POST.get("last_name")
+        email = request.POST.get("email")
+        subject = request.POST.get("subject")
+        message = request.POST.get("message")
+
+        if not all([first_name, last_name, email, subject, message]):
+            messages.error(request, "Please fill in all fields.")
+        else:
+            ContactMessage.objects.create(
+                first_name=first_name,
+                last_name=last_name,
+                email=email,
+                subject=subject,
+                message=message
+            )
+            messages.success(request, "Your message has been sent successfully! We will get back to you soon.")
+            return redirect("contact")
+
+    return render(request, "contact.html", {"active_section": "contact"})
+

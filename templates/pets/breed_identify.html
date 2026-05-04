@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{% url 'pets:pet_list' %}" class="text-decoration-none" style="color: #6366f1;">My Pets</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'pets:pet_detail' pet.id %}" class="text-decoration-none" style="color: #6366f1;">{{ pet.name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Breed Identification</li>
+        </ol>
+    </nav>
+
+    <!-- Back Button -->
+    <a href="{% url 'pets:pet_detail' pet.id %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3 mb-3 d-inline-flex align-items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/></svg>
+        Back to {{ pet.name }}
+    </a>
+
+    <div class="row pt-2">
+        <!-- Left Column: Pet Image -->
+        <div class="col-md-5">
+            <div class="bg-white rounded-4 shadow-sm overflow-hidden mb-4" style="border: 1px solid rgba(99, 102, 241, 0.25);">
+                {% if pet.image %}
+                    <img src="{{ pet.image.url }}" class="img-fluid w-100 object-fit-cover" alt="{{ pet.name }}" style="height: 400px;">
+                {% else %}
+                    <div class="bg-light d-flex align-items-center justify-content-center w-100" style="height: 400px;">
+                        <div class="text-center text-muted">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="mb-2 opacity-25" viewBox="0 0 16 16"><path d="M6 2a.5.5 0 0 1 .47.33L10 12.036l1.53-4.208A.5.5 0 0 1 12 7.5h3.5a.5.5 0 0 1 0 1h-3.15l-1.88 5.17a.5.5 0 0 1-.94 0L6 3.964 4.47 8.171A.5.5 0 0 1 4 8.5H.5a.5.5 0 0 1 0-1h3.15l1.88-5.17A.5.5 0 0 1 6 2Z"/></svg>
+                            <p class="mb-0 small">No Image Uploaded</p>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Run Identification Button -->
+            {% if pet.image %}
+            <div class="text-center mt-3 p-3 bg-light rounded-4 border">
+                <form action="{% url 'pets:run_breed_prediction' pet.id %}" method="post">
+                    {% csrf_token %}
+                    <p class="small text-muted mb-3 text-start fw-medium">Upload a clear photo of your pet for best results. The AI model analyzes visual features like fur, face shape, and body structure.</p>
+                    <button type="submit" class="btn btn-lg rounded-pill px-5 py-3 shadow-sm w-100 d-flex align-items-center justify-content-center gap-2" style="background: #6366f1; color: white; border: none;" onclick="this.innerHTML='<span class=\'spinner-border spinner-border-sm\'></span> Identifying Breed...'; this.classList.add('disabled');">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
+                        🤖 Run AI Breed Identification
+                    </button>
+                    <small class="text-muted d-block mt-3">Powered by EfficientNet Computer Vision AI.</small>
+                </form>
+            </div>
+            {% else %}
+            <div class="alert alert-warning d-flex align-items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/></svg>
+                <small>Please upload a pet image first to run breed identification.</small>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Right Column: Results -->
+        <div class="col-md-7 ps-md-4">
+            <div class="d-flex align-items-center gap-3 mb-4 mt-4 mt-md-0">
+                <div class="rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 56px; height: 56px; background: #6366f1; color: white;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
+                </div>
+                <div>
+                    <h2 class="fw-bold mb-0">Breed Identification</h2>
+                    <p class="text-muted mb-0">AI-powered breed detection for {{ pet.name }}</p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-4 shadow-sm p-4" style="border-top: 4px solid #6366f1;">
+                {% if breed_prediction %}
+                    <!-- Prediction Result -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5 class="fw-bold mb-3 border-bottom pb-2" style="color: #6366f1;">Prediction Result</h5>
+                        </div>
+                        <div class="col-md-7">
+                            <p class="text-muted small mb-1">AI Identified Breed</p>
+                            <h3 class="fw-bold mb-1" style="color: #6366f1;">{{ breed_prediction.predicted_breed }}</h3>
+                            <small class="text-muted">Species: {{ breed_prediction.species|title }} · Model: {{ breed_prediction.model_version }}</small>
+                        </div>
+                        <div class="col-md-5 text-md-end mt-3 mt-md-0">
+                            <p class="text-muted small mb-1">Confidence Level</p>
+                            {% if breed_prediction.confidence >= 80 %}
+                                <span class="badge bg-success rounded-pill px-4 py-2 fs-5 shadow-sm">{{ breed_prediction.confidence }}%</span>
+                            {% elif breed_prediction.confidence >= 50 %}
+                                <span class="badge bg-warning text-dark rounded-pill px-4 py-2 fs-5 shadow-sm">{{ breed_prediction.confidence }}%</span>
+                            {% else %}
+                                <span class="badge bg-danger rounded-pill px-4 py-2 fs-5 shadow-sm">{{ breed_prediction.confidence }}%</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Confidence Bar -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <small class="fw-medium text-muted">Detection Confidence</small>
+                            <small class="fw-bold" style="color: #6366f1;">{{ breed_prediction.confidence }}%</small>
+                        </div>
+                        <div class="progress rounded-pill" style="height: 14px;">
+                            <div class="progress-bar rounded-pill" role="progressbar" style="width: {{ breed_prediction.confidence }}%; background: linear-gradient(90deg, #6366f1, #818cf8);" aria-valuenow="{{ breed_prediction.confidence }}" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+
+                    <!-- Pet Info Summary -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-sm-4">
+                            <div class="border rounded-3 p-3 text-center">
+                                <span class="text-muted d-block small fw-bold">Pet Name</span>
+                                <span class="fs-6 fw-medium text-dark">{{ pet.name }}</span>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="border rounded-3 p-3 text-center">
+                                <span class="text-muted d-block small fw-bold">Species</span>
+                                <span class="fs-6 fw-medium text-dark">{{ pet.get_species_display }}</span>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="border rounded-3 p-3 text-center">
+                                <span class="text-muted d-block small fw-bold">Current Breed</span>
+                                <span class="fs-6 fw-medium text-dark">{{ pet.breed|default:"Not set" }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-light p-3 rounded-3 mb-3">
+                        <small class="text-muted">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="me-1" viewBox="0 0 16 16"><path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/></svg>
+                            Predicted on {{ breed_prediction.created_at|date:"M d, Y h:i A" }}
+                        </small>
+                    </div>
+
+                    <div class="alert alert-warning mb-0 d-flex align-items-center gap-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/></svg>
+                        <small>This AI analysis is for informational purposes. Results may vary based on image quality and lighting conditions.</small>
+                    </div>
+
+                {% else %}
+                    <!-- No Prediction Yet -->
+                    <div class="text-center py-5 my-3 text-muted">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="mb-3 opacity-25" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
+                        <h4 class="fw-bold">No Predictions Yet</h4>
+                        <p class="mb-0 mx-auto" style="max-width: 300px;">Click the <strong>Run AI Breed Identification</strong> button to analyze your pet's image and detect the breed.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

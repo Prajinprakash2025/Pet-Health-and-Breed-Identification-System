@@ -8,6 +8,7 @@ from .models import (
     PetService,
     VaccinationScheduleTemplate,
     VetDoctor,
+    ServiceBooking,
 )
 
 
@@ -58,3 +59,19 @@ class VetDoctorAdmin(admin.ModelAdmin):
     list_display = ("name", "specialization", "clinic_name", "phone", "is_available")
     list_filter = ("specialization", "is_available")
     search_fields = ("name", "clinic_name", "email")
+
+
+@admin.register(ServiceBooking)
+class ServiceBookingAdmin(admin.ModelAdmin):
+    list_display = ("user", "pet", "get_provider", "booking_date", "booking_time", "status", "created_at")
+    list_filter = ("status", "booking_date", "created_at")
+    search_fields = ("user__email", "user__username", "pet__name", "notes", "admin_notes")
+    list_editable = ("status",)
+
+    def get_provider(self, obj):
+        if obj.pet_service:
+            return f"Service: {obj.pet_service.name}"
+        elif obj.vet_doctor:
+            return f"Doctor: {obj.vet_doctor.name}"
+        return "Unknown"
+    get_provider.short_description = "Provider"

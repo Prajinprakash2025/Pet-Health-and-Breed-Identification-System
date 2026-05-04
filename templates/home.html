@@ -217,16 +217,13 @@
                     </div>
                 </div>
 
-                <div class="alert alert-info small mb-3">
-                    This is a preview of the upcoming missing-pet feature. For now, you can use your pet profiles and the contact page to share details.
-                </div>
 
                 <div class="d-flex flex-wrap gap-3">
-                    <a href="{% url 'contact' %}" class="btn btn-secondary">
+                    <a href="{% url 'pets:report_missing' %}" class="btn btn-primary">
                         Report a missing pet
                     </a>
-                    <a href="{% url 'contact' %}" class="btn btn-outline-secondary">
-                        I saw a pet, contact support
+                    <a href="{% url 'pets:missing_pets_list' %}" class="btn btn-outline-primary">
+                        Search Missing Pets
                     </a>
                 </div>
             </div>

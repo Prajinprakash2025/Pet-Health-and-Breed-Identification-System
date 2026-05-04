@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Privacy Policy - PetCare AI{% endblock %}
+
+{% block content %}
+<!-- Decorative Background -->
+<div class="position-absolute top-0 start-0 w-100" style="height: 300px; background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%); z-index: -1;"></div>
+
+<div class="container py-4 mt-3">
+    <!-- Back Button -->
+    <a href="javascript:history.back()" class="btn btn-light rounded-pill shadow-sm mb-4 px-4 py-2 fw-semibold text-primary transition-hover d-inline-flex align-items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="me-2" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
+        </svg>
+        Go Back
+    </a>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="text-center mb-5">
+                <div class="d-inline-flex align-items-center justify-content-center bg-white rounded-circle shadow-sm p-3 mb-3" style="width: 70px; height: 70px;">
+                    <svg width="32" height="32" fill="#0d6efd" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/></svg>
+                </div>
+                <h1 class="display-5 fw-bold text-dark mb-3">Privacy Policy</h1>
+                <p class="lead text-muted">Last Updated: May 5, 2026</p>
+            </div>
+
+            <div class="card border-0 shadow rounded-4 p-md-5 p-4 mb-5" style="line-height: 1.8;">
+                <div class="mb-5">
+                    <h4 class="fw-bold text-primary mb-3"><i class="bi bi-database me-2"></i>1. Data Collection</h4>
+                    <p class="text-dark">At PetCare AI, we take your privacy seriously. We collect minimal personal data necessary to provide you with the best possible service. This includes your account details (name, email), pet profiles (photos, health logs), and location data (if you choose to use our Missing Pet Community Map).</p>
+                </div>
+
+                <div class="mb-5">
+                    <h4 class="fw-bold text-primary mb-3"><i class="bi bi-robot me-2"></i>2. Use of Machine Learning</h4>
+                    <p class="text-dark">When you upload images of your pets for breed identification or health screening, these images are processed by our backend AI models. <strong>We do not sell your images or personal data to third parties.</strong> Data may be used in an anonymized, aggregated format to further improve our machine learning models.</p>
+                </div>
+
+                <div class="mb-5">
+                    <h4 class="fw-bold text-primary mb-3"><i class="bi bi-geo-alt me-2"></i>3. Location Data</h4>
+                    <p class="text-dark">Our "Missing Pets" and "Locate Me" features utilize your device's GPS and background location services strictly to place accurate markers on the community map. This location data is stored securely and is only made public when you explicitly report a pet as missing.</p>
+                </div>
+
+                <div class="mb-5">
+                    <h4 class="fw-bold text-primary mb-3"><i class="bi bi-shield-lock me-2"></i>4. Data Security</h4>
+                    <p class="text-dark">We implement a variety of security measures including database encryption, secure authentication (HTTPS), and restricted access controls to maintain the safety of your personal information. However, no method of transmission over the Internet is 100% secure.</p>
+                </div>
+
+                <div class="mb-5">
+                    <h4 class="fw-bold text-primary mb-3"><i class="bi bi-cookie me-2"></i>5. Cookies & Tracking</h4>
+                    <p class="text-dark">We use cookies and similar tracking technologies to track activity on our service and store certain functional information, such as your authentication session and basic UI preferences. You can instruct your browser to refuse all cookies, but some parts of our service may not function properly.</p>
+                </div>
+
+                <div class="mb-5">
+                    <h4 class="fw-bold text-primary mb-3"><i class="bi bi-person-check me-2"></i>6. Your Rights</h4>
+                    <p class="text-dark">You have the right to request access to, correction of, or deletion of your personal data at any time. You can manage your pet profiles directly from your dashboard. To request complete account deletion, please contact our support team.</p>
+                </div>
+                
+                <hr class="my-5 opacity-25">
+                
+                <div class="text-center bg-light p-4 rounded-4">
+                    <p class="text-dark mb-0">If you have any questions about this Privacy Policy, please <a href="{% url 'contact' %}" class="fw-bold text-primary text-decoration-none">contact us</a>.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

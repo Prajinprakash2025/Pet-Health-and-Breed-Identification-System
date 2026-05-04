@@ -1,12 +1,13 @@
 import random
 import time
+from django.db.models import Q
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
-from .forms import PetForm
-from .models import BreedPrediction, HealthAssessment, Pet
+from .forms import PetForm, MissingPetForm, PetSightingForm
+from .models import BreedPrediction, HealthAssessment, Pet, MissingPet, PetSighting
 
 
 # ── Breed-specific health risk data (demo) ─────────────────────────────────
@@ -192,6 +193,17 @@ def run_breed_prediction_view(request, pet_id):
 
 
 @login_required
+def breed_identify_view(request, pet_id):
+    pet = get_object_or_404(Pet, id=pet_id, owner=request.user)
+    breed_prediction = pet.breed_predictions.first()
+    return render(
+        request,
+        "pets/breed_identify.html",
+        {"pet": pet, "breed_prediction": breed_prediction, "active_section": "my_pets"},
+    )
+
+
+@login_required
 def health_scan_view(request, pet_id):
     pet = get_object_or_404(Pet, id=pet_id, owner=request.user)
     assessment = pet.health_assessments.first()
@@ -277,4 +289,111 @@ def run_health_prediction_view(request, pet_id):
 
     messages.success(request, f"AI Health Scan complete for {pet.name}.")
     return redirect("pets:health_scan", pet_id=pet.id)
+
+
+def missing_pets_list_view(request):
+    """Public list of missing pets with search functionality."""
+    query = request.GET.get("q", "")
+    species = request.GET.get("species", "")
+    
+    reports = MissingPet.objects.filter(is_found=False)
+    
+    if query:
+        reports = reports.filter(
+            Q(last_seen_location__icontains=query) | 
+            Q(pet_name__icontains=query) | 
+            Q(breed__icontains=query)
+        )
+    
+    if species:
+        reports = reports.filter(species=species)
+        
+    import json
+    from django.urls import reverse
+    map_markers = []
+    for report in reports:
+        if report.last_seen_lat and report.last_seen_lng:
+            map_markers.append({
+                "id": report.id,
+                "lat": report.last_seen_lat,
+                "lng": report.last_seen_lng,
+                "name": report.pet_name,
+                "species": report.get_species_display(),
+                "location": report.last_seen_location,
+                "photo_url": report.photo.url if report.photo else "",
+                "detail_url": reverse('pets:missing_pet_detail', args=[report.id])
+            })
+            
+    context = {
+        "reports": reports,
+        "query": query,
+        "species_filter": species,
+        "active_section": "missing_pets",
+        "map_markers_data": map_markers
+    }
+    return render(request, "pets/missing_pets_list.html", context)
+
+
+@login_required
+def report_missing_view(request):
+    """User view to report their pet as missing."""
+    if request.method == "POST":
+        form = MissingPetForm(request.POST, request.FILES, user=request.user)
+        if form.is_valid():
+            report = form.save(commit=False)
+            report.owner = request.user
+            report.save()
+            messages.success(request, f"Missing report for {report.pet_name} has been published.")
+            return redirect("pets:missing_pets_list")
+    else:
+        # Pre-fill species if a pet is selected via GET param
+        initial = {}
+        pet_id = request.GET.get("pet_id")
+        if pet_id:
+            pet = get_object_or_404(Pet, id=pet_id, owner=request.user)
+            initial = {"pet": pet, "pet_name": pet.name, "species": pet.species, "breed": pet.breed}
+        
+        form = MissingPetForm(user=request.user, initial=initial)
+        
+    import json
+    user_pets = Pet.objects.filter(owner=request.user)
+    pets_data = {
+        pet.id: {
+            "name": pet.name,
+            "species": pet.species,
+            "breed": pet.breed
+        } for pet in user_pets
+    }
+    pets_json = json.dumps(pets_data)
+        
+    return render(request, "pets/report_missing.html", {
+        "form": form, 
+        "active_section": "missing_pets",
+        "pets_json": pets_json
+    })
+
+
+def missing_pet_detail_view(request, report_id):
+    """Detail view for a missing pet report with sighting form."""
+    report = get_object_or_404(MissingPet, id=report_id)
+    sightings = report.sightings.all()
+    
+    if request.method == "POST":
+        sighting_form = PetSightingForm(request.POST, request.FILES)
+        if sighting_form.is_valid():
+            sighting = sighting_form.save(commit=False)
+            sighting.missing_pet = report
+            sighting.save()
+            messages.success(request, "Thank you! Your sighting report has been submitted.")
+            return redirect("pets:missing_pet_detail", report_id=report.id)
+    else:
+        sighting_form = PetSightingForm()
+        
+    context = {
+        "report": report,
+        "sightings": sightings,
+        "sighting_form": sighting_form,
+        "active_section": "missing_pets"
+    }
+    return render(request, "pets/missing_pet_detail.html", context)
 

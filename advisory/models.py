@@ -189,12 +189,17 @@ class ServiceBooking(models.Model):
         ("completed", "Completed"),
     ]
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    pet = models.ForeignKey(
+        "pets.Pet", on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="bookings", help_text="The pet this booking is for.",
+    )
     pet_service = models.ForeignKey(PetService, on_delete=models.SET_NULL, null=True, blank=True)
     vet_doctor = models.ForeignKey(VetDoctor, on_delete=models.SET_NULL, null=True, blank=True)
     booking_date = models.DateField()
     booking_time = models.TimeField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
-    notes = models.TextField(blank=True)
+    notes = models.TextField(blank=True, help_text="User's notes for the booking")
+    admin_notes = models.TextField(blank=True, help_text="Admin's notes or cancellation reason")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -210,3 +215,20 @@ class ServiceBooking(models.Model):
             service_name = "removed service"
         user_label = self.user.email or self.user.get_full_name() or str(self.user.pk)
         return f"Booking by {user_label} for {service_name} on {self.booking_date}"
+
+
+class ContactMessage(models.Model):
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    email = models.EmailField()
+    subject = models.CharField(max_length=255)
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.subject} - {self.email}"
+

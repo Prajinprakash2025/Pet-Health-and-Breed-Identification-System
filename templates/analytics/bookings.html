@@ -59,6 +59,7 @@
                 <thead>
                     <tr>
                         <th>Service / Doctor</th>
+                        <th>Pet</th>
                         <th>Date & Time</th>
                         <th>Status</th>
                         <th>Notes</th>
@@ -89,6 +90,14 @@
                             </small>
                         </td>
                         <td>
+                            {% if booking.pet %}
+                                <div class="fw-bold">{{ booking.pet.name }}</div>
+                                <small class="text-muted">{{ booking.pet.get_species_display }}</small>
+                            {% else %}
+                                <span class="text-muted small">Not specified</span>
+                            {% endif %}
+                        </td>
+                        <td>
                             <div>{{ booking.booking_date|date:"M d, Y" }}</div>
                             <small class="text-muted">{{ booking.booking_time|time:"h:i A" }}</small>
                         </td>
@@ -106,7 +115,16 @@
                             {% endif %}
                         </td>
                         <td>
-                            <span class="text-muted">{{ booking.notes|default:"No notes"|truncatechars:42 }}</span>
+                            <div class="small mb-1">
+                                <span class="text-muted fw-bold">My Note:</span> 
+                                <span class="text-muted">{{ booking.notes|default:"None"|truncatechars:30 }}</span>
+                            </div>
+                            {% if booking.admin_notes %}
+                            <div class="small">
+                                <span class="{% if booking.status == 'cancelled' %}text-danger{% else %}text-primary{% endif %} fw-bold">Feedback:</span> 
+                                <span class="{% if booking.status == 'cancelled' %}text-danger{% else %}text-dark{% endif %}">{{ booking.admin_notes|truncatechars:50 }}</span>
+                            </div>
+                            {% endif %}
                         </td>
                         <td>
                             <span class="text-muted">{{ booking.created_at|date:"M d, Y" }}</span>

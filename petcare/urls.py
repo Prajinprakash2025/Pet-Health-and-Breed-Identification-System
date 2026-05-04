@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.urls import include, path
 from django.views.generic import TemplateView
+from advisory.views import contact
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -23,8 +24,18 @@ urlpatterns = [
     ),
     path(
         "contact/",
-        TemplateView.as_view(template_name="contact.html"),
+        contact,
         name="contact",
+    ),
+    path(
+        "terms/",
+        TemplateView.as_view(template_name="terms.html"),
+        name="terms",
+    ),
+    path(
+        "privacy/",
+        TemplateView.as_view(template_name="privacy.html"),
+        name="privacy",
     ),
     path("dashboard/", include("analytics.urls", namespace="analytics")),
 ]

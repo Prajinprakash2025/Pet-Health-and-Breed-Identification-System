@@ -10,6 +10,12 @@
         </ol>
     </nav>
 
+    <!-- Back Button -->
+    <a href="{% url 'analytics:my_pets_section' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3 mb-3 d-inline-flex align-items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/></svg>
+        Back to My Pets
+    </a>
+
     <!-- ── Pet Profile Card ───────────────────────────────────────────── -->
     <div class="bg-white rounded-4 shadow-sm overflow-hidden mb-4">
         <div class="row g-0">
@@ -62,65 +68,69 @@
         </div>
     </div>
 
-    <!-- ── AI Identification Button ───────────────────────────────────── -->
-    {% if pet.image %}
-    <div class="text-center mb-4">
-        <form action="{% url 'pets:run_breed_prediction' pet.id %}" method="post" class="d-inline">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-primary btn-lg rounded-pill px-5 py-3 shadow-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="me-2" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
-                🤖 Run AI Breed Identification
-            </button>
-        </form>
-    </div>
-    {% endif %}
-
-    <!-- ── Breed Prediction & Health Assessment ───────────────────────── -->
+    <!-- ── Quick Actions: Identify & Health ─────────────────────────── -->
     <div class="row g-4 mb-4">
-        <!-- Breed Prediction Result -->
+        <!-- Breed Identification -->
         <div class="col-md-6">
-            <div class="bg-white rounded-4 shadow-sm p-4 h-100">
-                <div class="d-flex align-items-center gap-2 mb-3">
-                    <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
-                    </div>
-                    <h5 class="fw-bold mb-0">Breed Prediction</h5>
+            <div class="bg-white rounded-4 shadow-sm p-4 h-100 d-flex flex-column justify-content-center align-items-center text-center">
+                <div class="rounded-circle d-flex align-items-center justify-content-center mb-3 shadow-sm" style="width: 64px; height: 64px; background: rgba(99, 102, 241, 0.1); color: #6366f1;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
                 </div>
+                <h4 class="fw-bold mb-2">Breed Identification</h4>
+                <p class="text-muted mb-4 px-3">Run AI-powered breed detection to identify your pet's breed from their photo.</p>
                 {% if breed_prediction %}
                     <div class="mb-3">
-                        <h3 class="fw-bold text-primary mb-1">{{ breed_prediction.predicted_breed }}</h3>
-                        <small class="text-muted">Species: {{ breed_prediction.species|title }} · Model: {{ breed_prediction.model_version }}</small>
-                    </div>
-                    <div class="mb-2">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <small class="fw-medium text-muted">Confidence</small>
-                            <small class="fw-bold text-primary">{{ breed_prediction.confidence }}%</small>
-                        </div>
-                        <div class="progress rounded-pill" style="height: 12px;">
-                            <div class="progress-bar bg-primary rounded-pill" role="progressbar" style="width: {{ breed_prediction.confidence }}%;" aria-valuenow="{{ breed_prediction.confidence }}" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
-                    </div>
-                    <small class="text-muted">Predicted on {{ breed_prediction.created_at|date:"M d, Y h:i A" }}</small>
-                {% else %}
-                    <div class="text-center py-4 text-muted">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" class="mb-2 opacity-25" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
-                        <p class="mb-0">No prediction yet. Click the button above to identify the breed.</p>
+                        <span class="badge rounded-pill px-3 py-2" style="background: rgba(99, 102, 241, 0.1); color: #6366f1;">
+                            Last result: {{ breed_prediction.predicted_breed }} ({{ breed_prediction.confidence }}%)
+                        </span>
                     </div>
                 {% endif %}
+                <a href="{% url 'pets:breed_identify' pet.id %}" class="btn btn-lg rounded-pill px-4" style="background: #6366f1; color: white; border: none;">
+                    Open Breed Scanner 🔍
+                </a>
             </div>
         </div>
 
-        <!-- Health Assessment Link -->
+        <!-- Health Assessment -->
         <div class="col-md-6">
             <div class="bg-white rounded-4 shadow-sm p-4 h-100 d-flex flex-column justify-content-center align-items-center text-center">
-                <div class="bg-success bg-opacity-10 text-success rounded-circle d-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px;">
+                <div class="bg-success bg-opacity-10 text-success rounded-circle d-flex align-items-center justify-content-center mb-3 shadow-sm" style="width: 64px; height: 64px;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/></svg>
                 </div>
                 <h4 class="fw-bold mb-2">Pet Health Screening</h4>
                 <p class="text-muted mb-4 px-3">Run an advanced AI vision scan to detect skin diseases, wounds, and parasitic infections.</p>
+                {% if health_assessment %}
+                    <div class="mb-3">
+                        {% if health_assessment.overall_risk_level == "low" %}
+                            <span class="badge bg-success rounded-pill px-3 py-2">Last scan: 🟢 Low Risk</span>
+                        {% elif health_assessment.overall_risk_level == "medium" %}
+                            <span class="badge bg-warning text-dark rounded-pill px-3 py-2">Last scan: 🟡 Medium Risk</span>
+                        {% else %}
+                            <span class="badge bg-danger rounded-pill px-3 py-2">Last scan: 🔴 High Risk</span>
+                        {% endif %}
+                    </div>
+                {% endif %}
                 <a href="{% url 'pets:health_scan' pet.id %}" class="btn btn-success btn-lg rounded-pill px-4">
                     Open Health Scanner 🩺
                 </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Emergency Action: Missing Pet ─────────────────────────── -->
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="card border-0 rounded-4 shadow-sm p-4 bg-danger bg-opacity-10 border border-danger border-opacity-20 d-flex flex-md-row flex-column align-items-center justify-content-between gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm flex-shrink-0" style="width: 48px; height: 48px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/></svg>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold text-danger mb-1">Is {{ pet.name }} missing?</h5>
+                        <p class="text-danger small mb-0 opacity-75">Notify the community and track sightings in your area.</p>
+                    </div>
+                </div>
+                <a href="{% url 'pets:report_missing' %}?pet_id={{ pet.id }}" class="btn btn-danger rounded-pill px-4 fw-bold">Report Missing</a>
             </div>
         </div>
     </div>

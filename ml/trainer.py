@@ -124,14 +124,17 @@ def train_from_directory(dataset_root: Path, epochs_head: int = 5, epochs_finetu
     model, base_model = _build_mobilenet_model(num_classes)
 
     # Stage 1: train classifier head
+    print(f"\n[AI] Starting Stage 1: Training classifier head for {epochs_head} epochs...")
     history_head = model.fit(
         train_gen,
-        validation_data=val_gen,
+        validation_data=val_gen if len(val_gen) > 0 else None,
         epochs=epochs_head,
         verbose=1,
     )
+    print("[AI] Stage 1 complete.")
 
     # Stage 2: fine-tune last 30 layers of base model
+    print(f"\n[AI] Starting Stage 2: Fine-tuning base model for {epochs_finetune} epochs...")
     base_model.trainable = True
     for layer in base_model.layers[:-30]:
         layer.trainable = False
@@ -144,10 +147,11 @@ def train_from_directory(dataset_root: Path, epochs_head: int = 5, epochs_finetu
 
     history_ft = model.fit(
         train_gen,
-        validation_data=val_gen,
+        validation_data=val_gen if len(val_gen) > 0 else None,
         epochs=epochs_finetune,
         verbose=1,
     )
+    print("[AI] Stage 2 complete.")
 
     # Save trained model
     model.save(MODEL_PATH)
@@ -158,7 +162,7 @@ def train_from_directory(dataset_root: Path, epochs_head: int = 5, epochs_finetu
         json.dump(label_map, f, indent=2)
 
     final_train_acc = float(history_ft.history["accuracy"][-1])
-    final_val_acc = float(history_ft.history["val_accuracy"][-1])
+    final_val_acc = float(history_ft.history.get("val_accuracy", [0.0])[-1])
 
     return {
         "train_accuracy": final_train_acc,

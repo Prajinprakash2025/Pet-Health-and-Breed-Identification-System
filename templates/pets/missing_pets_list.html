@@ -1,0 +1,344 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<!-- Leaflet CSS & JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="display-5 fw-bold text-dark mb-2">Missing Pets & Sightings</h1>
+            <p class="lead text-muted">Help reunite pets with their families in our community.</p>
+        </div>
+        <div>
+            <a href="{% url 'pets:report_missing' %}" class="btn btn-primary btn-lg rounded-pill px-4 shadow-sm">
+                <svg width="20" height="20" fill="white" class="me-2" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/></svg>
+                Report Missing Pet
+            </a>
+        </div>
+    </div>
+
+    <!-- Community Map Section -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
+        <div class="card-header bg-white border-bottom py-3">
+            <h5 class="fw-bold mb-0 text-primary"><i class="bi bi-map me-2"></i>Community Map</h5>
+        </div>
+        <div id="community-map" style="height: 400px; width: 100%; z-index: 1;"></div>
+    </div>
+
+    <!-- Search Section -->
+    <div class="card border-0 shadow-sm rounded-4 mb-5 p-4" style="background: rgba(255,255,255,0.7); backdrop-filter: blur(10px);">
+        <form method="GET" action="{% url 'pets:missing_pets_list' %}" class="row g-3 align-items-end">
+            <div class="col-md-5">
+                <label class="form-label fw-semibold small text-uppercase tracking-wider">Search Location or Breed</label>
+                <div class="input-group shadow-sm rounded-3 overflow-hidden">
+                    <span class="input-group-text bg-white border-0 ps-3"><svg width="16" height="16" fill="#94a3b8" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg></span>
+                    <input type="text" id="search-location" name="q" class="form-control border-0 py-2 ps-2" placeholder="e.g. City Park, Beagle..." value="{{ query }}">
+                    <button type="button" id="btn-find-location" class="btn btn-primary px-3 d-flex align-items-center" style="border-radius: 0 8px 8px 0;" title="Use my current location">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="me-1" viewBox="0 0 16 16">
+                            <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+                        </svg>
+                        <span class="d-none d-sm-inline small fw-bold">Locate Me</span>
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-semibold small text-uppercase tracking-wider">Species</label>
+                <select name="species" class="form-select border-0 py-2">
+                    <option value="">All Species</option>
+                    <option value="dog" {% if species_filter == 'dog' %}selected{% endif %}>Dogs</option>
+                    <option value="cat" {% if species_filter == 'cat' %}selected{% endif %}>Cats</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-dark w-100 py-2 rounded-3 fw-bold">Apply Filters</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Results Grid -->
+    <div class="row g-4">
+        {% for report in reports %}
+        <div class="col-md-4 col-sm-6">
+            <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden transition-hover">
+                <div class="position-relative">
+                    <img src="{{ report.photo.url }}" class="card-img-top object-fit-cover" alt="{{ report.pet_name }}" style="height: 240px;">
+                    <div class="position-absolute top-0 end-0 m-3">
+                        <span class="badge {% if report.species == 'dog' %}bg-primary{% else %}bg-info{% endif %} shadow-sm px-3 py-2 rounded-pill">
+                            {{ report.get_species_display }}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="card-title fw-bold mb-0">{{ report.pet_name }}</h5>
+                        <span class="text-danger small fw-bold"><i class="bi bi-clock"></i> {{ report.last_seen_date|timesince }} ago</span>
+                    </div>
+                    <p class="text-muted small mb-3">
+                        <svg width="14" height="14" fill="currentColor" class="me-1" viewBox="0 0 16 16"><path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/></svg>
+                        Last seen: <strong>{{ report.last_seen_location }}</strong>
+                    </p>
+                    <div class="d-grid mt-3">
+                        <a href="{% url 'pets:missing_pet_detail' report.id %}" class="btn btn-outline-primary rounded-pill">View Details</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <div class="mb-4">
+                <svg width="64" height="64" fill="#e2e8f0" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z"/></svg>
+            </div>
+            <h3 class="fw-bold">No missing pets found</h3>
+            <p class="text-muted">Try adjusting your search filters or check back later.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Map Data -->
+{% if map_markers_data %}
+{{ map_markers_data|json_script:"map-markers-data" }}
+{% endif %}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const mapContainer = document.getElementById('community-map');
+        const mapDataScript = document.getElementById('map-markers-data');
+        
+        if (mapContainer) {
+            let markersData = [];
+            if (mapDataScript) {
+                try { markersData = JSON.parse(mapDataScript.textContent); } catch(e) { console.error("Error parsing map data", e); }
+            }
+            
+            // Determine center based on markers, default to general fallback (e.g. center of US/World)
+            let defaultLat = 37.7749;
+            let defaultLng = -122.4194;
+            
+            if (markersData.length > 0) {
+                // Center on the first marker for simplicity
+                defaultLat = markersData[0].lat;
+                defaultLng = markersData[0].lng;
+            }
+
+            const map = L.map('community-map').setView([defaultLat, defaultLng], 12);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            // Custom "Locate Me" Control on the Map
+            const LocateControl = L.Control.extend({
+                options: { position: 'topright' },
+                onAdd: function (map) {
+                    const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
+                    container.style.backgroundColor = 'white';
+                    container.style.cursor = 'pointer';
+                    container.title = 'Find My Location';
+                    
+                    container.innerHTML = `
+                        <div style="width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; color: #0d6efd;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+                            </svg>
+                        </div>
+                    `;
+                    
+                    container.onclick = function(e){
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (navigator.geolocation) {
+                            container.innerHTML = '<div style="width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;"><span class="spinner-border spinner-border-sm text-primary" role="status"></span></div>';
+                            navigator.geolocation.getCurrentPosition(function(pos) {
+                                const lat = pos.coords.latitude;
+                                const lng = pos.coords.longitude;
+                                map.flyTo([lat, lng], 14);
+                                
+                                // Draw a blue circle around user's location
+                                L.circle([lat, lng], {
+                                    color: '#0d6efd',
+                                    fillColor: '#0d6efd',
+                                    fillOpacity: 0.15,
+                                    radius: 800
+                                }).addTo(map);
+                                
+                                // Add a small dot for exact position
+                                L.circleMarker([lat, lng], {
+                                    radius: 6,
+                                    fillColor: "#0d6efd",
+                                    color: "#ffffff",
+                                    weight: 2,
+                                    opacity: 1,
+                                    fillOpacity: 1
+                                }).addTo(map).bindPopup("You are here").openPopup();
+
+                                // Reset icon
+                                container.innerHTML = `
+                                    <div style="width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; color: #0d6efd;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                            <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+                                        </svg>
+                                    </div>
+                                `;
+                            }, function() {
+                                alert("Could not get your location.");
+                                container.innerHTML = `...`; // (Reset icon logic)
+                            });
+                        }
+                    }
+                    return container;
+                }
+            });
+            map.addControl(new LocateControl());
+
+            const bounds = [];
+
+            // Add markers
+            if (markersData.length > 0) {
+                markersData.forEach(pet => {
+                    if (pet.lat && pet.lng) {
+                        bounds.push([pet.lat, pet.lng]);
+                        
+                        // Create a custom icon using the pet's photo
+                        let iconHtml;
+                        if (pet.photo_url) {
+                            iconHtml = `
+                                <div class="custom-marker" style="
+                                    background-image: url('${pet.photo_url}');
+                                    background-size: cover;
+                                    background-position: center;
+                                    width: 40px;
+                                    height: 40px;
+                                    border-radius: 50%;
+                                    border: 3px solid #dc3545;
+                                    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+                                "></div>
+                                <div class="marker-pointer" style="
+                                    width: 0;
+                                    height: 0;
+                                    border-left: 8px solid transparent;
+                                    border-right: 8px solid transparent;
+                                    border-top: 10px solid #dc3545;
+                                    margin: -2px auto 0;
+                                "></div>
+                            `;
+                        } else {
+                            // Fallback icon
+                            iconHtml = `
+                                <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center shadow" style="width: 36px; height: 36px; border: 2px solid white;">
+                                    <i class="bi bi-exclamation-triangle-fill"></i>
+                                </div>
+                            `;
+                        }
+
+                        const customIcon = L.divIcon({
+                            className: 'custom-leaflet-icon',
+                            html: iconHtml,
+                            iconSize: [46, 56],
+                            iconAnchor: [23, 56],
+                            popupAnchor: [0, -50]
+                        });
+
+                        const popupContent = `
+                            <div class="text-center p-1" style="min-width: 150px;">
+                                <h6 class="fw-bold mb-1">${pet.name}</h6>
+                                <p class="text-muted small mb-2">${pet.species}</p>
+                                <a href="${pet.detail_url}" class="btn btn-sm btn-primary rounded-pill d-block">View Details</a>
+                            </div>
+                        `;
+
+                        L.marker([pet.lat, pet.lng], {icon: customIcon})
+                            .addTo(map)
+                            .bindPopup(popupContent);
+                    }
+                });
+
+                // If there are multiple markers, fit map to bounds
+                if (bounds.length > 1) {
+                    map.fitBounds(bounds, {padding: [50, 50]});
+                }
+            }
+
+            // Fix Leaflet sizing issue by invalidating size multiple times during render lifecycle
+            setTimeout(() => { map.invalidateSize(); }, 100);
+            setTimeout(() => { map.invalidateSize(); }, 500);
+            window.addEventListener('load', function() {
+                map.invalidateSize();
+            });
+        }
+
+        // --- Find My Location Logic ---
+        const btnFindLocation = document.getElementById('btn-find-location');
+        const searchLocation = document.getElementById('search-location');
+        
+        if (btnFindLocation && searchLocation) {
+            // Initialize Bootstrap tooltip if available
+            if (typeof bootstrap !== 'undefined') {
+                new bootstrap.Tooltip(btnFindLocation);
+            }
+
+            btnFindLocation.addEventListener('click', function() {
+                if (navigator.geolocation) {
+                    // Show loading state
+                    const originalIcon = btnFindLocation.innerHTML;
+                    btnFindLocation.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+                    btnFindLocation.disabled = true;
+
+                    navigator.geolocation.getCurrentPosition(
+                        function(position) {
+                            const lat = position.coords.latitude;
+                            const lon = position.coords.longitude;
+                            
+                            // Reverse geocode to get city/suburb name
+                            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10&addressdetails=1`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data && data.address) {
+                                        // Prioritize city, then town, then village, then county
+                                        const city = data.address.city || data.address.town || data.address.village || data.address.county || data.address.state;
+                                        if (city) {
+                                            searchLocation.value = city;
+                                            // Automatically submit the search form
+                                            searchLocation.closest('form').submit();
+                                            return;
+                                        }
+                                    }
+                                    // Fallback if no clean city name is found
+                                    searchLocation.value = "Current Location";
+                                    btnFindLocation.innerHTML = originalIcon;
+                                    btnFindLocation.disabled = false;
+                                })
+                                .catch(err => {
+                                    console.error("Geocoding failed", err);
+                                    btnFindLocation.innerHTML = '<i class="bi bi-exclamation-triangle text-danger"></i>';
+                                    setTimeout(() => { btnFindLocation.innerHTML = originalIcon; btnFindLocation.disabled = false; }, 2000);
+                                });
+                        },
+                        function(error) {
+                            console.error("Geolocation failed", error);
+                            btnFindLocation.innerHTML = '<i class="bi bi-geo-alt-fill text-danger"></i>';
+                            setTimeout(() => { btnFindLocation.innerHTML = originalIcon; btnFindLocation.disabled = false; }, 2000);
+                        },
+                        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+                    );
+                } else {
+                    alert("Geolocation is not supported by your browser.");
+                }
+            });
+        }
+    });
+</script>
+
+<style>
+    .transition-hover { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+    .transition-hover:hover { transform: translateY(-5px); box-shadow: 0 1rem 3rem rgba(0,0,0,0.1) !important; }
+    .object-fit-cover { object-fit: cover; }
+    .custom-leaflet-icon {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+</style>
+{% endblock %}
