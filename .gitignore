@@ -53,5 +53,8 @@ build/
 *.egg-info/
 *.egg
 
+# --- Generated Documentation ---
+docs/
+
 # --- Logs ---
 *.log

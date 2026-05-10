@@ -4,6 +4,7 @@ from pets.models import Pet
 
 from .models import (
     CareAdvisory,
+    ContactMessage,
     MedicineRecommendation,
     PetService,
     VaccinationScheduleTemplate,
@@ -172,4 +173,3 @@ def contact(request):
             return redirect("contact")
 
     return render(request, "contact.html", {"active_section": "contact"})
-
