@@ -56,7 +56,12 @@
                                     {% if reminder.notes %}<div class="text-muted small">{{ reminder.notes|truncatewords:10 }}</div>{% endif %}
                                 </td>
                                 <td>{{ reminder.get_reminder_type_display }}</td>
-                                <td>{{ reminder.due_date|date:"M d, Y" }}</td>
+                                <td>
+                                    {{ reminder.due_date|date:"M d, Y" }}
+                                    {% if reminder.due_time %}
+                                        <div class="text-muted small">{{ reminder.due_time|time:"h:i A" }}</div>
+                                    {% endif %}
+                                </td>
                                 <td>
                                     {% if reminder.is_completed %}
                                         <span class="status-badge completed">Completed</span>

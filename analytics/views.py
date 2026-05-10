@@ -19,7 +19,7 @@ import zipfile
 import shutil
 import json
 
-from pets.models import Pet, BreedPrediction, HealthAssessment
+from pets.models import Pet, BreedPrediction, HealthAssessment, MissingPet
 from records.models import VaccinationRecord, MedicalRecord, Reminder
 from advisory.models import (
     CareAdvisory,
@@ -463,6 +463,26 @@ def bookings_section_view(request):
     return render(request, "analytics/bookings.html", context)
 
 
+@login_required
+def missing_pets_section_view(request):
+    """Dedicated user missing-pet reports page."""
+    reports = (
+        MissingPet.objects.filter(owner=request.user)
+        .select_related("pet")
+        .prefetch_related("sightings")
+        .order_by("-created_at")
+    )
+
+    context = {
+        "active_section": "missing_pets",
+        "missing_reports": reports,
+        "total_missing_reports": reports.count(),
+        "open_missing_reports": reports.filter(is_found=False).count(),
+        "found_missing_reports": reports.filter(is_found=True).count(),
+    }
+    return render(request, "analytics/missing_pets.html", context)
+
+
 @staff_required
 def ml_admin_dashboard(request):
     base_dir = Path(settings.BASE_DIR)
@@ -751,6 +771,31 @@ def ml_admin_dashboard(request):
                 messages.error(request, "Booking not found.")
             return redirect(reverse("analytics:ml_admin_dashboard") + "?panel=bookings")
 
+        # Missing pet: Toggle found status
+        if "toggle_missing_pet_id" in request.POST:
+            report_id = request.POST.get("toggle_missing_pet_id")
+            try:
+                report = MissingPet.objects.get(pk=report_id)
+                report.is_found = not report.is_found
+                report.save(update_fields=["is_found"])
+                status = "found" if report.is_found else "missing"
+                messages.success(request, f"{report.pet_name} marked as {status}.")
+            except MissingPet.DoesNotExist:
+                messages.error(request, "Missing pet report not found.")
+            return redirect(reverse("analytics:ml_admin_dashboard") + "?panel=missing")
+
+        # Missing pet: Delete report
+        if "delete_missing_pet_id" in request.POST:
+            report_id = request.POST.get("delete_missing_pet_id")
+            try:
+                report = MissingPet.objects.get(pk=report_id)
+                pet_name = report.pet_name
+                report.delete()
+                messages.success(request, f"Missing pet report for {pet_name} has been removed.")
+            except MissingPet.DoesNotExist:
+                messages.error(request, "Missing pet report not found.")
+            return redirect(reverse("analytics:ml_admin_dashboard") + "?panel=missing")
+
         # ── Contact: Toggle Read Status ────────────────────────────────────
         if "toggle_message_read" in request.POST:
             msg_id = request.POST.get("message_id")
@@ -812,6 +857,9 @@ def ml_admin_dashboard(request):
     high_risk_count    = HealthAssessment.objects.filter(overall_risk_level="high").count()
     total_doctors      = doctors.count()
     available_doctors  = doctors.filter(is_available=True).count()
+    total_missing_pets = MissingPet.objects.count()
+    open_missing_pets = MissingPet.objects.filter(is_found=False).count()
+    found_missing_pets = MissingPet.objects.filter(is_found=True).count()
 
     # ── Species distribution for chart ─────────────────────────────────────
     species_data = Pet.objects.values("species").annotate(count=Count("id"))
@@ -858,6 +906,12 @@ def ml_admin_dashboard(request):
     # ── Bookings for management ────────────────────────────────────────────
     all_bookings = ServiceBooking.objects.all().select_related("user", "pet_service", "vet_doctor").order_by("-created_at")
     booking_status_choices = ServiceBooking.STATUS_CHOICES
+    all_missing_pets = (
+        MissingPet.objects.all()
+        .select_related("owner", "pet")
+        .prefetch_related("sightings")
+        .order_by("-created_at")
+    )
 
     context = {
         "model_exists": model_exists,
@@ -870,6 +924,7 @@ def ml_admin_dashboard(request):
         "services": services,
         "all_bookings": all_bookings,
         "contact_messages": ContactMessage.objects.all(),
+        "all_missing_pets": all_missing_pets,
         "booking_status_choices": booking_status_choices,
         "specialization_choices": specialization_choices,
         "service_type_choices": service_type_choices,
@@ -888,6 +943,9 @@ def ml_admin_dashboard(request):
         "high_risk_count": high_risk_count,
         "total_doctors": total_doctors,
         "available_doctors": available_doctors,
+        "total_missing_pets": total_missing_pets,
+        "open_missing_pets": open_missing_pets,
+        "found_missing_pets": found_missing_pets,
         # charts
         "species_labels": json.dumps(species_labels),
         "species_counts": json.dumps(species_counts),

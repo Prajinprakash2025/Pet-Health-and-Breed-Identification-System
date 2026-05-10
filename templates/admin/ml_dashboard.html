@@ -878,6 +878,157 @@
 <!-- ═══════════════════════════════════════════════════════════════════════
      PANEL 8 — CONTACT REQUESTS
      ═══════════════════════════════════════════════════════════════════════ -->
+<div class="admin-panel" id="panel-missing">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+      <h5 class="fw-bold mb-1">Missing Pet Reports</h5>
+      <p class="text-muted small mb-0">Review user reports, sightings, contact details, and found status.</p>
+    </div>
+    <div class="d-flex gap-2 align-items-center">
+      <span class="badge bg-primary-subtle text-primary px-3 py-2" style="border-radius:999px;">{{ total_missing_pets }} total</span>
+      <span class="badge bg-danger-subtle text-danger px-3 py-2" style="border-radius:999px;">{{ open_missing_pets }} missing</span>
+      <span class="badge bg-success-subtle text-success px-3 py-2" style="border-radius:999px;">{{ found_missing_pets }} found</span>
+      <input type="text" id="missingPetSearch" class="admin-search" placeholder="Search missing pets...">
+    </div>
+  </div>
+
+  <div class="a-card">
+    <div class="table-responsive">
+      <table class="a-table">
+        <thead>
+          <tr>
+            <th>Pet</th>
+            <th>Owner</th>
+            <th>Last Seen</th>
+            <th class="text-center">Status</th>
+            <th class="text-center">Sightings</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for report in all_missing_pets %}
+          <tr class="missing-pet-row-item">
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                {% if report.photo %}
+                  <img src="{{ report.photo.url }}" alt="{{ report.pet_name }}" style="width:42px;height:42px;border-radius:10px;object-fit:cover;">
+                {% endif %}
+                <div>
+                  <div class="fw-bold">{{ report.pet_name }}</div>
+                  <small class="text-muted">{{ report.get_species_display }}{% if report.breed %} - {{ report.breed }}{% endif %}</small>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="fw-semibold">{{ report.owner.get_full_name|default:report.owner.username }}</div>
+              <small class="text-muted">{{ report.owner.email|default:"No email" }}</small>
+            </td>
+            <td>
+              <div style="max-width:260px;">{{ report.last_seen_location }}</div>
+              <small class="text-muted">{{ report.last_seen_date|date:"M d, Y h:i A" }}</small>
+            </td>
+            <td class="text-center">
+              {% if report.is_found %}
+                <span class="badge bg-success-subtle text-success rounded-pill px-3">Found</span>
+              {% else %}
+                <span class="badge bg-danger-subtle text-danger rounded-pill px-3">Missing</span>
+              {% endif %}
+            </td>
+            <td class="text-center">
+              <span class="badge bg-primary-subtle text-primary rounded-pill px-3">{{ report.sightings.count }}</span>
+            </td>
+            <td class="text-end">
+              <div class="d-flex gap-2 justify-content-end">
+                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#missingPetModal{{ report.id }}" style="border-radius:10px;">Details</button>
+                <form method="post">
+                  {% csrf_token %}
+                  <input type="hidden" name="toggle_missing_pet_id" value="{{ report.id }}">
+                  <button type="submit" class="btn btn-sm {% if report.is_found %}btn-outline-danger{% else %}btn-outline-success{% endif %}" style="border-radius:10px;">
+                    {% if report.is_found %}Reopen{% else %}Mark Found{% endif %}
+                  </button>
+                </form>
+                <form method="post" onsubmit="return confirm('Delete missing pet report for {{ report.pet_name }}?');">
+                  {% csrf_token %}
+                  <input type="hidden" name="delete_missing_pet_id" value="{{ report.id }}">
+                  <button type="submit" class="btn btn-sm btn-outline-danger" style="border-radius:10px;">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+
+          <div class="modal fade" id="missingPetModal{{ report.id }}" tabindex="-1">
+            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+              <div class="modal-content shadow-lg" style="border-radius:20px; border:none;">
+                <div class="modal-header border-0 bg-light py-3">
+                  <h5 class="modal-title fw-bold">{{ report.pet_name }} Missing Report</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                  <div class="row g-4">
+                    <div class="col-md-5">
+                      {% if report.photo %}
+                        <img src="{{ report.photo.url }}" class="img-fluid rounded-4 shadow-sm mb-3" alt="{{ report.pet_name }}">
+                      {% endif %}
+                      <div class="p-3 bg-light rounded-4">
+                        <label class="admin-form-label mb-2">Owner Contact</label>
+                        <div class="fw-semibold">{{ report.owner.get_full_name|default:report.owner.username }}</div>
+                        <div class="small text-muted">{{ report.owner.email|default:"No email" }}</div>
+                        <div class="small text-muted">{{ report.contact_phone }}</div>
+                      </div>
+                    </div>
+                    <div class="col-md-7">
+                      <div class="row g-3 mb-3">
+                        <div class="col-6">
+                          <label class="admin-form-label">Species</label>
+                          <div class="fw-semibold">{{ report.get_species_display }}</div>
+                        </div>
+                        <div class="col-6">
+                          <label class="admin-form-label">Breed</label>
+                          <div class="fw-semibold">{{ report.breed|default:"Unknown" }}</div>
+                        </div>
+                        <div class="col-12">
+                          <label class="admin-form-label">Last Seen</label>
+                          <div class="fw-semibold">{{ report.last_seen_location }}</div>
+                          <div class="text-muted small">{{ report.last_seen_date|date:"M d, Y h:i A" }}</div>
+                        </div>
+                        <div class="col-12">
+                          <label class="admin-form-label">Description</label>
+                          <div class="p-3 bg-white border rounded-4" style="white-space:pre-wrap;">{{ report.description }}</div>
+                        </div>
+                      </div>
+
+                      <h6 class="fw-bold mb-3">Sightings</h6>
+                      {% for sighting in report.sightings.all %}
+                        <div class="p-3 border rounded-4 mb-2">
+                          <div class="d-flex justify-content-between gap-3">
+                            <div class="fw-semibold">{{ sighting.sighting_location }}</div>
+                            <small class="text-muted">{{ sighting.sighting_date|date:"M d, Y h:i A" }}</small>
+                          </div>
+                          <div class="small text-muted mb-1">{{ sighting.description }}</div>
+                          <div class="small"><strong>Contact:</strong> {{ sighting.contact_info }}</div>
+                        </div>
+                      {% empty %}
+                        <div class="text-muted small">No sightings reported yet.</div>
+                      {% endfor %}
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-footer border-0 p-4 pt-0">
+                  <a href="{% url 'pets:missing_pet_detail' report.id %}" class="btn btn-outline-primary rounded-pill px-4">Open Public Detail</a>
+                  <button type="button" class="btn btn-primary rounded-pill px-4" data-bs-dismiss="modal">Close</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% empty %}
+          <tr><td colspan="6" class="text-center text-muted py-5">No missing pet reports yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
 <div class="admin-panel" id="panel-contacts">
   <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
     <div>

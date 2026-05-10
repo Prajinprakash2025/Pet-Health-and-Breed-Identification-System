@@ -1,3 +1,4 @@
+import json
 from io import StringIO
 from datetime import timedelta
 
@@ -5,11 +6,12 @@ from django.contrib.auth import get_user_model
 from django.core import mail
 from django.core.management import call_command
 from django.test import TestCase, override_settings
+from django.urls import reverse
 from django.utils import timezone
 
 from pets.models import Pet
 
-from .models import Reminder
+from .models import PushNotificationToken, Reminder
 
 
 User = get_user_model()
@@ -106,3 +108,69 @@ class ReminderEmailCommandTests(TestCase):
         reminder.refresh_from_db()
         self.assertIsNone(reminder.email_sent_at)
         self.assertIn("Would send", out.getvalue())
+
+
+class ReminderPushNotificationTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="notify-owner",
+            email="notify@example.com",
+            password="Strong-pass-2026",
+        )
+        self.pet = Pet.objects.create(owner=self.user, name="Bella", species="cat")
+
+    def test_authenticated_user_can_save_push_token(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse("records:save_push_token"),
+            data=json.dumps({"token": "test-fcm-token"}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        token = PushNotificationToken.objects.get(token="test-fcm-token")
+        self.assertEqual(token.user, self.user)
+        self.assertTrue(token.is_active)
+
+    def test_push_command_dry_run_does_not_mark_reminder(self):
+        reminder = Reminder.objects.create(
+            pet=self.pet,
+            title="Due medicine",
+            reminder_type="medical",
+            due_date=timezone.localdate(),
+        )
+        PushNotificationToken.objects.create(user=self.user, token="test-fcm-token")
+        out = StringIO()
+
+        call_command("send_reminder_push_notifications", "--dry-run", stdout=out)
+
+        reminder.refresh_from_db()
+        self.assertIsNone(reminder.push_sent_at)
+        self.assertIn("Would send", out.getvalue())
+
+    def test_push_command_waits_until_due_time(self):
+        now = timezone.localtime()
+        past_time = (now - timedelta(minutes=5)).time().replace(second=0, microsecond=0)
+        future_time = (now + timedelta(minutes=30)).time().replace(second=0, microsecond=0)
+        due_now = Reminder.objects.create(
+            pet=self.pet,
+            title="Medicine now",
+            reminder_type="medical",
+            due_date=timezone.localdate(),
+            due_time=past_time,
+        )
+        later = Reminder.objects.create(
+            pet=self.pet,
+            title="Medicine later",
+            reminder_type="medical",
+            due_date=timezone.localdate(),
+            due_time=future_time,
+        )
+        PushNotificationToken.objects.create(user=self.user, token="test-fcm-token")
+        out = StringIO()
+
+        call_command("send_reminder_push_notifications", "--dry-run", stdout=out)
+
+        output = out.getvalue()
+        self.assertIn(due_now.title, output)
+        self.assertNotIn(later.title, output)

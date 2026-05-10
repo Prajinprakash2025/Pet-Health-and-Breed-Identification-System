@@ -11,3 +11,4 @@ pandas==3.0.1
 opencv-python==4.13.0.92
 requests==2.32.5
 scipy==1.17.1
+firebase-admin==7.4.0

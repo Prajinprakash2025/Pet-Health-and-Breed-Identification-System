@@ -71,6 +71,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'records.context_processors.reminder_notifications',
             ],
         },
     },
@@ -114,7 +115,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = os.getenv('TIME_ZONE', 'Asia/Kolkata')
 
 USE_I18N = True
 
@@ -142,6 +143,39 @@ EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'False').lower() in ('true', '1', 'yes')
 EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', 'False').lower() in ('true', '1', 'yes')
+
+SITE_URL = os.getenv('SITE_URL', 'http://127.0.0.1:8000').rstrip('/')
+
+# Firebase Cloud Messaging settings for browser push notifications.
+FIREBASE_WEB_API_KEY = os.getenv('FIREBASE_WEB_API_KEY', '')
+FIREBASE_AUTH_DOMAIN = os.getenv('FIREBASE_AUTH_DOMAIN', '')
+FIREBASE_PROJECT_ID = os.getenv('FIREBASE_PROJECT_ID', '')
+FIREBASE_STORAGE_BUCKET = os.getenv('FIREBASE_STORAGE_BUCKET', '')
+FIREBASE_MESSAGING_SENDER_ID = os.getenv('FIREBASE_MESSAGING_SENDER_ID', '')
+FIREBASE_APP_ID = os.getenv('FIREBASE_APP_ID', '')
+FIREBASE_MEASUREMENT_ID = os.getenv('FIREBASE_MEASUREMENT_ID', '')
+FIREBASE_VAPID_KEY = os.getenv('FIREBASE_VAPID_KEY', '')
+FIREBASE_VAPID_KEY_LOOKS_VALID = len(FIREBASE_VAPID_KEY) >= 60
+FIREBASE_SERVICE_ACCOUNT_FILE = os.getenv(
+    'FIREBASE_SERVICE_ACCOUNT_FILE',
+    os.getenv('GOOGLE_APPLICATION_CREDENTIALS', ''),
+)
+FIREBASE_MESSAGING_ENABLED = all(
+    [
+        FIREBASE_WEB_API_KEY,
+        FIREBASE_PROJECT_ID,
+        FIREBASE_MESSAGING_SENDER_ID,
+        FIREBASE_APP_ID,
+        FIREBASE_VAPID_KEY_LOOKS_VALID,
+    ]
+)
+
+AUTO_SEND_REMINDER_PUSH = os.getenv('AUTO_SEND_REMINDER_PUSH', 'True').lower() in (
+    'true',
+    '1',
+    'yes',
+)
+REMINDER_PUSH_INTERVAL_SECONDS = int(os.getenv('REMINDER_PUSH_INTERVAL_SECONDS', '60'))
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

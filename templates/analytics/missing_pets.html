@@ -1,0 +1,115 @@
+{% extends "analytics/dashboard_base.html" %}
+
+{% block dashboard_content %}
+<div class="section-header d-flex flex-wrap align-items-start justify-content-between gap-3">
+    <div>
+        <h1 class="section-title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="#dc2626" viewBox="0 0 16 16">
+                <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+            </svg>
+            My Missing Pets
+        </h1>
+        <p class="section-subtitle">Track missing-pet alerts, edit details, and review community sightings.</p>
+    </div>
+    <a href="{% url 'pets:report_missing' %}" class="btn btn-danger rounded-pill px-4">
+        Report Missing Pet
+    </a>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-xl-4">
+        <div class="stat-card" style="border-left: 4px solid #0d9488;">
+            <span class="text-muted small fw-medium text-uppercase">Total Reports</span>
+            <h2 class="fw-bold mb-0">{{ total_missing_reports }}</h2>
+            <small class="text-muted">All alerts created by you</small>
+        </div>
+    </div>
+    <div class="col-6 col-xl-4">
+        <div class="stat-card" style="border-left: 4px solid #dc2626;">
+            <span class="text-muted small fw-medium text-uppercase">Still Missing</span>
+            <h2 class="fw-bold mb-0">{{ open_missing_reports }}</h2>
+            <small class="text-muted">Visible in public missing list</small>
+        </div>
+    </div>
+    <div class="col-6 col-xl-4">
+        <div class="stat-card" style="border-left: 4px solid #22c55e;">
+            <span class="text-muted small fw-medium text-uppercase">Found</span>
+            <h2 class="fw-bold mb-0">{{ found_missing_reports }}</h2>
+            <small class="text-muted">Resolved alerts</small>
+        </div>
+    </div>
+</div>
+
+<div class="chart-card">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+        <div>
+            <div class="chart-card-title mb-0">Missing Pet Reports</div>
+            <p class="text-muted small mb-0">Use edit to update location/contact details, or mark a pet as found.</p>
+        </div>
+        <a href="{% url 'pets:missing_pets_list' %}" class="text-primary text-decoration-none small fw-semibold">Public List</a>
+    </div>
+
+    {% if missing_reports %}
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Pet</th>
+                        <th>Last Seen</th>
+                        <th>Contact</th>
+                        <th>Status</th>
+                        <th>Sightings</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for report in missing_reports %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center gap-3">
+                                <img src="{{ report.photo.url }}" alt="{{ report.pet_name }}" style="width:54px;height:54px;border-radius:10px;object-fit:cover;">
+                                <div>
+                                    <div class="fw-bold">{{ report.pet_name }}</div>
+                                    <small class="text-muted">{{ report.get_species_display }}{% if report.breed %} - {{ report.breed }}{% endif %}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="fw-semibold">{{ report.last_seen_location }}</div>
+                            <small class="text-muted">{{ report.last_seen_date|date:"M d, Y h:i A" }}</small>
+                        </td>
+                        <td>{{ report.contact_phone }}</td>
+                        <td>
+                            {% if report.is_found %}
+                                <span class="badge bg-success-subtle text-success rounded-pill px-3">Found</span>
+                            {% else %}
+                                <span class="badge bg-danger-subtle text-danger rounded-pill px-3">Missing</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-primary-subtle text-primary rounded-pill px-3">{{ report.sightings.count }}</span>
+                        </td>
+                        <td class="text-end" style="white-space: nowrap;">
+                            <a href="{% url 'pets:missing_pet_detail' report.id %}" class="btn btn-sm btn-outline-primary">View</a>
+                            <a href="{% url 'pets:edit_missing_pet' report.id %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                            <form method="post" action="{% url 'pets:toggle_missing_pet_found' report.id %}" class="d-inline">
+                                {% csrf_token %}
+                                <button class="btn btn-sm {% if report.is_found %}btn-outline-danger{% else %}btn-outline-success{% endif %}">
+                                    {% if report.is_found %}Reopen{% else %}Mark Found{% endif %}
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state py-5 text-center">
+            <h5 class="fw-bold mb-2">No missing-pet reports yet</h5>
+            <p class="text-muted mb-3">Create an alert when a pet is missing, then manage updates from this page.</p>
+            <a href="{% url 'pets:report_missing' %}" class="btn btn-danger rounded-pill px-4">Report Missing Pet</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

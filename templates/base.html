@@ -103,6 +103,18 @@
                             <span class="d-none d-xl-inline text-dark">{{ user.get_full_name|default:user.email }}</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2 p-2 rounded-3">
+                            {% if firebase_web_config_available %}
+                                <li class="px-2 py-2">
+                                    <button type="button" id="enablePushNotifications" class="btn btn-sm btn-outline-primary w-100" {% if not firebase_messaging_enabled %}disabled{% endif %}>Enable Notifications</button>
+                                    <input type="hidden" id="pushCsrfToken" value="{{ csrf_token }}">
+                                    <div id="pushNotificationStatus" class="small {% if firebase_messaging_enabled %}text-muted{% else %}text-danger{% endif %} mt-2">
+                                        {% if not firebase_messaging_enabled %}
+                                            Firebase VAPID public key is missing or invalid.
+                                        {% endif %}
+                                    </div>
+                                </li>
+                                <li><hr class="dropdown-divider opacity-50"></li>
+                            {% endif %}
                             <li><a class="dropdown-item rounded-2 py-2" href="{% url 'accounts:profile' %}">My Profile</a></li>
                             {% if user.is_staff or user.is_superuser %}
                                 <li><a class="dropdown-item rounded-2 py-2 fw-semibold text-primary" href="{% url 'analytics:ml_admin_dashboard' %}">Admin Dashboard</a></li>
@@ -182,5 +194,128 @@
 {% endblock %}
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+{% if user.is_authenticated and firebase_messaging_enabled %}
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js"></script>
+<script>
+(() => {
+    const button = document.getElementById("enablePushNotifications");
+    const statusEl = document.getElementById("pushNotificationStatus");
+    const csrfToken = document.getElementById("pushCsrfToken")?.value;
+    const firebaseConfig = {{ firebase_config_json|safe }};
+    const vapidKey = "{{ firebase_vapid_key|escapejs }}";
+    const saveTokenUrl = "{% url 'records:save_push_token' %}";
+    const serviceWorkerUrl = "{% url 'firebase_messaging_sw' %}";
+    let foregroundListenerReady = false;
+
+    const setStatus = (message, isError = false) => {
+        if (!statusEl) {
+            return;
+        }
+        statusEl.textContent = message;
+        statusEl.classList.toggle("text-danger", isError);
+        statusEl.classList.toggle("text-muted", !isError);
+    };
+
+    if (!button || !("Notification" in window) || !("serviceWorker" in navigator)) {
+        setStatus("Browser push notification support is not available.", true);
+        return;
+    }
+
+    const showForegroundNotification = (payload) => {
+        const notification = payload.notification || {};
+        const title = notification.title || "PetCare Reminder";
+        const options = {
+            body: notification.body || "You have a pet care reminder.",
+            data: payload.data || {},
+        };
+        if (Notification.permission === "granted") {
+            new Notification(title, options);
+        }
+    };
+
+    const getMessagingClient = async () => {
+        const supported = firebase.messaging.isSupported
+            ? await Promise.resolve(firebase.messaging.isSupported())
+            : true;
+        if (!supported) {
+            throw new Error("Firebase messaging is not supported in this browser.");
+        }
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        const registration = await navigator.serviceWorker.register(serviceWorkerUrl);
+        const messaging = firebase.messaging();
+        if (!foregroundListenerReady) {
+            messaging.onMessage(showForegroundNotification);
+            foregroundListenerReady = true;
+        }
+        return { messaging, registration };
+    };
+
+    const saveCurrentToken = async ({ messaging, registration }) => {
+        const token = await messaging.getToken({
+            vapidKey,
+            serviceWorkerRegistration: registration,
+        });
+
+        if (!token) {
+            throw new Error("Could not create notification token.");
+        }
+
+        const response = await fetch(saveTokenUrl, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrfToken,
+            },
+            body: JSON.stringify({ token }),
+        });
+
+        if (!response.ok) {
+            throw new Error("Could not save notification token.");
+        }
+    };
+
+    const registerForPush = async () => {
+        try {
+            button.disabled = true;
+            setStatus("Requesting permission...");
+
+            const permission = await Notification.requestPermission();
+            if (permission !== "granted") {
+                setStatus("Notification permission was not allowed.", true);
+                return;
+            }
+
+            const client = await getMessagingClient();
+            await saveCurrentToken(client);
+            setStatus("Notifications enabled.");
+        } catch (error) {
+            console.error("Push notification setup failed", error);
+            const detail = error.code || error.message || "Check Firebase settings.";
+            setStatus(`Notification setup failed: ${detail}`, true);
+        } finally {
+            button.disabled = false;
+        }
+    };
+
+    button.addEventListener("click", registerForPush);
+
+    if (Notification.permission === "granted") {
+        getMessagingClient()
+            .then(saveCurrentToken)
+            .then(() => setStatus("Notifications enabled."))
+            .catch((error) => {
+                console.error("Push notification refresh failed", error);
+                const detail = error.code || error.message || "Check Firebase settings.";
+                setStatus(`Notification setup failed: ${detail}`, true);
+            });
+    }
+})();
+</script>
+{% endif %}
 </body>
 </html>

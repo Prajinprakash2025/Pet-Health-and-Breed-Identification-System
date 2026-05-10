@@ -291,6 +291,12 @@
           <path d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.293l2.646-2.647a.5.5 0 0 1 .708 0z"/><path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5V2zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1H4z"/></svg>
         Service Bookings
       </a>
+      <a class="admin-nav-link" data-panel="missing" href="#">
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+        </svg>
+        Missing Pets
+      </a>
       <a class="admin-nav-link" data-panel="contacts" href="#">
         <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
           <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2zm13 2.383-4.758 2.855L15 11.114v-5.73zm-.034 6.878L9.271 8.82 8 9.583 6.728 8.82l-5.694 3.44A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.739zM1 11.114l4.758-2.876L1 5.383v5.73z"/>
@@ -379,6 +385,7 @@
     doctors:'Doctors', 
     services:'Pet Services', 
     bookings:'Service Bookings', 
+    missing:'Missing Pets',
     contacts:'Contact Requests',
     reports:'Reports', 
     ml:'Dataset & Training' 
@@ -446,6 +453,17 @@
     srvSearch.addEventListener('input', function () {
       const q = this.value.toLowerCase();
       document.querySelectorAll('.service-row-item').forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+      });
+    });
+  }
+
+  // Missing pets search
+  const missingSearch = document.getElementById('missingPetSearch');
+  if (missingSearch) {
+    missingSearch.addEventListener('input', function () {
+      const q = this.value.toLowerCase();
+      document.querySelectorAll('.missing-pet-row-item').forEach(row => {
         row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
       });
     });

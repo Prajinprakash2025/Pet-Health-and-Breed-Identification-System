@@ -13,8 +13,14 @@
                 <div class="d-inline-flex align-items-center justify-content-center bg-danger bg-opacity-10 text-danger rounded-circle p-3 mb-3 shadow-sm">
                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 16 16"><path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/></svg>
                 </div>
-                <h2 class="fw-bold">Report a Missing Pet</h2>
-                <p class="text-muted">Notify the community instantly. Provide clear photos and accurate last-seen details to help bring your pet home safely.</p>
+                <h2 class="fw-bold">{% if is_update %}Update Missing Pet Report{% else %}Report a Missing Pet{% endif %}</h2>
+                <p class="text-muted">
+                    {% if is_update %}
+                        Keep the report accurate with the latest photo, location, and contact details.
+                    {% else %}
+                        Notify the community instantly. Provide clear photos and accurate last-seen details to help bring your pet home safely.
+                    {% endif %}
+                </p>
             </div>
 
             <div class="card border-0 shadow-lg rounded-4 overflow-hidden" style="background: rgba(255, 255, 255, 0.95);">
@@ -55,6 +61,11 @@
                                 <div class="mb-3">
                                     <label class="form-label fw-bold small text-uppercase text-muted mb-1">Recent Photo <span class="text-danger">*</span></label>
                                     {{ form.photo }}
+                                    {% if is_update and report.photo %}
+                                        <div class="form-text" style="font-size: 0.75rem;">
+                                            Current photo is kept unless you choose a new one.
+                                        </div>
+                                    {% endif %}
                                 </div>
 
                                 <div class="mb-3">
@@ -100,8 +111,10 @@
                                 </div>
 
                                 <div class="d-grid gap-2 mt-auto">
-                                    <button type="submit" class="btn btn-danger btn-lg rounded-pill fw-bold py-2 shadow hover-lift transition-all">Publish Missing Alert</button>
-                                    <a href="{% url 'pets:missing_pets_list' %}" class="btn btn-light rounded-pill py-2 text-muted fw-semibold hover-lift">Cancel</a>
+                                    <button type="submit" class="btn btn-danger btn-lg rounded-pill fw-bold py-2 shadow hover-lift transition-all">
+                                        {% if is_update %}Save Report Updates{% else %}Publish Missing Alert{% endif %}
+                                    </button>
+                                    <a href="{% if is_update %}{% url 'analytics:missing_pets_section' %}{% else %}{% url 'pets:missing_pets_list' %}{% endif %}" class="btn btn-light rounded-pill py-2 text-muted fw-semibold hover-lift">Cancel</a>
                                 </div>
                             </div>
                         </div>

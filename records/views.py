@@ -1,11 +1,15 @@
+import json
+
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from .forms import MedicalRecordForm, ReminderForm, VaccinationRecordForm
-from .models import MedicalRecord, Reminder, VaccinationRecord
+from .models import MedicalRecord, PushNotificationToken, Reminder, VaccinationRecord
 
 
 def _user_pet_ids(user):
@@ -153,3 +157,68 @@ def delete_reminder(request, reminder_id):
     reminder.delete()
     messages.success(request, "Reminder deleted.")
     return redirect("records:reminders")
+
+
+@require_POST
+@login_required
+def save_push_token(request):
+    try:
+        payload = json.loads(request.body.decode("utf-8") or "{}")
+    except json.JSONDecodeError:
+        return JsonResponse({"ok": False, "error": "Invalid JSON payload."}, status=400)
+
+    token = (payload.get("token") or "").strip()
+    if not token:
+        return JsonResponse({"ok": False, "error": "Token is required."}, status=400)
+
+    PushNotificationToken.objects.update_or_create(
+        token=token,
+        defaults={"user": request.user, "is_active": True},
+    )
+    return JsonResponse({"ok": True})
+
+
+def firebase_messaging_sw(request):
+    firebase_config = {
+        "apiKey": settings.FIREBASE_WEB_API_KEY,
+        "authDomain": settings.FIREBASE_AUTH_DOMAIN,
+        "projectId": settings.FIREBASE_PROJECT_ID,
+        "storageBucket": settings.FIREBASE_STORAGE_BUCKET,
+        "messagingSenderId": settings.FIREBASE_MESSAGING_SENDER_ID,
+        "appId": settings.FIREBASE_APP_ID,
+        "measurementId": settings.FIREBASE_MEASUREMENT_ID,
+    }
+    config_json = json.dumps(firebase_config)
+    script = f"""
+importScripts("https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js");
+importScripts("https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js");
+
+firebase.initializeApp({config_json});
+
+const messaging = firebase.messaging();
+
+messaging.onBackgroundMessage((payload) => {{
+    const notification = payload.notification || {{}};
+    const data = payload.data || {{}};
+    const title = notification.title || "PetCare Reminder";
+    const options = {{
+        body: notification.body || "You have a pet care reminder.",
+        data: {{
+            url: data.url || "/records/reminders/",
+        }},
+    }};
+    if (data.icon) {{
+        options.icon = data.icon;
+    }}
+    self.registration.showNotification(title, options);
+}});
+
+self.addEventListener("notificationclick", (event) => {{
+    event.notification.close();
+    const url = event.notification.data && event.notification.data.url
+        ? event.notification.data.url
+        : "/records/reminders/";
+    event.waitUntil(clients.openWindow(url));
+}});
+"""
+    return HttpResponse(script, content_type="application/javascript")

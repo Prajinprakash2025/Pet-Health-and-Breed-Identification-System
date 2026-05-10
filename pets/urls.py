@@ -19,4 +19,6 @@ urlpatterns = [
     path("missing/", views.missing_pets_list_view, name="missing_pets_list"),
     path("missing/report/", views.report_missing_view, name="report_missing"),
     path("missing/<int:report_id>/", views.missing_pet_detail_view, name="missing_pet_detail"),
+    path("missing/<int:report_id>/edit/", views.edit_missing_pet_view, name="edit_missing_pet"),
+    path("missing/<int:report_id>/toggle-found/", views.toggle_missing_pet_found_view, name="toggle_missing_pet_found"),
 ]

@@ -373,6 +373,49 @@ def report_missing_view(request):
     })
 
 
+@login_required
+def edit_missing_pet_view(request, report_id):
+    """Owner view to update a missing-pet report."""
+    report = get_object_or_404(MissingPet, id=report_id, owner=request.user)
+    if request.method == "POST":
+        form = MissingPetForm(request.POST, request.FILES, user=request.user, instance=report)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"Missing report for {report.pet_name} has been updated.")
+            return redirect("analytics:missing_pets_section")
+    else:
+        form = MissingPetForm(user=request.user, instance=report)
+
+    import json
+    user_pets = Pet.objects.filter(owner=request.user)
+    pets_data = {
+        pet.id: {
+            "name": pet.name,
+            "species": pet.species,
+            "breed": pet.breed
+        } for pet in user_pets
+    }
+
+    return render(request, "pets/report_missing.html", {
+        "form": form,
+        "report": report,
+        "is_update": True,
+        "active_section": "missing_pets",
+        "pets_json": json.dumps(pets_data),
+    })
+
+
+@require_POST
+@login_required
+def toggle_missing_pet_found_view(request, report_id):
+    report = get_object_or_404(MissingPet, id=report_id, owner=request.user)
+    report.is_found = not report.is_found
+    report.save(update_fields=["is_found"])
+    status = "found" if report.is_found else "missing"
+    messages.success(request, f"{report.pet_name} marked as {status}.")
+    return redirect("analytics:missing_pets_section")
+
+
 def missing_pet_detail_view(request, report_id):
     """Detail view for a missing pet report with sighting form."""
     report = get_object_or_404(MissingPet, id=report_id)
@@ -396,4 +439,3 @@ def missing_pet_detail_view(request, report_id):
         "active_section": "missing_pets"
     }
     return render(request, "pets/missing_pet_detail.html", context)
-

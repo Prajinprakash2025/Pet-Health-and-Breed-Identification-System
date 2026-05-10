@@ -4,6 +4,7 @@ from django.views.generic import TemplateView
 from advisory.views import contact
 from django.conf import settings
 from django.conf.urls.static import static
+from records.views import firebase_messaging_sw
 
 
 urlpatterns = [
@@ -12,6 +13,7 @@ urlpatterns = [
     path("advisory/", include("advisory.urls", namespace="advisory")),
     path("pets/", include("pets.urls", namespace="pets")),
     path("records/", include("records.urls", namespace="records")),
+    path("firebase-messaging-sw.js", firebase_messaging_sw, name="firebase_messaging_sw"),
     path(
         "",
         TemplateView.as_view(template_name="home.html"),

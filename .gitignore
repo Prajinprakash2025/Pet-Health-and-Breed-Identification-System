@@ -2,6 +2,7 @@
 .env
 .env.*
 !.env.example
+*-firebase-adminsdk-*.json
 
 # --- Python ---
 __pycache__/

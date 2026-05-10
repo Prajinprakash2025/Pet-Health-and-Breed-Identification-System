@@ -61,11 +61,12 @@ class MedicalRecordForm(OwnerPetFormMixin, forms.ModelForm):
 class ReminderForm(OwnerPetFormMixin, forms.ModelForm):
     class Meta:
         model = Reminder
-        fields = ("pet", "title", "reminder_type", "due_date", "notes")
+        fields = ("pet", "title", "reminder_type", "due_date", "due_time", "notes")
         widgets = {
             "pet": forms.Select(attrs={"class": "form-control"}),
             "title": forms.TextInput(attrs={"class": "form-control"}),
             "reminder_type": forms.Select(attrs={"class": "form-control"}),
             "due_date": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
+            "due_time": forms.TimeInput(attrs={"type": "time", "class": "form-control"}),
             "notes": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
         }

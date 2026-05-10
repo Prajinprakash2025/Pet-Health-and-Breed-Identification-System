@@ -1,22 +1,20 @@
-from datetime import timedelta
-
 from django.conf import settings
 from django.core.mail import send_mail
 from django.utils import timezone
 
 from .models import Reminder
+from .schedule_utils import due_reminder_filter
 
 
 def get_pending_email_reminders(days_ahead=0):
-    target_date = timezone.localdate() + timedelta(days=days_ahead)
     return (
         Reminder.objects.filter(
+            due_reminder_filter(days_ahead=days_ahead),
             is_completed=False,
             email_sent_at__isnull=True,
-            due_date__lte=target_date,
         )
         .select_related("pet", "pet__owner")
-        .order_by("due_date", "pet__name", "title")
+        .order_by("due_date", "due_time", "pet__name", "title")
     )
 
 
@@ -25,6 +23,8 @@ def build_reminder_email(reminder):
     owner = pet.owner
     display_name = owner.get_full_name() or owner.email or owner.username
     due_label = reminder.due_date.strftime("%d %b %Y")
+    if reminder.due_time:
+        due_label += reminder.due_time.strftime(" at %I:%M %p")
     reminder_type = reminder.get_reminder_type_display()
 
     subject = f"PetCare Reminder: {reminder.title} for {pet.name}"

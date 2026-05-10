@@ -9,6 +9,17 @@
             <svg width="16" height="16" fill="currentColor" class="me-2" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/></svg>
             Back to Missing Pets
         </a>
+        {% if user.is_authenticated and report.owner_id == user.id %}
+            <div class="d-inline-flex gap-2 ms-3">
+                <a href="{% url 'pets:edit_missing_pet' report.id %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">Edit Report</a>
+                <form method="post" action="{% url 'pets:toggle_missing_pet_found' report.id %}" class="d-inline">
+                    {% csrf_token %}
+                    <button class="btn btn-sm {% if report.is_found %}btn-outline-danger{% else %}btn-outline-success{% endif %} rounded-pill px-3">
+                        {% if report.is_found %}Reopen Missing Alert{% else %}Mark as Found{% endif %}
+                    </button>
+                </form>
+            </div>
+        {% endif %}
     </div>
 
     <div class="row g-4">
@@ -19,7 +30,11 @@
                 <div class="card-body p-5">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h1 class="display-5 fw-bold text-dark mb-0">{{ report.pet_name }}</h1>
-                        <span class="badge bg-danger rounded-pill px-4 py-2 shadow-sm text-uppercase tracking-wider">Missing</span>
+                        {% if report.is_found %}
+                            <span class="badge bg-success rounded-pill px-4 py-2 shadow-sm text-uppercase tracking-wider">Found</span>
+                        {% else %}
+                            <span class="badge bg-danger rounded-pill px-4 py-2 shadow-sm text-uppercase tracking-wider">Missing</span>
+                        {% endif %}
                     </div>
 
                     <div class="row g-4 mb-5">
