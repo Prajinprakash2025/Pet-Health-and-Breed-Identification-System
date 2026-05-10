@@ -1,6 +1,6 @@
 from django import forms
-from django.contrib.auth import authenticate, get_user_model
-from django.contrib.auth.forms import SetPasswordForm, UserCreationForm
+from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import SetPasswordForm
 from django.utils.text import slugify
 
 from .models import UserProfile
@@ -9,7 +9,7 @@ from .models import UserProfile
 User = get_user_model()
 
 
-class RegistrationForm(UserCreationForm):
+class RegistrationForm(forms.ModelForm):
     email = forms.EmailField(
         required=True,
         widget=forms.EmailInput(
@@ -25,7 +25,7 @@ class RegistrationForm(UserCreationForm):
     city = forms.CharField(max_length=100, required=False)
     country = forms.CharField(max_length=100, required=False)
 
-    class Meta(UserCreationForm.Meta):
+    class Meta:
         model = User
         fields = ("email", "first_name", "last_name")
 
@@ -59,6 +59,7 @@ class RegistrationForm(UserCreationForm):
         user.username = self._generate_username(user.email)
         user.first_name = self.cleaned_data.get("first_name", "")
         user.last_name = self.cleaned_data.get("last_name", "")
+        user.set_unusable_password()
 
         if commit:
             user.save()
@@ -73,8 +74,8 @@ class RegistrationForm(UserCreationForm):
 
 class LoginForm(forms.Form):
     error_messages = {
-        "invalid_login": "Please enter a correct email address and password.",
-        "inactive": "This account is inactive.",
+        "invalid_login": "No account was found with this email address.",
+        "inactive": "This account is inactive. Please verify your email first.",
     }
 
     email = forms.EmailField(
@@ -88,43 +89,19 @@ class LoginForm(forms.Form):
             }
         ),
     )
-    password = forms.CharField(
-        label="Password",
-        strip=False,
-        widget=forms.PasswordInput(
-            attrs={
-                "autocomplete": "current-password",
-                "class": "form-control",
-            }
-        ),
-    )
-
     def __init__(self, request=None, *args, **kwargs):
         self.request = request
         self.user_cache = None
         super().__init__(*args, **kwargs)
 
-    def clean(self):
-        email = self.cleaned_data.get("email")
-        password = self.cleaned_data.get("password")
-
-        if email is not None and password:
-            email = email.strip().lower()
-            user = User.objects.filter(email__iexact=email).first()
-            if user is None:
-                raise self.get_invalid_login_error()
-
-            self.user_cache = authenticate(
-                self.request,
-                username=user.get_username(),
-                password=password,
-            )
-            if self.user_cache is None:
-                raise self.get_invalid_login_error()
-            self.confirm_login_allowed(self.user_cache)
-            self.cleaned_data["email"] = email
-
-        return self.cleaned_data
+    def clean_email(self):
+        email = self.cleaned_data["email"].strip().lower()
+        user = User.objects.filter(email__iexact=email).first()
+        if user is None:
+            raise self.get_invalid_login_error()
+        self.confirm_login_allowed(user)
+        self.user_cache = user
+        return email
 
     def confirm_login_allowed(self, user):
         if not user.is_active:
@@ -186,7 +163,7 @@ class PasswordResetOTPForm(forms.Form):
     def clean_otp(self):
         otp = self.cleaned_data["otp"].strip()
         if not otp.isdigit():
-            raise forms.ValidationError("Enter the 6-digit OTP from the terminal.")
+            raise forms.ValidationError("Enter the 6-digit OTP from your email.")
         return otp
 
 

@@ -19,6 +19,6 @@ class MedicalRecordAdmin(admin.ModelAdmin):
 
 @admin.register(Reminder)
 class ReminderAdmin(admin.ModelAdmin):
-    list_display = ("title", "pet", "reminder_type", "due_date", "is_completed")
-    list_filter = ("reminder_type", "due_date", "is_completed")
+    list_display = ("title", "pet", "reminder_type", "due_date", "is_completed", "email_sent_at")
+    list_filter = ("reminder_type", "due_date", "is_completed", "email_sent_at")
     search_fields = ("title", "pet__name", "notes")

@@ -9,11 +9,11 @@
                 <div>
                     <span class="badge rounded-pill bg-light text-dark auth-badge mb-3">
                         <span class="badge-dot"></span>
-                        Secure password reset
+                        Email verification
                     </span>
-                    <h2 class="fw-bold mb-3">We will verify it is really you</h2>
+                    <h2 class="fw-bold mb-3">Check your email inbox</h2>
                     <p class="mb-4 auth-text">
-                        Enter your registered email. PetCare AI will send a reset OTP to your inbox.
+                        PetCare AI has sent a 6-digit OTP to verify your new account.
                     </p>
                     <ul class="list-unstyled small mb-0">
                         <li class="d-flex align-items-center mb-2">
@@ -22,41 +22,49 @@
                         </li>
                         <li class="d-flex align-items-center mb-2">
                             <span class="check-icon me-2"></span>
-                            OTP is sent to your registered email
+                            Maximum five incorrect attempts
                         </li>
                         <li class="d-flex align-items-center">
                             <span class="check-icon me-2"></span>
-                            New password is set after verification
+                            Account activates after verification
                         </li>
                     </ul>
                 </div>
                 <div class="text-end mt-4">
-                    <img src="{% static 'images/heart-pulse.svg' %}" alt="PetCare security illustration" class="auth-illustration-img">
+                    <img src="{% static 'images/first-aid.svg' %}" alt="Email verification illustration" class="auth-illustration-img">
                 </div>
             </div>
 
             <div class="col-lg-7 bg-white p-4 p-lg-5">
                 <div class="mb-4 text-center text-lg-start">
-                    <span class="text-muted small text-uppercase fw-semibold tracking-wide">Step 1 of 3</span>
-                    <h1 class="h2 fw-bold mt-1 mb-2">Reset your password</h1>
-                    <p class="text-muted small mb-0">Use the email connected to your PetCare AI account.</p>
+                    <span class="text-muted small text-uppercase fw-semibold tracking-wide">Step 2 of 2</span>
+                    <h1 class="h2 fw-bold mt-1 mb-2">Verify your email</h1>
+                    <p class="text-muted small mb-0">
+                        Enter the OTP sent to <strong>{{ masked_email }}</strong>.
+                    </p>
+                </div>
+
+                <div class="auth-hint mb-4">
+                    <div class="fw-semibold text-dark">Verification email</div>
+                    <div class="small text-muted">Email: {{ email }}</div>
+                    <div class="small text-muted">OTP: 6-digit code sent to your inbox</div>
                 </div>
 
                 <form method="post" novalidate>
                     {% csrf_token %}
                     {{ form.non_field_errors }}
                     <div class="mb-3">
-                        <label class="form-label fw-semibold small text-uppercase" for="{{ form.email.id_for_label }}">Email address</label>
-                        {{ form.email }}
-                        {% for error in form.email.errors %}
+                        <label class="form-label fw-semibold small text-uppercase" for="{{ form.otp.id_for_label }}">One-time password</label>
+                        {{ form.otp }}
+                        {% for error in form.otp.errors %}
                             <div class="text-danger small mt-1">{{ error }}</div>
                         {% endfor %}
                     </div>
-                    <button type="submit" class="btn btn-primary w-100 mt-2">Generate OTP</button>
+                    <button type="submit" class="btn btn-primary w-100 mt-2">Verify and activate account</button>
                 </form>
 
                 <div class="text-center mt-4">
-                    <a href="{% url 'accounts:login' %}" class="auth-link small">Back to login</a>
+                    <a href="{% url 'accounts:register' %}" class="auth-link small">Start registration again</a>
                 </div>
             </div>
         </div>
