@@ -232,3 +232,33 @@ class ContactMessage(models.Model):
     def __str__(self):
         return f"{self.subject} - {self.email}"
 
+
+class CustomerReview(models.Model):
+    RATING_CHOICES = [(value, f"{value} Star{'s' if value != 1 else ''}") for value in range(1, 6)]
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="customer_reviews",
+    )
+    name = models.CharField(max_length=120)
+    role = models.CharField(max_length=120, blank=True, help_text="Example: Dog Owner, Shelter Volunteer")
+    rating = models.PositiveSmallIntegerField(choices=RATING_CHOICES, default=5)
+    message = models.TextField()
+    is_approved = models.BooleanField(default=False)
+    show_on_home = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-show_on_home", "-is_approved", "-created_at"]
+
+    @property
+    def initials(self):
+        parts = [part for part in self.name.split() if part]
+        return "".join(part[0] for part in parts[:2]).upper() or "U"
+
+    def __str__(self):
+        return f"{self.name} ({self.rating}/5)"

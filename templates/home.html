@@ -2,6 +2,46 @@
 {% load static %}
 
 {% block content %}
+<style>
+    .review-star-picker {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.2rem;
+        padding: 0.35rem 0.55rem;
+        border: 1px solid #cbd5e1;
+        border-radius: 999px;
+        background: #ffffff;
+        box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.02);
+    }
+
+    .review-star-button {
+        border: 0;
+        background: transparent;
+        color: #cbd5e1;
+        font-size: 2rem;
+        line-height: 1;
+        padding: 0 0.08rem;
+        cursor: pointer;
+        transition: color 0.15s ease, transform 0.15s ease;
+    }
+
+    .review-star-button.active,
+    .review-star-button.preview {
+        color: #fbbc04;
+    }
+
+    .review-star-button:hover {
+        transform: translateY(-1px) scale(1.06);
+    }
+
+    .review-rating-label {
+        color: #475569;
+        font-size: 0.92rem;
+        font-weight: 700;
+        min-width: 5.5rem;
+    }
+</style>
+
 <!-- Hero Section -->
 <div class="row align-items-center mt-4 mb-5 pb-5">
     <div class="col-lg-6 mb-5 mb-lg-0 text-center text-lg-start pe-lg-5">
@@ -105,12 +145,39 @@
 </div>
 
 <!-- Testimonials -->
-<div class="bg-light py-5 rounded-4 shadow-sm mb-5">
+<div id="reviews" class="bg-light py-5 rounded-4 shadow-sm mb-5">
     <div class="container">
         <div class="text-center mb-5">
              <h2 class="fw-bold text-dark display-6">Happy Pet Owners</h2>
         </div>
         <div class="row g-4">
+             {% if featured_reviews %}
+                  {% for review in featured_reviews %}
+                  <div class="col-md-6">
+                       <div class="bg-white p-4 rounded-4 shadow-sm border-0 h-100">
+                            <ul class="d-flex list-unstyled gap-1 mb-3 text-warning">
+                                 {% for _ in "12345" %}
+                                      <li>
+                                           {% if forloop.counter <= review.rating %}
+                                                <span style="font-size: 1.05rem; line-height: 1;">&#9733;</span>
+                                           {% else %}
+                                                <span class="text-secondary opacity-25" style="font-size: 1.05rem; line-height: 1;">&#9733;</span>
+                                           {% endif %}
+                                      </li>
+                                 {% endfor %}
+                            </ul>
+                            <p class="fst-italic text-muted">"{{ review.message }}"</p>
+                            <div class="d-flex align-items-center mt-4">
+                                 <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold me-3" style="width: 40px; height: 40px;">{{ review.initials }}</div>
+                                 <div>
+                                      <h6 class="mb-0 fw-bold">{{ review.name }}</h6>
+                                      <small class="text-muted">{{ review.role|default:"Pet Owner" }}</small>
+                                 </div>
+                            </div>
+                       </div>
+                  </div>
+                  {% endfor %}
+             {% else %}
              <div class="col-md-6">
                   <div class="bg-white p-4 rounded-4 shadow-sm border-0 h-100">
                        <ul class="d-flex list-unstyled gap-1 mb-3 text-warning">
@@ -147,6 +214,62 @@
                                  <small class="text-muted">Shelter Volunteer</small>
                             </div>
                        </div>
+                  </div>
+             </div>
+             {% endif %}
+        </div>
+
+        <div class="row justify-content-center mt-4">
+             <div class="col-lg-8">
+                  <div class="bg-white p-4 rounded-4 shadow-sm border-0">
+                       <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+                            <div>
+                                 <h3 class="h4 fw-bold mb-1">Share Your Experience</h3>
+                                 <p class="text-muted small mb-0">Your review will appear here after admin approval.</p>
+                            </div>
+                            {% if user.is_authenticated %}
+                                 <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2">Signed in as {{ user.get_full_name|default:user.username }}</span>
+                            {% endif %}
+                       </div>
+
+                       {% if user.is_authenticated %}
+                            <form method="post" class="row g-3">
+                                 {% csrf_token %}
+                                 <div class="col-md-6">
+                                      <label class="form-label fw-semibold small text-uppercase">{{ review_form.role.label }}</label>
+                                      {{ review_form.role }}
+                                      {% for error in review_form.role.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                                 </div>
+                                 <div class="col-md-6">
+                                      <label class="form-label fw-semibold small text-uppercase">{{ review_form.rating.label }}</label>
+                                      {{ review_form.rating }}
+                                      <div class="d-flex flex-wrap align-items-center gap-3">
+                                           <div class="review-star-picker" role="radiogroup" aria-label="Rating" data-selected="{{ review_form.rating.value|default:'5' }}">
+                                                <button type="button" class="review-star-button" data-rating="1" role="radio" aria-label="1 star" aria-checked="false">&#9733;</button>
+                                                <button type="button" class="review-star-button" data-rating="2" role="radio" aria-label="2 stars" aria-checked="false">&#9733;</button>
+                                                <button type="button" class="review-star-button" data-rating="3" role="radio" aria-label="3 stars" aria-checked="false">&#9733;</button>
+                                                <button type="button" class="review-star-button" data-rating="4" role="radio" aria-label="4 stars" aria-checked="false">&#9733;</button>
+                                                <button type="button" class="review-star-button" data-rating="5" role="radio" aria-label="5 stars" aria-checked="false">&#9733;</button>
+                                           </div>
+                                           <span class="review-rating-label" id="reviewRatingLabel">Excellent</span>
+                                      </div>
+                                      {% for error in review_form.rating.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                                 </div>
+                                 <div class="col-12">
+                                      <label class="form-label fw-semibold small text-uppercase">{{ review_form.message.label }}</label>
+                                      {{ review_form.message }}
+                                      {% for error in review_form.message.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                                 </div>
+                                 <div class="col-12">
+                                      <button type="submit" class="btn btn-primary rounded-pill px-4">Submit Review</button>
+                                 </div>
+                            </form>
+                       {% else %}
+                            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 bg-light rounded-4 p-3">
+                                 <span class="text-muted small">Sign in to submit your own PetCare AI review.</span>
+                                 <a href="{% url 'accounts:login' %}" class="btn btn-primary rounded-pill px-4">Sign In</a>
+                            </div>
+                       {% endif %}
                   </div>
              </div>
         </div>
@@ -230,5 +353,63 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const picker = document.querySelector(".review-star-picker");
+    const input = document.getElementById("reviewRatingInput");
+    const label = document.getElementById("reviewRatingLabel");
+    if (!picker || !input || !label) {
+        return;
+    }
+
+    const labels = {
+        1: "Poor",
+        2: "Fair",
+        3: "Good",
+        4: "Very good",
+        5: "Excellent",
+    };
+    const buttons = Array.from(picker.querySelectorAll(".review-star-button"));
+
+    const paint = (rating, className) => {
+        buttons.forEach((button) => {
+            const value = Number(button.dataset.rating);
+            button.classList.toggle(className, value <= rating);
+        });
+    };
+
+    const setRating = (rating) => {
+        const value = Math.max(1, Math.min(5, Number(rating) || 5));
+        input.value = String(value);
+        label.textContent = labels[value];
+        buttons.forEach((button) => {
+            const buttonRating = Number(button.dataset.rating);
+            button.classList.toggle("active", buttonRating <= value);
+            button.setAttribute("aria-checked", buttonRating === value ? "true" : "false");
+        });
+    };
+
+    buttons.forEach((button) => {
+        button.addEventListener("mouseenter", () => paint(Number(button.dataset.rating), "preview"));
+        button.addEventListener("focus", () => paint(Number(button.dataset.rating), "preview"));
+        button.addEventListener("mouseleave", () => paint(0, "preview"));
+        button.addEventListener("blur", () => paint(0, "preview"));
+        button.addEventListener("click", () => setRating(button.dataset.rating));
+        button.addEventListener("keydown", (event) => {
+            if (event.key === "ArrowLeft" || event.key === "ArrowDown") {
+                event.preventDefault();
+                setRating(Number(input.value) - 1);
+            }
+            if (event.key === "ArrowRight" || event.key === "ArrowUp") {
+                event.preventDefault();
+                setRating(Number(input.value) + 1);
+            }
+        });
+    });
+
+    setRating(picker.dataset.selected);
+});
+</script>
 
 {% endblock %}

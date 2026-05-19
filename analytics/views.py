@@ -30,6 +30,7 @@ from advisory.models import (
     VaccinationScheduleTemplate,
     VetDoctor,
     ContactMessage,
+    CustomerReview,
 )
 
 
@@ -809,6 +810,53 @@ def ml_admin_dashboard(request):
                 messages.error(request, "Message not found.")
             return redirect(reverse("analytics:ml_admin_dashboard") + "?panel=contacts")
 
+        if "add_review" in request.POST:
+            show_on_home = "review_show_on_home" in request.POST
+            CustomerReview.objects.create(
+                name=request.POST.get("review_name", "").strip(),
+                role=request.POST.get("review_role", "").strip(),
+                rating=request.POST.get("review_rating", "5"),
+                message=request.POST.get("review_message", "").strip(),
+                is_approved="review_approved" in request.POST or show_on_home,
+                show_on_home=show_on_home,
+            )
+            messages.success(request, "Review added successfully.")
+            return redirect(reverse("analytics:ml_admin_dashboard") + "?panel=reviews")
+
+        if "publish_review_id" in request.POST:
+            review_id = request.POST.get("publish_review_id")
+            try:
+                review = CustomerReview.objects.get(pk=review_id)
+                review.is_approved = True
+                review.show_on_home = True
+                review.save(update_fields=["is_approved", "show_on_home", "updated_at"])
+                messages.success(request, f"Review from {review.name} is now visible on the home page.")
+            except CustomerReview.DoesNotExist:
+                messages.error(request, "Review not found.")
+            return redirect(reverse("analytics:ml_admin_dashboard") + "?panel=reviews")
+
+        if "hide_review_id" in request.POST:
+            review_id = request.POST.get("hide_review_id")
+            try:
+                review = CustomerReview.objects.get(pk=review_id)
+                review.show_on_home = False
+                review.save(update_fields=["show_on_home", "updated_at"])
+                messages.success(request, f"Review from {review.name} was removed from the home page.")
+            except CustomerReview.DoesNotExist:
+                messages.error(request, "Review not found.")
+            return redirect(reverse("analytics:ml_admin_dashboard") + "?panel=reviews")
+
+        if "delete_review_id" in request.POST:
+            review_id = request.POST.get("delete_review_id")
+            try:
+                review = CustomerReview.objects.get(pk=review_id)
+                name = review.name
+                review.delete()
+                messages.success(request, f"Review from {name} has been deleted.")
+            except CustomerReview.DoesNotExist:
+                messages.error(request, "Review not found.")
+            return redirect(reverse("analytics:ml_admin_dashboard") + "?panel=reviews")
+
         # ── Training trigger ───────────────────────────────────────────────
         if "train_model" in request.POST:
             if latest_dataset is None:
@@ -906,6 +954,7 @@ def ml_admin_dashboard(request):
     # ── Bookings for management ────────────────────────────────────────────
     all_bookings = ServiceBooking.objects.all().select_related("user", "pet_service", "vet_doctor").order_by("-created_at")
     booking_status_choices = ServiceBooking.STATUS_CHOICES
+    all_reviews = CustomerReview.objects.select_related("user").order_by("-created_at")
     all_missing_pets = (
         MissingPet.objects.all()
         .select_related("owner", "pet")
@@ -924,6 +973,9 @@ def ml_admin_dashboard(request):
         "services": services,
         "all_bookings": all_bookings,
         "contact_messages": ContactMessage.objects.all(),
+        "all_reviews": all_reviews,
+        "pending_reviews_count": all_reviews.filter(is_approved=False).count(),
+        "home_reviews_count": all_reviews.filter(is_approved=True, show_on_home=True).count(),
         "all_missing_pets": all_missing_pets,
         "booking_status_choices": booking_status_choices,
         "specialization_choices": specialization_choices,

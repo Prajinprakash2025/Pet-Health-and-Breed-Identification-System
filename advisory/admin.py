@@ -9,6 +9,7 @@ from .models import (
     VaccinationScheduleTemplate,
     VetDoctor,
     ServiceBooking,
+    CustomerReview,
 )
 
 
@@ -75,3 +76,11 @@ class ServiceBookingAdmin(admin.ModelAdmin):
             return f"Doctor: {obj.vet_doctor.name}"
         return "Unknown"
     get_provider.short_description = "Provider"
+
+
+@admin.register(CustomerReview)
+class CustomerReviewAdmin(admin.ModelAdmin):
+    list_display = ("name", "role", "rating", "is_approved", "show_on_home", "created_at")
+    list_filter = ("is_approved", "show_on_home", "rating", "created_at")
+    search_fields = ("name", "role", "message", "user__email", "user__username")
+    list_editable = ("is_approved", "show_on_home")

@@ -1029,6 +1029,148 @@
   </div>
 </div>
 
+<div class="admin-panel" id="panel-reviews">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+      <h5 class="fw-bold mb-1">Home Page Reviews</h5>
+      <p class="text-muted small mb-0">Approve user reviews and choose which testimonials appear on the home page.</p>
+    </div>
+    <div class="d-flex gap-2 align-items-center">
+      <span class="badge bg-warning-subtle text-warning px-3 py-2" style="border-radius:999px;">{{ pending_reviews_count }} pending</span>
+      <span class="badge bg-success-subtle text-success px-3 py-2" style="border-radius:999px;">{{ home_reviews_count }} on home</span>
+    </div>
+  </div>
+
+  <div class="a-card mb-4">
+    <div class="a-card-title">Add Review Manually</div>
+    <div class="a-card-sub">Create an approved testimonial directly from the admin panel.</div>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="add_review" value="1">
+      <div class="row g-3">
+        <div class="col-md-3">
+          <label class="admin-form-label">Reviewer Name *</label>
+          <input type="text" name="review_name" class="admin-form-control" placeholder="Sarah Jenkins" required>
+        </div>
+        <div class="col-md-3">
+          <label class="admin-form-label">Role</label>
+          <input type="text" name="review_role" class="admin-form-control" placeholder="Dog Owner">
+        </div>
+        <div class="col-md-2">
+          <label class="admin-form-label">Rating</label>
+          <select name="review_rating" class="admin-form-control">
+            <option value="5">5 Stars</option>
+            <option value="4">4 Stars</option>
+            <option value="3">3 Stars</option>
+            <option value="2">2 Stars</option>
+            <option value="1">1 Star</option>
+          </select>
+        </div>
+        <div class="col-md-4 d-flex align-items-end gap-3">
+          <label class="d-flex align-items-center gap-2 small mb-2">
+            <input type="checkbox" name="review_approved" checked>
+            Approved
+          </label>
+          <label class="d-flex align-items-center gap-2 small mb-2">
+            <input type="checkbox" name="review_show_on_home" checked>
+            Show on home
+          </label>
+        </div>
+        <div class="col-12">
+          <label class="admin-form-label">Review Message *</label>
+          <textarea name="review_message" class="admin-form-control" rows="3" placeholder="Write the review text..." required></textarea>
+        </div>
+        <div class="col-12">
+          <button type="submit" class="btn btn-primary px-4" style="border-radius:10px;">Add Review</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div class="a-card">
+    <div class="table-responsive">
+      <table class="a-table">
+        <thead>
+          <tr>
+            <th>Reviewer</th>
+            <th>Rating</th>
+            <th>Review</th>
+            <th class="text-center">Status</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for review in all_reviews %}
+          <tr>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <div style="width:34px;height:34px;border-radius:999px;background:linear-gradient(135deg,#0d9488,#2563eb);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.75rem;flex-shrink:0;">
+                  {{ review.initials }}
+                </div>
+                <div>
+                  <div class="fw-bold">{{ review.name }}</div>
+                  <small class="text-muted">{{ review.role|default:"Pet Owner" }}</small>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="text-warning" style="white-space:nowrap;">
+                {% for _ in "12345" %}
+                  {% if forloop.counter <= review.rating %}&#9733;{% else %}<span class="text-secondary opacity-25">&#9733;</span>{% endif %}
+                {% endfor %}
+              </div>
+              <small class="text-muted">{{ review.rating }}/5</small>
+            </td>
+            <td>
+              <div style="max-width:420px; font-size: .82rem; line-height: 1.45;">
+                {{ review.message|truncatewords:28 }}
+              </div>
+              <small class="text-muted">Submitted {{ review.created_at|date:"M d, Y" }}</small>
+            </td>
+            <td class="text-center">
+              <div class="d-flex flex-column align-items-center gap-1">
+                {% if review.is_approved %}
+                  <span class="badge bg-success-subtle text-success rounded-pill px-3">Approved</span>
+                {% else %}
+                  <span class="badge bg-warning-subtle text-warning rounded-pill px-3">Pending</span>
+                {% endif %}
+                {% if review.show_on_home %}
+                  <span class="badge bg-primary-subtle text-primary rounded-pill px-3">Home Page</span>
+                {% endif %}
+              </div>
+            </td>
+            <td class="text-end">
+              <div class="d-flex gap-2 justify-content-end">
+                {% if review.show_on_home %}
+                  <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="hide_review_id" value="{{ review.id }}">
+                    <button type="submit" class="btn btn-sm btn-outline-secondary" style="border-radius:10px;">Hide</button>
+                  </form>
+                {% else %}
+                  <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="publish_review_id" value="{{ review.id }}">
+                    <button type="submit" class="btn btn-sm btn-outline-success" style="border-radius:10px;">Publish</button>
+                  </form>
+                {% endif %}
+                <form method="post" onsubmit="return confirm('Delete this review from {{ review.name }}?');">
+                  {% csrf_token %}
+                  <input type="hidden" name="delete_review_id" value="{{ review.id }}">
+                  <button type="submit" class="btn btn-sm btn-outline-danger" style="border-radius:10px;">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="5" class="text-center text-muted py-5">No reviews submitted yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
 <div class="admin-panel" id="panel-contacts">
   <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
     <div>
