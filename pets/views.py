@@ -6,6 +6,9 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
+from advisory.models import ServiceBooking
+from records.models import MedicalRecord, Reminder, VaccinationRecord
+
 from .forms import PetForm, MissingPetForm, PetSightingForm
 from .models import BreedPrediction, HealthAssessment, Pet, MissingPet, PetSighting
 
@@ -68,11 +71,33 @@ def pet_list_view(request):
 def pet_detail_view(request, pet_id):
     pet = get_object_or_404(Pet, id=pet_id, owner=request.user)
     breed_prediction = pet.breed_predictions.first()
-    health_assessment = pet.health_assessments.first()
+    health_assessments = pet.health_assessments.all()
+    health_assessment = health_assessments.first()
+    pet_bookings = (
+        ServiceBooking.objects.filter(user=request.user, pet=pet)
+        .select_related("pet_service", "vet_doctor")
+        .order_by("-booking_date", "-booking_time", "-created_at")
+    )
+    medical_records = MedicalRecord.objects.filter(pet=pet).order_by("-visit_date")
+    vaccination_records = VaccinationRecord.objects.filter(pet=pet).order_by(
+        "-scheduled_date", "-administered_date"
+    )
+    open_reminders = Reminder.objects.filter(pet=pet, is_completed=False).order_by(
+        "due_date", "due_time", "title"
+    )
     context = {
         "pet": pet,
         "breed_prediction": breed_prediction,
         "health_assessment": health_assessment,
+        "health_assessments": health_assessments[:4],
+        "pet_bookings": pet_bookings[:5],
+        "medical_records": medical_records[:4],
+        "vaccination_records": vaccination_records[:4],
+        "open_reminders": open_reminders[:4],
+        "pet_bookings_count": pet_bookings.count(),
+        "health_assessments_count": health_assessments.count(),
+        "medical_records_count": medical_records.count(),
+        "open_reminders_count": open_reminders.count(),
         "active_section": "my_pets",
     }
     return render(request, "pets/pet_detail.html", context)

@@ -1,12 +1,92 @@
+from datetime import time
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from .models import MissingPet, Pet
+from advisory.models import PetService, ServiceBooking
+from records.models import MedicalRecord, Reminder, VaccinationRecord
+
+from .models import HealthAssessment, MissingPet, Pet
 
 
 User = get_user_model()
+
+
+class PetDetailOverviewTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="pet-owner",
+            email="pet-owner@example.com",
+            password="Strong-pass-2026",
+        )
+        self.pet = Pet.objects.create(
+            owner=self.user,
+            name="Juli",
+            species="dog",
+            breed="German Shepherd",
+        )
+
+    def test_pet_detail_shows_bookings_and_health_care_sections(self):
+        today = timezone.localdate()
+        service = PetService.objects.create(
+            name="Healthy Paw Clinic",
+            service_type="vet",
+            city="Kochi",
+        )
+        ServiceBooking.objects.create(
+            user=self.user,
+            pet=self.pet,
+            pet_service=service,
+            booking_date=today,
+            booking_time=time(10, 30),
+            status="confirmed",
+            notes="Annual checkup",
+        )
+        HealthAssessment.objects.create(
+            pet=self.pet,
+            overall_risk_level="medium",
+            skin_infection_risk="medium",
+            parasite_risk="low",
+            fur_loss_risk="low",
+            notes="AI Health Detection: Skin irritation (82% confidence).",
+            symptom_details="Scratching near the neck",
+            care_recommendations="Keep the affected area clean and book a vet visit.",
+        )
+        MedicalRecord.objects.create(
+            pet=self.pet,
+            visit_date=today,
+            clinic_name="Healthy Paw Clinic",
+            diagnosis="Skin irritation",
+        )
+        VaccinationRecord.objects.create(
+            pet=self.pet,
+            vaccine_name="Rabies",
+            scheduled_date=today,
+            status="scheduled",
+        )
+        Reminder.objects.create(
+            pet=self.pet,
+            title="Follow-up bath",
+            reminder_type="grooming",
+            due_date=today,
+        )
+
+        self.client.force_login(self.user)
+        response = self.client.get(reverse("pets:pet_detail", args=[self.pet.id]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["pet_bookings_count"], 1)
+        self.assertEqual(response.context["health_assessments_count"], 1)
+        self.assertEqual(response.context["medical_records_count"], 1)
+        self.assertEqual(response.context["open_reminders_count"], 1)
+        self.assertContains(response, "Care Overview")
+        self.assertContains(response, "Healthy Paw Clinic")
+        self.assertContains(response, "Medium Risk")
+        self.assertContains(response, "Skin irritation")
+        self.assertContains(response, "Rabies")
+        self.assertContains(response, "Follow-up bath")
 
 
 class MissingPetDashboardTests(TestCase):

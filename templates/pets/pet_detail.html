@@ -68,6 +68,259 @@
         </div>
     </div>
 
+    <!-- Care Overview -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-xl-3">
+            <div class="stat-card" style="border-left: 4px solid var(--primary-color);">
+                <span class="text-muted small fw-medium text-uppercase">Bookings</span>
+                <h3 class="fw-bold mb-0">{{ pet_bookings_count }}</h3>
+                <small class="text-muted">Service requests for {{ pet.name }}</small>
+            </div>
+        </div>
+        <div class="col-6 col-xl-3">
+            <div class="stat-card" style="border-left: 4px solid #22C55E;">
+                <span class="text-muted small fw-medium text-uppercase">Health Checks</span>
+                <h3 class="fw-bold mb-0">{{ health_assessments_count }}</h3>
+                <small class="text-muted">
+                    {% if health_assessment %}Latest: {{ health_assessment.get_overall_risk_level_display }} risk{% else %}No scan yet{% endif %}
+                </small>
+            </div>
+        </div>
+        <div class="col-6 col-xl-3">
+            <div class="stat-card" style="border-left: 4px solid #3B82F6;">
+                <span class="text-muted small fw-medium text-uppercase">Medical Visits</span>
+                <h3 class="fw-bold mb-0">{{ medical_records_count }}</h3>
+                <small class="text-muted">Treatment logs saved</small>
+            </div>
+        </div>
+        <div class="col-6 col-xl-3">
+            <div class="stat-card" style="border-left: 4px solid #EAB308;">
+                <span class="text-muted small fw-medium text-uppercase">Open Reminders</span>
+                <h3 class="fw-bold mb-0">{{ open_reminders_count }}</h3>
+                <small class="text-muted">Upcoming care tasks</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="chart-card">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                    <div class="chart-card-title mb-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="var(--primary-color)" viewBox="0 0 16 16">
+                            <path d="M4 .5a.5.5 0 0 0-1 0V1H2a2 2 0 0 0-2 2v1h16V3a2 2 0 0 0-2-2h-1V.5a.5.5 0 0 0-1 0V1H4V.5zM16 14V5H0v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2z"/>
+                        </svg>
+                        Bookings
+                    </div>
+                    <a href="{% url 'analytics:bookings_section' %}" class="text-primary text-decoration-none small fw-semibold">View all</a>
+                </div>
+
+                {% if pet_bookings %}
+                    <div class="d-flex flex-column gap-3">
+                        {% for booking in pet_bookings %}
+                        <div class="border rounded-3 p-3">
+                            <div class="d-flex flex-wrap justify-content-between gap-2 mb-2">
+                                <div>
+                                    <div class="fw-bold">
+                                        {% if booking.pet_service %}
+                                            {{ booking.pet_service.name }}
+                                        {% elif booking.vet_doctor %}
+                                            Dr. {{ booking.vet_doctor.name }}
+                                        {% else %}
+                                            Service unavailable
+                                        {% endif %}
+                                    </div>
+                                    <small class="text-muted">
+                                        {% if booking.pet_service %}
+                                            {{ booking.pet_service.get_service_type_display }}
+                                        {% elif booking.vet_doctor %}
+                                            {{ booking.vet_doctor.get_specialization_display }}
+                                        {% else %}
+                                            Removed service
+                                        {% endif %}
+                                    </small>
+                                </div>
+                                <div class="text-end">
+                                    {% if booking.status == "confirmed" %}
+                                        <span class="badge bg-success-subtle text-success rounded-pill px-3">Confirmed</span>
+                                    {% elif booking.status == "pending" %}
+                                        <span class="badge bg-warning-subtle text-warning rounded-pill px-3">Pending</span>
+                                    {% elif booking.status == "cancelled" %}
+                                        <span class="badge bg-danger-subtle text-danger rounded-pill px-3">Cancelled</span>
+                                    {% elif booking.status == "completed" %}
+                                        <span class="badge bg-primary-subtle text-primary rounded-pill px-3">Completed</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary-subtle text-secondary rounded-pill px-3">{{ booking.status|title }}</span>
+                                    {% endif %}
+                                    <div class="small text-muted mt-1">{{ booking.booking_date|date:"M d, Y" }} at {{ booking.booking_time|time:"h:i A" }}</div>
+                                </div>
+                            </div>
+                            {% if booking.notes %}
+                                <div class="small text-muted"><strong class="text-dark">My note:</strong> {{ booking.notes|truncatechars:90 }}</div>
+                            {% endif %}
+                            {% if booking.admin_notes %}
+                                <div class="small mt-1 {% if booking.status == 'cancelled' %}text-danger{% else %}text-primary{% endif %}">
+                                    <strong>Feedback:</strong> {{ booking.admin_notes|truncatechars:100 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <h6 class="fw-bold mb-2">No bookings for {{ pet.name }}</h6>
+                        <p class="text-muted small mb-3">Book a vet, groomer, trainer, boarding center, or pharmacy service and track it here.</p>
+                        <a href="{% url 'advisory:service_finder' %}" class="btn btn-primary rounded-pill px-4">Find Services</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="chart-card">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                    <div class="chart-card-title mb-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#22C55E" viewBox="0 0 16 16">
+                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                            <path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/>
+                        </svg>
+                        Health Check Details
+                    </div>
+                    <a href="{% url 'pets:health_scan' pet.id %}" class="text-success text-decoration-none small fw-semibold">Run scan</a>
+                </div>
+
+                {% if health_assessments %}
+                    <div class="d-flex flex-column gap-3">
+                        {% for assessment in health_assessments %}
+                        <div class="border rounded-3 p-3">
+                            <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-2">
+                                <div>
+                                    <div class="fw-bold">{{ assessment.assessment_date|date:"M d, Y" }}</div>
+                                    <small class="text-muted">{{ assessment.assessment_date|time:"h:i A" }}</small>
+                                </div>
+                                <span class="risk-badge {{ assessment.overall_risk_level }}">{{ assessment.get_overall_risk_level_display }} Risk</span>
+                            </div>
+                            <div class="row g-2 mb-2">
+                                <div class="col-6 col-md-4"><span class="risk-badge {{ assessment.skin_infection_risk }}">Skin {{ assessment.skin_infection_risk }}</span></div>
+                                <div class="col-6 col-md-4"><span class="risk-badge {{ assessment.parasite_risk }}">Parasite {{ assessment.parasite_risk }}</span></div>
+                                <div class="col-6 col-md-4"><span class="risk-badge {{ assessment.fur_loss_risk }}">Fur {{ assessment.fur_loss_risk }}</span></div>
+                            </div>
+                            {% if assessment.notes %}
+                                <p class="small text-muted mb-2">{{ assessment.notes|truncatechars:120 }}</p>
+                            {% endif %}
+                            {% if assessment.symptom_details %}
+                                <div class="small text-muted"><strong class="text-dark">Symptoms:</strong> {{ assessment.symptom_details|truncatechars:90 }}</div>
+                            {% endif %}
+                            {% if assessment.care_recommendations %}
+                                <div class="small text-success mt-1"><strong>Care:</strong> {{ assessment.care_recommendations|truncatechars:110 }}</div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <h6 class="fw-bold mb-2">No health scan yet</h6>
+                        <p class="text-muted small mb-3">Run a health check so the latest risk level, symptoms, and care suggestions appear here.</p>
+                        <a href="{% url 'pets:health_scan' pet.id %}" class="btn btn-success rounded-pill px-4">Open Health Scanner</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="chart-card">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                    <div class="chart-card-title mb-0">Medical Visit History</div>
+                    <a href="{% url 'records:add_medical' %}" class="text-primary text-decoration-none small fw-semibold">Add record</a>
+                </div>
+                {% if medical_records %}
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Visit</th>
+                                    <th>Clinic</th>
+                                    <th>Diagnosis</th>
+                                    <th>Follow-up</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in medical_records %}
+                                <tr>
+                                    <td>{{ record.visit_date|date:"M d, Y" }}</td>
+                                    <td>{{ record.clinic_name|default:"-" }}</td>
+                                    <td>{{ record.diagnosis|truncatechars:45 }}</td>
+                                    <td>{{ record.follow_up_date|date:"M d, Y"|default:"-" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted small mb-0">No medical visit records saved for {{ pet.name }} yet.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="chart-card">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                    <div class="chart-card-title mb-0">Vaccines & Reminders</div>
+                    <a href="{% url 'records:reminders' %}" class="text-primary text-decoration-none small fw-semibold">Manage reminders</a>
+                </div>
+
+                {% if vaccination_records %}
+                    <h6 class="fw-bold small text-uppercase text-muted mb-2">Recent Vaccinations</h6>
+                    <div class="table-responsive mb-3">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Vaccine</th>
+                                    <th>Scheduled</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in vaccination_records %}
+                                <tr>
+                                    <td>{{ record.vaccine_name }}</td>
+                                    <td>{{ record.scheduled_date|date:"M d, Y"|default:"-" }}</td>
+                                    <td><span class="status-badge {{ record.status }}">{{ record.get_status_display }}</span></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted small mb-3">No vaccination records saved yet.</p>
+                {% endif %}
+
+                {% if open_reminders %}
+                    <h6 class="fw-bold small text-uppercase text-muted mb-2">Open Reminders</h6>
+                    <div class="d-flex flex-column gap-2">
+                        {% for reminder in open_reminders %}
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 border-top pt-2">
+                            <div>
+                                <div class="fw-semibold small">{{ reminder.title }}</div>
+                                <small class="text-muted">{{ reminder.get_reminder_type_display }}{% if reminder.due_time %} at {{ reminder.due_time|time:"h:i A" }}{% endif %}</small>
+                            </div>
+                            {% if reminder.is_overdue %}
+                                <span class="status-badge missed">Overdue</span>
+                            {% else %}
+                                <span class="status-badge scheduled">{{ reminder.due_date|date:"M d" }}</span>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted small mb-0">No open reminders for {{ pet.name }}.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
     <!-- ── Quick Actions: Identify & Health ─────────────────────────── -->
     <div class="row g-4 mb-4">
         <!-- Breed Identification -->
