@@ -3,19 +3,85 @@
 {% block content %}
 <style>
     .reviews-page-hero {
-        background: linear-gradient(180deg, #f0fdfa 0%, #ffffff 100%);
-        border: 1px solid #ccfbf1;
+        position: relative;
+        overflow: hidden;
+        background:
+            radial-gradient(circle at 8% 78%, rgba(34, 197, 94, 0.13) 0 12rem, transparent 12.2rem),
+            radial-gradient(circle at 93% 28%, rgba(13, 148, 136, 0.11) 0 10rem, transparent 10.2rem),
+            linear-gradient(135deg, #fff7ed 0%, #ffffff 38%, #effaf7 100%);
+        border: 1px solid rgba(13, 148, 136, 0.12);
+    }
+
+    .reviews-page-hero .text-primary,
+    .reviews-list .text-primary {
+        color: #0d9488 !important;
+    }
+
+    .reviews-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.4rem 1rem;
+        border-radius: 999px;
+        background: rgba(16, 185, 129, 0.1);
+        color: #059669;
+        font-size: 0.74rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    .reviews-kicker svg,
+    .review-stat-icon svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .review-stats {
+        max-width: 820px;
+        margin: 2rem auto 0;
+        border: 1px solid rgba(13, 148, 136, 0.11);
+        background: rgba(255, 255, 255, 0.78);
+        backdrop-filter: blur(12px);
+        box-shadow: 0 18px 42px rgba(15, 23, 42, 0.06);
+    }
+
+    .review-stat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 999px;
+        background: #d1fae5;
+        color: #059669;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: inset 0 0 0 10px rgba(255, 255, 255, 0.45);
+    }
+
+    .review-stat-value {
+        color: #111827;
+        font-size: 1.75rem;
+        font-weight: 900;
+        line-height: 1;
+    }
+
+    .review-stat-label {
+        color: #64748b;
+        font-size: 0.8rem;
+        font-weight: 700;
     }
 
     .review-card {
-        min-height: 255px;
-        border: 1px solid #e2e8f0;
+        position: relative;
+        min-height: 300px;
+        border: 1px solid rgba(13, 148, 136, 0.12);
+        box-shadow: 0 20px 42px rgba(15, 23, 42, 0.08) !important;
         transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
     }
 
     .review-card:hover {
         transform: translateY(-3px);
-        box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08) !important;
+        box-shadow: 0 26px 52px rgba(15, 23, 42, 0.11) !important;
         border-color: rgba(13, 148, 136, 0.25);
     }
 
@@ -30,23 +96,83 @@
         border-left: 4px solid var(--primary-color);
     }
 
+    .review-quote-mark {
+        color: rgba(16, 185, 129, 0.26);
+        font-size: 3.25rem;
+        font-weight: 900;
+        line-height: 1;
+        height: 2.25rem;
+    }
+
+    .review-message {
+        color: #1f2937;
+        font-size: 1.02rem;
+        line-height: 1.55;
+    }
+
     .review-avatar {
-        width: 42px;
-        height: 42px;
+        width: 56px;
+        height: 56px;
+        flex: 0 0 56px;
+        background:
+            radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.8), transparent 24%),
+            linear-gradient(135deg, #0d9488, #14b8a6 52%, #f97316);
+        color: #ffffff;
+        box-shadow: 0 10px 20px rgba(13, 148, 136, 0.22);
     }
 </style>
 
 <section class="reviews-page-hero rounded-4 shadow-sm p-4 p-lg-5 my-4 text-center">
-    <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2 mb-3">Community reviews</span>
-    <h1 class="fw-bold text-dark display-5 mb-3">All Pet Owner Reviews</h1>
-    <p class="lead text-muted mb-4">Read every published review from the PetCare AI community.</p>
-    <div class="d-flex flex-wrap justify-content-center gap-2">
-        <span class="badge bg-white text-dark border rounded-pill px-3 py-2">{{ review_count }} published reviews</span>
+    <span class="reviews-kicker mb-3">
+        <svg fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z"/></svg>
+        Loved by pet owners
+    </span>
+    <h1 class="fw-bold text-dark display-5 mb-3">Happy Pet Parents</h1>
+    <p class="lead text-muted mb-4">Real stories from pet owners who trust PetCare AI for their pets' health and happiness.</p>
+    <div class="d-flex flex-wrap justify-content-center gap-2 mb-2">
         <a href="{% url 'home' %}#reviews" class="btn btn-primary rounded-pill px-4">Write a review</a>
+    </div>
+    <div class="review-stats rounded-4 p-3 p-lg-4">
+        <div class="row g-3 align-items-center text-center text-md-start">
+            <div class="col-md-4">
+                <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-3">
+                    <span class="review-stat-icon">
+                        <svg fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/></svg>
+                    </span>
+                    <div>
+                        <div class="review-stat-value">{{ average_rating|floatformat:1 }}</div>
+                        <div class="review-stat-label">Average Rating</div>
+                        <div class="text-warning small">&#9733; &#9733; &#9733; &#9733; &#9733;</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="d-flex align-items-center justify-content-center gap-3">
+                    <span class="review-stat-icon">
+                        <svg fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Zm7 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3ZM8 8a1.75 1.75 0 1 0 0-3.5A1.75 1.75 0 0 0 8 8Zm-3.5 2.5C2.6 10.5 1 12 1 13.75A1.25 1.25 0 0 0 2.25 15h11.5A1.25 1.25 0 0 0 15 13.75c0-1.75-1.6-3.25-3.5-3.25-.9 0-1.67.28-2.2.76A2.98 2.98 0 0 0 8 11a2.98 2.98 0 0 0-1.3.26 3.18 3.18 0 0 0-2.2-.76Z"/></svg>
+                    </span>
+                    <div>
+                        <div class="review-stat-value">{{ pet_count|default:0 }}+</div>
+                        <div class="review-stat-label">Happy Pets and counting</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="d-flex align-items-center justify-content-center justify-content-md-end gap-3">
+                    <span class="review-stat-icon">
+                        <svg fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path d="M5.338 1.59 8 0l2.662 1.59 3.105.686.29 3.168L16 8l-1.943 2.556-.29 3.168-3.105.686L8 16l-2.662-1.59-3.105-.686-.29-3.168L0 8l1.943-2.556.29-3.168 3.105-.686Zm5.015 5.264a.5.5 0 0 0-.707-.708L7.25 8.543 6.354 7.646a.5.5 0 1 0-.708.708l1.25 1.25a.5.5 0 0 0 .708 0l2.75-2.75Z"/></svg>
+                    </span>
+                    <div>
+                        <div class="review-stat-value">{{ review_count }}</div>
+                        <div class="review-stat-label">Published reviews</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </section>
 
-<section class="pb-5">
+<section class="reviews-list pb-5">
     {% if page_obj.object_list %}
         <div class="row g-4">
             {% for review in page_obj.object_list %}
@@ -64,10 +190,11 @@
                                     </li>
                                 {% endfor %}
                             </ul>
-                            <span class="badge bg-light text-muted rounded-pill">{{ review.rating }}/5</span>
+                            <span class="text-primary fw-bold small">{{ review.rating }}/5</span>
                         </div>
 
-                        <p class="review-message fst-italic text-muted mb-3">"{{ review.message }}"</p>
+                        <div class="review-quote-mark">"</div>
+                        <p class="review-message mb-3">{{ review.message }}</p>
 
                         {% if review.admin_reply %}
                             <div class="review-reply rounded-4 p-3 mt-auto mb-3">
@@ -77,10 +204,10 @@
                         {% endif %}
 
                         <div class="d-flex align-items-center mt-auto pt-2">
-                            <div class="review-avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold me-3">{{ review.initials }}</div>
+                            <div class="review-avatar rounded-circle d-flex align-items-center justify-content-center fw-bold me-3">{{ review.initials }}</div>
                             <div>
                                 <h6 class="mb-0 fw-bold">{{ review.name }}</h6>
-                                <small class="text-muted">{{ review.role|default:"Pet Owner" }}</small>
+                                <small class="text-primary fw-semibold">{{ review.role|default:"Pet Owner" }}</small>
                             </div>
                         </div>
                     </article>

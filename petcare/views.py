@@ -1,11 +1,12 @@
 from django.contrib import messages
 from django.core.paginator import Paginator
+from django.db.models import Avg
 from django.shortcuts import redirect, render
 from django.urls import reverse
 
 from advisory.forms import CustomerReviewForm
 from advisory.models import CustomerReview
-from pets.models import MissingPet, PetSighting
+from pets.models import MissingPet, Pet, PetSighting
 
 
 def home(request):
@@ -35,10 +36,12 @@ def home(request):
     home_reviews = list(CustomerReview.objects.filter(
         is_approved=True,
         show_on_home=True,
-    ).order_by("-updated_at", "-created_at")[:8])
-    featured_reviews = home_reviews[:4]
-    additional_reviews = home_reviews[4:]
-    review_count = CustomerReview.objects.filter(is_approved=True, show_on_home=True).count()
+    ).order_by("-updated_at", "-created_at")[:9])
+    featured_reviews = home_reviews[:6]
+    additional_reviews = home_reviews[6:]
+    approved_reviews = CustomerReview.objects.filter(is_approved=True, show_on_home=True)
+    review_count = approved_reviews.count()
+    average_rating = approved_reviews.aggregate(value=Avg("rating"))["value"] or 5
     latest_missing_reports = (
         MissingPet.objects.filter(is_found=False)
         .prefetch_related("sightings")
@@ -52,6 +55,8 @@ def home(request):
             "featured_reviews": featured_reviews,
             "additional_reviews": additional_reviews,
             "review_count": review_count,
+            "average_rating": average_rating,
+            "pet_count": Pet.objects.count(),
             "review_form": review_form,
             "latest_missing_reports": latest_missing_reports,
             "open_missing_count": MissingPet.objects.filter(is_found=False).count(),
@@ -67,6 +72,7 @@ def reviews(request):
     ).order_by("-updated_at", "-created_at")
     paginator = Paginator(review_queryset, 12)
     page_obj = paginator.get_page(request.GET.get("page"))
+    average_rating = review_queryset.aggregate(value=Avg("rating"))["value"] or 5
 
     return render(
         request,
@@ -74,5 +80,7 @@ def reviews(request):
         {
             "page_obj": page_obj,
             "review_count": paginator.count,
+            "average_rating": average_rating,
+            "pet_count": Pet.objects.count(),
         },
     )
