@@ -2,6 +2,29 @@
 {% load static %}
 
 {% block content %}
+<style>
+    .about-health-card {
+        min-height: 350px;
+        background:
+            radial-gradient(circle at 18% 20%, rgba(255, 255, 255, 0.22), transparent 32%),
+            linear-gradient(135deg, #0d9488 0%, #0f766e 58%, #115e59 100%) !important;
+        color: #ffffff;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    .about-health-card svg,
+    .about-health-card h3,
+    .about-health-card p {
+        position: relative;
+        z-index: 1;
+    }
+
+    .about-health-card p {
+        color: rgba(255, 255, 255, 0.9);
+        max-width: 420px;
+    }
+</style>
+
 <div class="container py-5">
     <div class="row align-items-center mb-5 pb-5">
         <div class="col-lg-6 mb-4 mb-lg-0 pe-lg-5">
@@ -50,13 +73,13 @@
               </ul>
          </div>
          <div class="col-lg-6">
-              <div class="rounded-4 overflow-hidden shadow-sm p-5 bg-gradient text-white text-center d-flex flex-column align-items-center justify-content-center border-0" style="background: linear-gradient(135deg, var(--primary-color) 0%, #0F766E 100%); min-height: 350px;">
+              <div class="about-health-card rounded-4 overflow-hidden shadow-sm p-5 text-white text-center d-flex flex-column align-items-center justify-content-center">
                      <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="currentColor" class="bi bi-heart-pulse-fill mb-4 opacity-75" viewBox="0 0 16 16">
                       <path d="M1.475 9C2.702 10.84 4.779 12.871 8 15c3.221-2.129 5.298-4.16 6.525-6H12a.5.5 0 0 1-.464-.314l-1.457-3.642-1.598 5.593a.5.5 0 0 1-.945.049L5.889 6.568l-1.473 2.21A.5.5 0 0 1 4 9H1.475Z"/>
                       <path d="M.88 8C-2.427 1.68 4.41-2 7.823 1.143q.09.083.176.171a3 3 0 0 1 .176-.17C11.59-2 18.426 1.68 15.12 8h-2.783l-1.874-4.686a.5.5 0 0 0-.945.049L7.921 8.956 6.464 5.314a.5.5 0 0 0-.88-.091L3.732 8H.88Z"/>
                     </svg>
                      <h3 class="fw-bold mb-3">AI-Powered Health</h3>
-                     <p class="opacity-75 mb-0">Delivering accurate insights tailored for your pet's specific breed and parameters.</p>
+                     <p class="mb-0">Delivering accurate insights tailored for your pet's specific breed and parameters.</p>
                  </div>
          </div>
     </div>
