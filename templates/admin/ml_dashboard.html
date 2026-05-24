@@ -120,13 +120,25 @@
     <div class="col-md-6">
       <div class="a-card">
         <div class="a-card-title">🐾 Species Distribution</div>
-        <div class="chart-box"><canvas id="speciesChart"></canvas></div>
+        {% if has_species_data %}
+          <div class="chart-box"><canvas id="speciesChart"></canvas></div>
+        {% else %}
+          <div class="chart-box d-flex align-items-center justify-content-center text-muted small">
+            No pet species data yet.
+          </div>
+        {% endif %}
       </div>
     </div>
     <div class="col-md-6">
       <div class="a-card">
         <div class="a-card-title">🏥 Health Risk Distribution</div>
-        <div class="chart-box"><canvas id="healthChart"></canvas></div>
+        {% if has_health_data %}
+          <div class="chart-box"><canvas id="healthChart"></canvas></div>
+        {% else %}
+          <div class="chart-box d-flex align-items-center justify-content-center text-muted small">
+            No health scan data yet.
+          </div>
+        {% endif %}
       </div>
     </div>
   </div>
@@ -689,6 +701,180 @@
 <!-- ═══════════════════════════════════════════════════════════════════════
      PANEL 4 — REPORTS
      ═══════════════════════════════════════════════════════════════════════ -->
+<div class="admin-panel" id="panel-advisory">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+      <h5 class="fw-bold mb-1">Veterinary Advisory Management</h5>
+      <p class="text-muted small mb-0">Add care advisory records and vaccination schedule templates shown on the advisory page.</p>
+    </div>
+    <div class="d-flex gap-2 align-items-center">
+      <span class="badge bg-primary-subtle text-primary px-3 py-2" style="border-radius:999px;">{{ all_advisories|length }} advisories</span>
+      <span class="badge bg-success-subtle text-success px-3 py-2" style="border-radius:999px;">{{ vaccine_templates|length }} vaccines</span>
+      <input type="text" id="advisorySearch" class="admin-search" placeholder="Search advisory...">
+    </div>
+  </div>
+
+  <div class="row g-4 mb-4">
+    <div class="col-lg-7">
+      <div class="a-card h-100">
+        <div class="a-card-title">Add Care Advisory</div>
+        <div class="a-card-sub">These records appear as care advisory cards on the Veterinary Advisory page.</div>
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="add_advisory" value="1">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="admin-form-label">Species</label>
+              <select name="advisory_species" class="admin-form-control">
+                {% for value, label in advisory_species_choices %}
+                  <option value="{{ value }}">{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="admin-form-label">Advisory Type</label>
+              <select name="advisory_category" class="admin-form-control">
+                {% for value, label in advisory_category_choices %}
+                  <option value="{{ value }}">{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="admin-form-label">Title *</label>
+              <input type="text" name="advisory_title" class="admin-form-control" placeholder="Balanced daily nutrition" required>
+            </div>
+            <div class="col-12">
+              <label class="admin-form-label">Short Summary</label>
+              <input type="text" name="advisory_summary" class="admin-form-control" placeholder="Match portions to age, weight, activity level and health status.">
+            </div>
+            <div class="col-12">
+              <label class="admin-form-label">Recommendation *</label>
+              <textarea name="advisory_recommendation" class="admin-form-control" rows="3" required></textarea>
+            </div>
+            <div class="col-md-8">
+              <label class="admin-form-label">When to Apply</label>
+              <input type="text" name="advisory_when" class="admin-form-control" placeholder="Daily feeding and weight checks">
+            </div>
+            <div class="col-md-4 d-flex align-items-end justify-content-between gap-3">
+              <div class="form-check mb-2">
+                <input type="checkbox" name="advisory_active" class="form-check-input" id="advisoryActive" checked>
+                <label class="form-check-label" for="advisoryActive">Active</label>
+              </div>
+              <button type="submit" class="btn btn-primary px-4" style="border-radius:10px;">Add</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="col-lg-5">
+      <div class="a-card h-100">
+        <div class="a-card-title">Add Vaccination Template</div>
+        <div class="a-card-sub">These rows appear in the vaccination schedule table.</div>
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="add_vaccine_template" value="1">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="admin-form-label">Species</label>
+              <select name="vaccine_species" class="admin-form-control">
+                {% for value, label in vaccine_species_choices %}
+                  <option value="{{ value }}">{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="admin-form-label">Vaccine *</label>
+              <input type="text" name="vaccine_name" class="admin-form-control" placeholder="Rabies" required>
+            </div>
+            <div class="col-md-6">
+              <label class="admin-form-label">Age (weeks) *</label>
+              <input type="number" name="vaccine_age" class="admin-form-control" min="0" required>
+            </div>
+            <div class="col-md-6">
+              <label class="admin-form-label">Booster (weeks)</label>
+              <input type="number" name="vaccine_repeat" class="admin-form-control" min="0" placeholder="52">
+            </div>
+            <div class="col-12">
+              <label class="admin-form-label">Notes</label>
+              <textarea name="vaccine_notes" class="admin-form-control" rows="3"></textarea>
+            </div>
+            <div class="col-12 d-flex justify-content-end">
+              <button type="submit" class="btn btn-primary px-4" style="border-radius:10px;">Add Vaccine</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="a-card">
+    <div class="a-card-title">Care Advisory Records</div>
+    <div class="table-responsive">
+      <table class="a-table">
+        <thead><tr><th>Title</th><th>Species</th><th>Type</th><th>Summary</th><th class="text-center">Status</th><th class="text-end">Actions</th></tr></thead>
+        <tbody>
+          {% for item in all_advisories %}
+          <tr class="advisory-row-item">
+            <td><strong>{{ item.title }}</strong></td>
+            <td>{{ item.get_species_display }}</td>
+            <td><span class="badge bg-primary-subtle text-primary">{{ item.get_category_display }}</span></td>
+            <td class="text-muted">{{ item.short_summary|default:item.recommendation|truncatewords:12 }}</td>
+            <td class="text-center">
+              {% if item.is_active %}<span class="status-badge-a badge-active">Active</span>
+              {% else %}<span class="status-badge-a badge-blocked">Inactive</span>{% endif %}
+            </td>
+            <td class="text-end">
+              <div class="d-flex gap-2 justify-content-end">
+                <form method="post">{% csrf_token %}
+                  <input type="hidden" name="toggle_advisory_id" value="{{ item.id }}">
+                  <button class="btn-action btn {% if item.is_active %}btn-outline-warning{% else %}btn-outline-success{% endif %}">{% if item.is_active %}Pause{% else %}Activate{% endif %}</button>
+                </form>
+                <button class="btn-action btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editAdvisoryModal{{ item.id }}">Edit</button>
+                <form method="post" onsubmit="return confirm('Delete {{ item.title }}?');">{% csrf_token %}
+                  <input type="hidden" name="delete_advisory_id" value="{{ item.id }}">
+                  <button class="btn-action btn btn-outline-danger">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="6" class="text-center text-muted py-4">No care advisory records yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="a-card">
+    <div class="a-card-title">Vaccination Schedule Templates</div>
+    <div class="table-responsive">
+      <table class="a-table">
+        <thead><tr><th>Vaccine</th><th>Species</th><th>Age</th><th>Booster</th><th>Notes</th><th class="text-end">Actions</th></tr></thead>
+        <tbody>
+          {% for vax in vaccine_templates %}
+          <tr class="advisory-row-item">
+            <td><strong>{{ vax.vaccine_name }}</strong></td>
+            <td>{{ vax.get_species_display }}</td>
+            <td>{{ vax.recommended_age_weeks }} weeks</td>
+            <td>{% if vax.repeat_interval_weeks %}Every {{ vax.repeat_interval_weeks }} weeks{% else %}-{% endif %}</td>
+            <td class="text-muted">{{ vax.notes|default:"-"|truncatewords:10 }}</td>
+            <td class="text-end">
+              <form method="post" class="d-inline" onsubmit="return confirm('Delete {{ vax.vaccine_name }}?');">{% csrf_token %}
+                <input type="hidden" name="delete_vaccine_template_id" value="{{ vax.id }}">
+                <button class="btn-action btn btn-outline-danger">Delete</button>
+              </form>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="6" class="text-center text-muted py-4">No vaccination templates yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
 <div class="admin-panel" id="panel-reports">
 
   <h5 class="fw-bold mb-1">Platform Reports</h5>
@@ -1033,10 +1219,10 @@
   <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
     <div>
       <h5 class="fw-bold mb-1">Home Page Reviews</h5>
-      <p class="text-muted small mb-0">Approve user reviews and choose which testimonials appear on the home page.</p>
+      <p class="text-muted small mb-0">User reviews publish directly. Hide, remove, or reply from here.</p>
     </div>
     <div class="d-flex gap-2 align-items-center">
-      <span class="badge bg-warning-subtle text-warning px-3 py-2" style="border-radius:999px;">{{ pending_reviews_count }} pending</span>
+      <span class="badge bg-warning-subtle text-warning px-3 py-2" style="border-radius:999px;">{{ hidden_reviews_count }} hidden</span>
       <span class="badge bg-success-subtle text-success px-3 py-2" style="border-radius:999px;">{{ home_reviews_count }} on home</span>
     </div>
   </div>
@@ -1068,10 +1254,6 @@
         </div>
         <div class="col-md-4 d-flex align-items-end gap-3">
           <label class="d-flex align-items-center gap-2 small mb-2">
-            <input type="checkbox" name="review_approved" checked>
-            Approved
-          </label>
-          <label class="d-flex align-items-center gap-2 small mb-2">
             <input type="checkbox" name="review_show_on_home" checked>
             Show on home
           </label>
@@ -1079,6 +1261,10 @@
         <div class="col-12">
           <label class="admin-form-label">Review Message *</label>
           <textarea name="review_message" class="admin-form-control" rows="3" placeholder="Write the review text..." required></textarea>
+        </div>
+        <div class="col-12">
+          <label class="admin-form-label">Admin Reply</label>
+          <textarea name="review_reply" class="admin-form-control" rows="2" placeholder="Optional response shown below this review."></textarea>
         </div>
         <div class="col-12">
           <button type="submit" class="btn btn-primary px-4" style="border-radius:10px;">Add Review</button>
@@ -1125,33 +1311,30 @@
               <div style="max-width:420px; font-size: .82rem; line-height: 1.45;">
                 {{ review.message|truncatewords:28 }}
               </div>
+              {% if review.admin_reply %}
+                <div class="mt-2 small text-primary">
+                  <strong>Reply:</strong> {{ review.admin_reply|truncatewords:18 }}
+                </div>
+              {% endif %}
               <small class="text-muted">Submitted {{ review.created_at|date:"M d, Y" }}</small>
             </td>
             <td class="text-center">
               <div class="d-flex flex-column align-items-center gap-1">
-                {% if review.is_approved %}
-                  <span class="badge bg-success-subtle text-success rounded-pill px-3">Approved</span>
-                {% else %}
-                  <span class="badge bg-warning-subtle text-warning rounded-pill px-3">Pending</span>
-                {% endif %}
                 {% if review.show_on_home %}
-                  <span class="badge bg-primary-subtle text-primary rounded-pill px-3">Home Page</span>
+                  <span class="badge bg-success-subtle text-success rounded-pill px-3">Published</span>
+                {% else %}
+                  <span class="badge bg-secondary-subtle text-secondary rounded-pill px-3">Hidden</span>
                 {% endif %}
               </div>
             </td>
             <td class="text-end">
               <div class="d-flex gap-2 justify-content-end">
+                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#replyReviewModal{{ review.id }}" style="border-radius:10px;">Reply</button>
                 {% if review.show_on_home %}
                   <form method="post">
                     {% csrf_token %}
                     <input type="hidden" name="hide_review_id" value="{{ review.id }}">
                     <button type="submit" class="btn btn-sm btn-outline-secondary" style="border-radius:10px;">Hide</button>
-                  </form>
-                {% else %}
-                  <form method="post">
-                    {% csrf_token %}
-                    <input type="hidden" name="publish_review_id" value="{{ review.id }}">
-                    <button type="submit" class="btn btn-sm btn-outline-success" style="border-radius:10px;">Publish</button>
                   </form>
                 {% endif %}
                 <form method="post" onsubmit="return confirm('Delete this review from {{ review.name }}?');">
@@ -1162,6 +1345,33 @@
               </div>
             </td>
           </tr>
+          <div class="modal fade" id="replyReviewModal{{ review.id }}" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content shadow border-0" style="border-radius:16px;">
+                <div class="modal-header border-0 pb-0">
+                  <h5 class="modal-title fw-bold">Reply to {{ review.name }}</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                  <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="reply_review_id" value="{{ review.id }}">
+                    <div class="mb-3">
+                      <label class="admin-form-label">Review</label>
+                      <div class="p-3 bg-light rounded-4 small text-muted">{{ review.message }}</div>
+                    </div>
+                    <div class="mb-3">
+                      <label class="admin-form-label">Admin Reply</label>
+                      <textarea name="review_reply" class="admin-form-control" rows="4" placeholder="Write a public response...">{{ review.admin_reply }}</textarea>
+                    </div>
+                    <div class="d-flex justify-content-end">
+                      <button type="submit" class="btn btn-primary px-4" style="border-radius:10px;">Save Reply</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
           {% empty %}
           <tr><td colspan="5" class="text-center text-muted py-5">No reviews submitted yet.</td></tr>
           {% endfor %}
@@ -1407,6 +1617,16 @@
      ═══════════════════════════════════════════════════════════════════════ -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+  if (!window.Chart) {
+    document.querySelectorAll('.chart-box').forEach(function(box) {
+      if (box.querySelector('canvas')) {
+        box.classList.add('d-flex', 'align-items-center', 'justify-content-center', 'text-muted', 'small');
+        box.textContent = 'Charts could not load. Check your internet connection.';
+      }
+    });
+    return;
+  }
+
   // Species Distribution Pie
   const speciesCtx = document.getElementById('speciesChart');
   if (speciesCtx) {
@@ -1455,6 +1675,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 });
+</script>
 <!-- ── Booking Status Update Modal ─────────────────────────────────────── -->
 <div class="modal fade" id="statusUpdateModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">

@@ -10,7 +10,12 @@ from advisory.models import ServiceBooking
 from records.models import MedicalRecord, Reminder, VaccinationRecord
 
 from .forms import PetForm, MissingPetForm, PetSightingForm
-from .models import BreedPrediction, HealthAssessment, Pet, MissingPet, PetSighting
+from .models import BreedPrediction, HealthAssessment, Pet, MissingPet, MissingPetNotification, PetSighting
+from .notifications import (
+    notify_found_status_changed,
+    notify_missing_report_created,
+    notify_sighting_reported,
+)
 
 
 # ── Breed-specific health risk data (demo) ─────────────────────────────────
@@ -368,6 +373,7 @@ def report_missing_view(request):
             report = form.save(commit=False)
             report.owner = request.user
             report.save()
+            notify_missing_report_created(report)
             messages.success(request, f"Missing report for {report.pet_name} has been published.")
             return redirect("pets:missing_pets_list")
     else:
@@ -436,9 +442,30 @@ def toggle_missing_pet_found_view(request, report_id):
     report = get_object_or_404(MissingPet, id=report_id, owner=request.user)
     report.is_found = not report.is_found
     report.save(update_fields=["is_found"])
+    notify_found_status_changed(report)
     status = "found" if report.is_found else "missing"
     messages.success(request, f"{report.pet_name} marked as {status}.")
     return redirect("analytics:missing_pets_section")
+
+
+@login_required
+def notifications_view(request):
+    notifications = MissingPetNotification.objects.filter(user=request.user)
+
+    if request.method == "POST" and "mark_all_read" in request.POST:
+        notifications.filter(is_read=False).update(is_read=True)
+        messages.success(request, "Notifications marked as read.")
+        return redirect("pets:notifications")
+
+    return render(
+        request,
+        "pets/notifications.html",
+        {
+            "notifications": notifications,
+            "unread_notifications_count": notifications.filter(is_read=False).count(),
+            "active_section": "notifications",
+        },
+    )
 
 
 def missing_pet_detail_view(request, report_id):
@@ -452,6 +479,7 @@ def missing_pet_detail_view(request, report_id):
             sighting = sighting_form.save(commit=False)
             sighting.missing_pet = report
             sighting.save()
+            notify_sighting_reported(report, sighting)
             messages.success(request, "Thank you! Your sighting report has been submitted.")
             return redirect("pets:missing_pet_detail", report_id=report.id)
     else:

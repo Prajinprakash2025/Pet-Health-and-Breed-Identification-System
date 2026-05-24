@@ -54,6 +54,7 @@
     }
 
     .admin-nav-link {
+      position: relative;
       display: flex; align-items: center; gap: .65rem;
       padding: .6rem .75rem; border-radius: 9px;
       color: #94a3b8; text-decoration: none;
@@ -63,7 +64,23 @@
       cursor: pointer; margin-bottom: 2px;
     }
     .admin-nav-link:hover  { background: rgba(148,163,184,.1); color: #e2e8f0; border-left-color: rgba(13,148,136,.4); }
-    .admin-nav-link.active { background: rgba(13,148,136,.15); color: #5eead4; border-left-color: #0d9488; font-weight: 600; }
+    .admin-nav-link.active {
+      background: rgba(13,148,136,.24);
+      color: #67e8f9;
+      border-left-color: #14b8a6;
+      box-shadow: inset 0 0 0 1px rgba(94,234,212,.18), 0 8px 18px rgba(13,148,136,.16);
+      font-weight: 700;
+    }
+    .admin-nav-link.active::after {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #5eead4;
+      box-shadow: 0 0 0 4px rgba(94,234,212,.12);
+      margin-left: auto;
+      flex-shrink: 0;
+    }
     .admin-nav-link svg    { opacity: .65; transition: opacity .18s; flex-shrink: 0; }
     .admin-nav-link:hover svg, .admin-nav-link.active svg { opacity: 1; }
 
@@ -255,55 +272,62 @@
 
     <div class="admin-section-label">Main</div>
     <nav>
-      <a class="admin-nav-link active" data-panel="overview" href="#">
+      <a class="admin-nav-link active" data-panel="overview" href="?panel=overview" aria-current="page">
         <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
           <path d="M0 1.5A1.5 1.5 0 0 1 1.5 0h2A1.5 1.5 0 0 1 5 1.5v2A1.5 1.5 0 0 1 3.5 5h-2A1.5 1.5 0 0 1 0 3.5v-2zM1.5 1a.5.5 0 0 0-.5.5v2a.5.5 0 0 0 .5.5h2a.5.5 0 0 0 .5-.5v-2a.5.5 0 0 0-.5-.5h-2zM0 8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V8zm1 3v2a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2H1zm14-1V8a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v2h14zM2 8.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0 4a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5z"/>
         </svg>
         Overview
       </a>
-      <a class="admin-nav-link" data-panel="users" href="#">
+      <a class="admin-nav-link" data-panel="users" href="?panel=users">
         <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
           <path d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1h8zm-7.978-1A.261.261 0 0 1 7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002-.014.002H7.022zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM6.936 9.28a5.88 5.88 0 0 0-1.23-.247A7.35 7.35 0 0 0 5 9c-4 0-5 3-5 4 0 .667.333 1 1 1h4.216A2.238 2.238 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816zM4.92 10A5.493 5.493 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275zM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0zm3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/>
         </svg>
         User Management
       </a>
-      <a class="admin-nav-link" data-panel="doctors" href="#">
+      <a class="admin-nav-link" data-panel="doctors" href="?panel=doctors">
         <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
           <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.25-11.25v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5a.75.75 0 0 1 1.5 0z"/>
         </svg>
         Doctors
       </a>
-      <a class="admin-nav-link" data-panel="services" href="#">
+      <a class="admin-nav-link" data-panel="services" href="?panel=services">
         <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
           <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z"/>
         </svg>
         Pet Services
       </a>
-      <a class="admin-nav-link" data-panel="reports" href="#">
+      <a class="admin-nav-link" data-panel="advisory" href="?panel=advisory">
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12.5a.5.5 0 0 1-.8.4L8 11l-5.2 3.9a.5.5 0 0 1-.8-.4V2zm2-1a1 1 0 0 0-1 1v11.5l4.7-3.525a.5.5 0 0 1 .6 0L13 13.5V2a1 1 0 0 0-1-1H4z"/>
+          <path d="M5 4.5A.5.5 0 0 1 5.5 4h5a.5.5 0 0 1 0 1h-5A.5.5 0 0 1 5 4.5zM5 7a.5.5 0 0 1 .5-.5H9a.5.5 0 0 1 0 1H5.5A.5.5 0 0 1 5 7z"/>
+        </svg>
+        Veterinary Advisory
+      </a>
+      <a class="admin-nav-link" data-panel="reports" href="?panel=reports">
         <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
           <path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h13zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13z"/>
           <path d="M3 8.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5zm0-5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5v-1z"/>
         </svg>
         Reports
       </a>
-      <a class="admin-nav-link" data-panel="bookings" href="#">
+      <a class="admin-nav-link" data-panel="bookings" href="?panel=bookings">
         <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
           <path d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.293l2.646-2.647a.5.5 0 0 1 .708 0z"/><path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5V2zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1H4z"/></svg>
         Service Bookings
       </a>
-      <a class="admin-nav-link" data-panel="missing" href="#">
+      <a class="admin-nav-link" data-panel="missing" href="?panel=missing">
         <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
           <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
         </svg>
         Missing Pets
       </a>
-      <a class="admin-nav-link" data-panel="reviews" href="#">
+      <a class="admin-nav-link" data-panel="reviews" href="?panel=reviews">
         <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
           <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
         </svg>
         Reviews
       </a>
-      <a class="admin-nav-link" data-panel="contacts" href="#">
+      <a class="admin-nav-link" data-panel="contacts" href="?panel=contacts">
         <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
           <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2zm13 2.383-4.758 2.855L15 11.114v-5.73zm-.034 6.878L9.271 8.82 8 9.583 6.728 8.82l-5.694 3.44A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.739zM1 11.114l4.758-2.876L1 5.383v5.73z"/>
         </svg>
@@ -314,7 +338,7 @@
     <hr class="admin-divider">
     <div class="admin-section-label">AI / ML</div>
     <nav>
-      <a class="admin-nav-link" data-panel="ml" href="#">
+      <a class="admin-nav-link" data-panel="ml" href="?panel=ml">
         <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
           <path d="M6 12.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5ZM3 8.062C3 6.76 4.235 5.765 5.53 5.886a26.58 26.58 0 0 0 4.94 0C11.765 5.765 13 6.76 13 8.062v1.157a.933.933 0 0 1-.765.935c-.845.147-2.34.346-4.235.346-1.895 0-3.39-.2-4.235-.346A.933.933 0 0 1 3 9.219V8.062Z"/>
           <path d="M8 1a2.5 2.5 0 0 1 2.5 2.5V4h-5v-.5A2.5 2.5 0 0 1 8 1Zm3.5 3v-.5a3.5 3.5 0 1 0-7 0V4H1v10h14V4H11.5ZM2 5h12v8H2V5Z"/>
@@ -390,6 +414,7 @@
     users:'User Management', 
     doctors:'Doctors', 
     services:'Pet Services', 
+    advisory:'Veterinary Advisory',
     bookings:'Service Bookings', 
     missing:'Missing Pets',
     reviews:'Reviews',
@@ -398,34 +423,49 @@
     ml:'Dataset & Training' 
   };
 
-  navLinks.forEach(link => {
-    link.addEventListener('click', e => {
-      e.preventDefault();
-      const panel = link.dataset.panel;
-      navLinks.forEach(l => l.classList.remove('active'));
-      link.classList.add('active');
-      panels.forEach(p => p.id === 'panel-' + panel ? p.classList.add('active') : p.classList.remove('active'));
-      document.getElementById('topbarTitle').textContent = titles[panel] || '';
-      
-      // Update URL without reloading
+  function activatePanel(panel, updateUrl = true) {
+    if (!titles[panel]) {
+      panel = 'overview';
+    }
+
+    navLinks.forEach(link => {
+      const isActive = link.dataset.panel === panel;
+      link.classList.toggle('active', isActive);
+      if (isActive) {
+        link.setAttribute('aria-current', 'page');
+      } else {
+        link.removeAttribute('aria-current');
+      }
+    });
+
+    panels.forEach(panelEl => {
+      panelEl.classList.toggle('active', panelEl.id === 'panel-' + panel);
+    });
+
+    document.getElementById('topbarTitle').textContent = titles[panel] || '';
+
+    if (updateUrl) {
       const url = new URL(window.location);
       url.searchParams.set('panel', panel);
       window.history.pushState({}, '', url);
+    }
+  }
+
+  navLinks.forEach(link => {
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      activatePanel(link.dataset.panel);
     });
   });
 
   // Auto-switch to panel from URL query param on load
   const urlParams = new URLSearchParams(window.location.search);
-  const targetPanel = urlParams.get('panel');
-  if (targetPanel && titles[targetPanel]) {
-    const targetLink = document.querySelector(`.admin-nav-link[data-panel="${targetPanel}"]`);
-    if (targetLink) {
-        navLinks.forEach(l => l.classList.remove('active'));
-        targetLink.classList.add('active');
-        panels.forEach(p => p.id === 'panel-' + targetPanel ? p.classList.add('active') : p.classList.remove('active'));
-        document.getElementById('topbarTitle').textContent = titles[targetPanel] || '';
-    }
-  }
+  activatePanel(urlParams.get('panel') || 'overview', false);
+
+  window.addEventListener('popstate', () => {
+    const panel = new URLSearchParams(window.location.search).get('panel') || 'overview';
+    activatePanel(panel, false);
+  });
 
   // Mobile sidebar
   document.getElementById('sidebarToggle')?.addEventListener('click', () => {
@@ -460,6 +500,16 @@
     srvSearch.addEventListener('input', function () {
       const q = this.value.toLowerCase();
       document.querySelectorAll('.service-row-item').forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+      });
+    });
+  }
+
+  const advisorySearch = document.getElementById('advisorySearch');
+  if (advisorySearch) {
+    advisorySearch.addEventListener('input', function () {
+      const q = this.value.toLowerCase();
+      document.querySelectorAll('.advisory-row-item').forEach(row => {
         row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
       });
     });

@@ -247,6 +247,7 @@ class CustomerReview(models.Model):
     role = models.CharField(max_length=120, blank=True, help_text="Example: Dog Owner, Shelter Volunteer")
     rating = models.PositiveSmallIntegerField(choices=RATING_CHOICES, default=5)
     message = models.TextField()
+    admin_reply = models.TextField(blank=True)
     is_approved = models.BooleanField(default=False)
     show_on_home = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)

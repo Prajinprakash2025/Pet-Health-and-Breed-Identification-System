@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .notifications-hero {
+        background: linear-gradient(180deg, #f0fdfa 0%, #ffffff 100%);
+        border: 1px solid #ccfbf1;
+    }
+
+    .notification-row {
+        border: 1px solid #e2e8f0;
+        transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    }
+
+    .notification-row:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
+        border-color: rgba(13, 148, 136, 0.22);
+    }
+
+    .notification-row.unread {
+        background: #f0fdfa;
+        border-color: #99f6e4;
+    }
+
+    .notification-copy {
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+</style>
+
+<section class="notifications-hero rounded-4 shadow-sm p-4 p-lg-5 my-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div>
+            <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2 mb-3">Notification center</span>
+            <h1 class="fw-bold text-dark display-6 mb-2">Your Notifications</h1>
+            <p class="text-muted mb-0">Missing pet reports, sightings, and found updates will collect here.</p>
+        </div>
+        {% if unread_notifications_count %}
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="mark_all_read" value="1">
+                <button type="submit" class="btn btn-primary rounded-pill px-4">Mark all as read</button>
+            </form>
+        {% endif %}
+    </div>
+</section>
+
+<section class="pb-5">
+    {% if notifications %}
+        <div class="d-flex flex-column gap-3">
+            {% for notification in notifications %}
+                <a href="{% url 'pets:missing_pet_detail' notification.missing_pet.id %}" class="notification-row {% if not notification.is_read %}unread{% else %}bg-white{% endif %} text-decoration-none rounded-4 p-4 shadow-sm">
+                    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+                        <div class="flex-grow-1">
+                            <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                                {% if not notification.is_read %}
+                                    <span class="badge bg-danger-subtle text-danger rounded-pill">New</span>
+                                {% endif %}
+                                <span class="badge bg-primary-subtle text-primary rounded-pill">{{ notification.get_event_type_display }}</span>
+                            </div>
+                            <h2 class="h5 fw-bold text-dark mb-2">{{ notification.title }}</h2>
+                            <p class="notification-copy text-muted mb-0">{{ notification.message }}</p>
+                        </div>
+                        <small class="text-muted" style="white-space: nowrap;">{{ notification.created_at|date:"M d, Y h:i A" }}</small>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="bg-white rounded-4 border shadow-sm p-5 text-center">
+            <h2 class="h4 fw-bold mb-2">No notifications yet</h2>
+            <p class="text-muted mb-4">When you report a missing pet, receive a sighting, or mark a pet found, updates will appear here.</p>
+            <a href="{% url 'pets:missing_pets_list' %}" class="btn btn-primary rounded-pill px-4">Open Missing Pets</a>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

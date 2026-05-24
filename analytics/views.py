@@ -10,6 +10,7 @@ def staff_required(view_func):
     )(view_func)
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
+from django.db import IntegrityError
 from django.db.models import Count, Q
 from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse
@@ -19,7 +20,8 @@ import zipfile
 import shutil
 import json
 
-from pets.models import Pet, BreedPrediction, HealthAssessment, MissingPet
+from pets.models import Pet, BreedPrediction, HealthAssessment, MissingPet, MissingPetNotification
+from pets.notifications import notify_found_status_changed
 from records.models import VaccinationRecord, MedicalRecord, Reminder
 from advisory.models import (
     CareAdvisory,
@@ -467,6 +469,11 @@ def bookings_section_view(request):
 @login_required
 def missing_pets_section_view(request):
     """Dedicated user missing-pet reports page."""
+    if request.method == "POST" and "mark_missing_notifications_read" in request.POST:
+        MissingPetNotification.objects.filter(user=request.user, is_read=False).update(is_read=True)
+        messages.success(request, "Missing-pet notifications marked as read.")
+        return redirect("analytics:missing_pets_section")
+
     reports = (
         MissingPet.objects.filter(owner=request.user)
         .select_related("pet")
@@ -477,6 +484,11 @@ def missing_pets_section_view(request):
     context = {
         "active_section": "missing_pets",
         "missing_reports": reports,
+        "missing_pet_notifications": MissingPetNotification.objects.filter(user=request.user)[:8],
+        "unread_missing_pet_notifications": MissingPetNotification.objects.filter(
+            user=request.user,
+            is_read=False,
+        ).count(),
         "total_missing_reports": reports.count(),
         "open_missing_reports": reports.filter(is_found=False).count(),
         "found_missing_reports": reports.filter(is_found=True).count(),
@@ -697,6 +709,113 @@ def ml_admin_dashboard(request):
             return redirect("analytics:ml_admin_dashboard")
 
         # ── Dataset upload ─────────────────────────────────────────────────
+        if "add_advisory" in request.POST:
+            CareAdvisory.objects.create(
+                species=request.POST.get("advisory_species", "both"),
+                category=request.POST.get("advisory_category", "diet"),
+                title=request.POST.get("advisory_title", "").strip(),
+                short_summary=request.POST.get("advisory_summary", "").strip(),
+                recommendation=request.POST.get("advisory_recommendation", "").strip(),
+                when_to_apply=request.POST.get("advisory_when", "").strip(),
+                is_active="advisory_active" in request.POST,
+            )
+            messages.success(request, "Care advisory added successfully.")
+            return redirect(reverse("analytics:ml_admin_dashboard") + "?panel=advisory")
+
+        if "edit_advisory_id" in request.POST:
+            advisory_id = request.POST.get("edit_advisory_id")
+            try:
+                advisory = CareAdvisory.objects.get(pk=advisory_id)
+                advisory.species = request.POST.get("advisory_species", "both")
+                advisory.category = request.POST.get("advisory_category", "diet")
+                advisory.title = request.POST.get("advisory_title", "").strip()
+                advisory.short_summary = request.POST.get("advisory_summary", "").strip()
+                advisory.recommendation = request.POST.get("advisory_recommendation", "").strip()
+                advisory.when_to_apply = request.POST.get("advisory_when", "").strip()
+                advisory.is_active = "advisory_active" in request.POST
+                advisory.save()
+                messages.success(request, f"Care advisory '{advisory.title}' updated successfully.")
+            except CareAdvisory.DoesNotExist:
+                messages.error(request, "Care advisory not found.")
+            return redirect(reverse("analytics:ml_admin_dashboard") + "?panel=advisory")
+
+        if "toggle_advisory_id" in request.POST:
+            advisory_id = request.POST.get("toggle_advisory_id")
+            try:
+                advisory = CareAdvisory.objects.get(pk=advisory_id)
+                advisory.is_active = not advisory.is_active
+                advisory.save(update_fields=["is_active", "updated_at"])
+                status = "active" if advisory.is_active else "inactive"
+                messages.success(request, f"Care advisory '{advisory.title}' marked as {status}.")
+            except CareAdvisory.DoesNotExist:
+                messages.error(request, "Care advisory not found.")
+            return redirect(reverse("analytics:ml_admin_dashboard") + "?panel=advisory")
+
+        if "delete_advisory_id" in request.POST:
+            advisory_id = request.POST.get("delete_advisory_id")
+            try:
+                advisory = CareAdvisory.objects.get(pk=advisory_id)
+                title = advisory.title
+                advisory.delete()
+                messages.success(request, f"Care advisory '{title}' has been removed.")
+            except CareAdvisory.DoesNotExist:
+                messages.error(request, "Care advisory not found.")
+            return redirect(reverse("analytics:ml_admin_dashboard") + "?panel=advisory")
+
+        if "add_vaccine_template" in request.POST:
+            try:
+                VaccinationScheduleTemplate.objects.create(
+                    species=request.POST.get("vaccine_species", "dog"),
+                    vaccine_name=request.POST.get("vaccine_name", "").strip(),
+                    recommended_age_weeks=max(int(request.POST.get("vaccine_age", 0) or 0), 0),
+                    repeat_interval_weeks=(
+                        int(request.POST["vaccine_repeat"])
+                        if request.POST.get("vaccine_repeat", "").strip()
+                        else None
+                    ),
+                    notes=request.POST.get("vaccine_notes", "").strip(),
+                )
+                messages.success(request, "Vaccination schedule template added successfully.")
+            except IntegrityError:
+                messages.error(request, "That vaccination template already exists.")
+            except ValueError:
+                messages.error(request, "Please enter valid numbers for vaccine age and booster interval.")
+            return redirect(reverse("analytics:ml_admin_dashboard") + "?panel=advisory")
+
+        if "edit_vaccine_template_id" in request.POST:
+            vaccine_id = request.POST.get("edit_vaccine_template_id")
+            try:
+                vaccine = VaccinationScheduleTemplate.objects.get(pk=vaccine_id)
+                vaccine.species = request.POST.get("vaccine_species", "dog")
+                vaccine.vaccine_name = request.POST.get("vaccine_name", "").strip()
+                vaccine.recommended_age_weeks = max(int(request.POST.get("vaccine_age", 0) or 0), 0)
+                vaccine.repeat_interval_weeks = (
+                    int(request.POST["vaccine_repeat"])
+                    if request.POST.get("vaccine_repeat", "").strip()
+                    else None
+                )
+                vaccine.notes = request.POST.get("vaccine_notes", "").strip()
+                vaccine.save()
+                messages.success(request, f"Vaccination template '{vaccine.vaccine_name}' updated successfully.")
+            except VaccinationScheduleTemplate.DoesNotExist:
+                messages.error(request, "Vaccination template not found.")
+            except IntegrityError:
+                messages.error(request, "That vaccination template already exists.")
+            except ValueError:
+                messages.error(request, "Please enter valid numbers for vaccine age and booster interval.")
+            return redirect(reverse("analytics:ml_admin_dashboard") + "?panel=advisory")
+
+        if "delete_vaccine_template_id" in request.POST:
+            vaccine_id = request.POST.get("delete_vaccine_template_id")
+            try:
+                vaccine = VaccinationScheduleTemplate.objects.get(pk=vaccine_id)
+                name = vaccine.vaccine_name
+                vaccine.delete()
+                messages.success(request, f"Vaccination template '{name}' has been removed.")
+            except VaccinationScheduleTemplate.DoesNotExist:
+                messages.error(request, "Vaccination template not found.")
+            return redirect(reverse("analytics:ml_admin_dashboard") + "?panel=advisory")
+
         if "dataset_zip" in request.FILES:
             upload = request.FILES["dataset_zip"]
             zip_name = upload.name.rsplit(".", 1)[0]
@@ -779,6 +898,7 @@ def ml_admin_dashboard(request):
                 report = MissingPet.objects.get(pk=report_id)
                 report.is_found = not report.is_found
                 report.save(update_fields=["is_found"])
+                notify_found_status_changed(report)
                 status = "found" if report.is_found else "missing"
                 messages.success(request, f"{report.pet_name} marked as {status}.")
             except MissingPet.DoesNotExist:
@@ -817,20 +937,20 @@ def ml_admin_dashboard(request):
                 role=request.POST.get("review_role", "").strip(),
                 rating=request.POST.get("review_rating", "5"),
                 message=request.POST.get("review_message", "").strip(),
-                is_approved="review_approved" in request.POST or show_on_home,
+                admin_reply=request.POST.get("review_reply", "").strip(),
+                is_approved=True,
                 show_on_home=show_on_home,
             )
             messages.success(request, "Review added successfully.")
             return redirect(reverse("analytics:ml_admin_dashboard") + "?panel=reviews")
 
-        if "publish_review_id" in request.POST:
-            review_id = request.POST.get("publish_review_id")
+        if "reply_review_id" in request.POST:
+            review_id = request.POST.get("reply_review_id")
             try:
                 review = CustomerReview.objects.get(pk=review_id)
-                review.is_approved = True
-                review.show_on_home = True
-                review.save(update_fields=["is_approved", "show_on_home", "updated_at"])
-                messages.success(request, f"Review from {review.name} is now visible on the home page.")
+                review.admin_reply = request.POST.get("review_reply", "").strip()
+                review.save(update_fields=["admin_reply", "updated_at"])
+                messages.success(request, f"Reply for {review.name}'s review was saved.")
             except CustomerReview.DoesNotExist:
                 messages.error(request, "Review not found.")
             return redirect(reverse("analytics:ml_admin_dashboard") + "?panel=reviews")
@@ -950,6 +1070,10 @@ def ml_admin_dashboard(request):
     # ── Services and Service type choices for service form ─────────────────
     services = PetService.objects.all()
     service_type_choices = PetService.SERVICE_TYPE_CHOICES
+    all_advisories = CareAdvisory.objects.all()
+    vaccine_templates = VaccinationScheduleTemplate.objects.all().order_by(
+        "species", "recommended_age_weeks", "vaccine_name"
+    )
 
     # ── Bookings for management ────────────────────────────────────────────
     all_bookings = ServiceBooking.objects.all().select_related("user", "pet_service", "vet_doctor").order_by("-created_at")
@@ -971,15 +1095,20 @@ def ml_admin_dashboard(request):
         "users": users,
         "doctors": doctors,
         "services": services,
+        "all_advisories": all_advisories,
+        "vaccine_templates": vaccine_templates,
         "all_bookings": all_bookings,
         "contact_messages": ContactMessage.objects.all(),
         "all_reviews": all_reviews,
-        "pending_reviews_count": all_reviews.filter(is_approved=False).count(),
+        "hidden_reviews_count": all_reviews.filter(show_on_home=False).count(),
         "home_reviews_count": all_reviews.filter(is_approved=True, show_on_home=True).count(),
         "all_missing_pets": all_missing_pets,
         "booking_status_choices": booking_status_choices,
         "specialization_choices": specialization_choices,
         "service_type_choices": service_type_choices,
+        "advisory_species_choices": CareAdvisory.SPECIES_CHOICES,
+        "advisory_category_choices": CareAdvisory.CATEGORY_CHOICES,
+        "vaccine_species_choices": VaccinationScheduleTemplate.SPECIES_CHOICES,
         # overview stats
         "total_users": total_users,
         "active_users": active_users,
@@ -1001,8 +1130,10 @@ def ml_admin_dashboard(request):
         # charts
         "species_labels": json.dumps(species_labels),
         "species_counts": json.dumps(species_counts),
+        "has_species_data": bool(species_counts),
         "health_labels": json.dumps(health_labels),
         "health_counts": json.dumps(health_counts),
+        "has_health_data": bool(health_counts),
         # recent activity
         "recent_users": recent_users,
         "recent_predictions_all": recent_predictions_all,

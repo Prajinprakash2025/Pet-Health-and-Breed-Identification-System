@@ -82,5 +82,5 @@ class ServiceBookingAdmin(admin.ModelAdmin):
 class CustomerReviewAdmin(admin.ModelAdmin):
     list_display = ("name", "role", "rating", "is_approved", "show_on_home", "created_at")
     list_filter = ("is_approved", "show_on_home", "rating", "created_at")
-    search_fields = ("name", "role", "message", "user__email", "user__username")
+    search_fields = ("name", "role", "message", "admin_reply", "user__email", "user__username")
     list_editable = ("is_approved", "show_on_home")

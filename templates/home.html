@@ -40,6 +40,64 @@
         font-weight: 700;
         min-width: 5.5rem;
     }
+
+    .review-section {
+        background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+        border: 1px solid #e2e8f0;
+    }
+
+    .review-card {
+        min-height: 245px;
+        border: 1px solid #e2e8f0;
+        transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    }
+
+    .review-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08) !important;
+        border-color: rgba(13, 148, 136, 0.22);
+    }
+
+    .review-message,
+    .review-reply-text,
+    .missing-preview-text {
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+
+    .review-message {
+        display: -webkit-box;
+        -webkit-line-clamp: 4;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        min-height: 5.6rem;
+    }
+
+    .review-reply {
+        background: #f8fafc;
+        border-left: 4px solid var(--primary-color);
+    }
+
+    .review-form-card {
+        max-width: 760px;
+        margin: 0 auto;
+        border: 1px solid #e2e8f0;
+    }
+
+    .community-card {
+        border: 1px solid #e2e8f0;
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .community-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+    }
+
+    .missing-mini-card {
+        border: 1px solid #fee2e2;
+        background: linear-gradient(135deg, #fff7ed 0%, #fff 65%);
+    }
 </style>
 
 <!-- Hero Section -->
@@ -145,29 +203,43 @@
 </div>
 
 <!-- Testimonials -->
-<div id="reviews" class="bg-light py-5 rounded-4 shadow-sm mb-5">
+<div id="reviews" class="review-section py-5 rounded-4 shadow-sm mb-5">
     <div class="container">
-        <div class="text-center mb-5">
-             <h2 class="fw-bold text-dark display-6">Happy Pet Owners</h2>
+        <div class="text-center mb-4">
+             <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2 mb-3">Latest community reviews</span>
+             <h2 class="fw-bold text-dark display-6 mb-2">Happy Pet Owners</h2>
+             <p class="text-muted mb-0">Showing the latest {{ featured_reviews|length }}{% if review_count > featured_reviews|length %} of {{ review_count }}{% endif %} published reviews so the home page stays clean.</p>
+             {% if review_count > featured_reviews|length %}
+                  <a href="{% url 'reviews' %}" class="btn btn-outline-primary rounded-pill px-4 mt-3">View all {{ review_count }} reviews</a>
+             {% endif %}
         </div>
         <div class="row g-4">
              {% if featured_reviews %}
                   {% for review in featured_reviews %}
                   <div class="col-md-6">
-                       <div class="bg-white p-4 rounded-4 shadow-sm border-0 h-100">
-                            <ul class="d-flex list-unstyled gap-1 mb-3 text-warning">
-                                 {% for _ in "12345" %}
-                                      <li>
-                                           {% if forloop.counter <= review.rating %}
-                                                <span style="font-size: 1.05rem; line-height: 1;">&#9733;</span>
-                                           {% else %}
-                                                <span class="text-secondary opacity-25" style="font-size: 1.05rem; line-height: 1;">&#9733;</span>
-                                           {% endif %}
-                                      </li>
-                                 {% endfor %}
-                            </ul>
-                            <p class="fst-italic text-muted">"{{ review.message }}"</p>
-                            <div class="d-flex align-items-center mt-4">
+                       <div class="review-card bg-white p-4 rounded-4 shadow-sm h-100 d-flex flex-column">
+                            <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+                                 <ul class="d-flex list-unstyled gap-1 mb-0 text-warning">
+                                      {% for _ in "12345" %}
+                                           <li>
+                                                {% if forloop.counter <= review.rating %}
+                                                     <span style="font-size: 1.05rem; line-height: 1;">&#9733;</span>
+                                                {% else %}
+                                                     <span class="text-secondary opacity-25" style="font-size: 1.05rem; line-height: 1;">&#9733;</span>
+                                                {% endif %}
+                                           </li>
+                                      {% endfor %}
+                                 </ul>
+                                 <span class="badge bg-light text-muted rounded-pill">{{ review.rating }}/5</span>
+                            </div>
+                             <p class="review-message fst-italic text-muted mb-3">"{{ review.message|truncatechars:260 }}"</p>
+                             {% if review.admin_reply %}
+                                  <div class="review-reply rounded-4 p-3 mt-auto mb-3">
+                                       <small class="text-primary fw-bold text-uppercase d-block mb-1">Admin Reply</small>
+                                       <p class="review-reply-text text-muted small mb-0">{{ review.admin_reply|truncatechars:150 }}</p>
+                                  </div>
+                             {% endif %}
+                            <div class="d-flex align-items-center mt-auto">
                                  <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold me-3" style="width: 40px; height: 40px;">{{ review.initials }}</div>
                                  <div>
                                       <h6 class="mb-0 fw-bold">{{ review.name }}</h6>
@@ -221,11 +293,11 @@
 
         <div class="row justify-content-center mt-4">
              <div class="col-lg-8">
-                  <div class="bg-white p-4 rounded-4 shadow-sm border-0">
+                  <div class="review-form-card bg-white p-4 rounded-4 shadow-sm">
                        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
                             <div>
                                  <h3 class="h4 fw-bold mb-1">Share Your Experience</h3>
-                                 <p class="text-muted small mb-0">Your review will appear here after admin approval.</p>
+                                  <p class="text-muted small mb-0">Your review will be published immediately. Admin may reply or hide inappropriate content.</p>
                             </div>
                             {% if user.is_authenticated %}
                                  <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2">Signed in as {{ user.get_full_name|default:user.username }}</span>
@@ -319,33 +391,51 @@
 
         <!-- Missing Pets & Sightings -->
         <div class="col-lg-6">
-            <div class="glass-card h-100">
-                <h2 class="h3 fw-bold mb-3">Missing Pets & Sightings</h2>
-                <p class="text-muted mb-4">
-                    Turn PetCare AI into a safety net for your community. Share missing pet alerts and let nearby users report when they see a pet that might match.
-                </p>
-
-                <div class="row g-3 mb-3">
-                    <div class="col-12">
-                        <div class="border rounded-4 p-3 bg-light">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <strong>Missing: Luna (Golden Retriever)</strong>
-                                <span class="badge bg-warning text-dark small">Sample alert</span>
-                            </div>
-                            <p class="text-muted small mb-2">
-                                Last seen near City Park on 12 March. Friendly and wearing a blue collar.
-                            </p>
-                            <span class="text-muted small">If you think you saw Luna, you could submit a quick sighting report.</span>
-                        </div>
+            <div class="community-card glass-card h-100">
+                <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+                    <div>
+                        <h2 class="h3 fw-bold mb-1">Missing Pets & Sightings</h2>
+                        <p class="text-muted mb-0">A cleaner community safety board with active missing alerts and sighting reports.</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <span class="badge bg-danger-subtle text-danger rounded-pill px-3">{{ open_missing_count }} active</span>
+                        <span class="badge bg-primary-subtle text-primary rounded-pill px-3">{{ community_sighting_count }} sightings</span>
                     </div>
                 </div>
 
+                <div class="d-flex flex-column gap-3 mb-4">
+                    {% if latest_missing_reports %}
+                        {% for report in latest_missing_reports %}
+                            <a href="{% url 'pets:missing_pet_detail' report.id %}" class="text-decoration-none">
+                                <div class="missing-mini-card rounded-4 p-3">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <img src="{{ report.photo.url }}" alt="{{ report.pet_name }}" style="width:58px;height:58px;border-radius:14px;object-fit:cover;">
+                                        <div class="flex-grow-1 min-width-0">
+                                            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                                                <strong class="text-dark">Missing: {{ report.pet_name }}</strong>
+                                                <span class="badge bg-warning text-dark rounded-pill">{{ report.sightings.count }} sightings</span>
+                                            </div>
+                                            <p class="missing-preview-text text-muted small mb-0">
+                                                Last seen near {{ report.last_seen_location }} on {{ report.last_seen_date|date:"M d, Y" }}.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        {% endfor %}
+                    {% else %}
+                        <div class="missing-mini-card rounded-4 p-4 text-center">
+                            <h6 class="fw-bold mb-1">No active missing pet alerts</h6>
+                            <p class="text-muted small mb-0">When someone reports a missing pet, the latest alerts will appear here.</p>
+                        </div>
+                    {% endif %}
+                </div>
 
                 <div class="d-flex flex-wrap gap-3">
-                    <a href="{% url 'pets:report_missing' %}" class="btn btn-primary">
+                    <a href="{% url 'pets:report_missing' %}" class="btn btn-primary rounded-pill px-4">
                         Report a missing pet
                     </a>
-                    <a href="{% url 'pets:missing_pets_list' %}" class="btn btn-outline-primary">
+                    <a href="{% url 'pets:missing_pets_list' %}" class="btn btn-outline-primary rounded-pill px-4">
                         Search Missing Pets
                     </a>
                 </div>

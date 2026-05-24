@@ -5,7 +5,7 @@ from advisory.views import contact
 from django.conf import settings
 from django.conf.urls.static import static
 from records.views import firebase_messaging_sw
-from .views import home
+from .views import home, reviews
 
 
 urlpatterns = [
@@ -19,6 +19,11 @@ urlpatterns = [
         "",
         home,
         name="home",
+    ),
+    path(
+        "reviews/",
+        reviews,
+        name="reviews",
     ),
     path(
         "about/",

@@ -525,11 +525,11 @@ def profile(request):
 def edit_profile(request):
     profile_obj, _ = UserProfile.objects.get_or_create(user=request.user)
     if request.method == "POST":
-        form = UserProfileForm(request.POST, instance=profile_obj)
+        form = UserProfileForm(request.POST, instance=profile_obj, user=request.user)
         if form.is_valid():
             form.save()
             return redirect("accounts:profile")
     else:
-        form = UserProfileForm(instance=profile_obj)
+        form = UserProfileForm(instance=profile_obj, user=request.user)
     return render(request, "accounts/profile_edit.html", {"form": form})
 

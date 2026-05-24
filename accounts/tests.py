@@ -142,3 +142,35 @@ class EmailAuthenticationTests(TestCase):
         )
         self.assertRedirects(response, reverse("home"))
         self.assertEqual(int(self.client.session["_auth_user_id"]), user.pk)
+
+
+class ProfileEditTests(TestCase):
+    def test_profile_edit_updates_display_name(self):
+        user = User.objects.create_user(
+            username="owner",
+            email="owner@example.com",
+            password="Strong-pass-2026",
+        )
+        self.client.force_login(user)
+
+        response = self.client.get(reverse("accounts:profile_edit"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'name="first_name"')
+        self.assertContains(response, 'name="last_name"')
+
+        response = self.client.post(
+            reverse("accounts:profile_edit"),
+            {
+                "first_name": "Akhil",
+                "last_name": "Santhosh",
+                "phone_number": "9876543210",
+                "address": "Home",
+                "city": "Kochi",
+                "country": "India",
+            },
+        )
+        self.assertRedirects(response, reverse("accounts:profile"))
+
+        user.refresh_from_db()
+        self.assertEqual(user.get_full_name(), "Akhil Santhosh")
+        self.assertContains(self.client.get(reverse("accounts:profile")), "Akhil Santhosh")

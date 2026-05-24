@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import BreedPrediction, HealthAssessment, Pet, MissingPet, PetSighting
+from .models import BreedPrediction, HealthAssessment, Pet, MissingPet, MissingPetNotification, PetSighting
 
 
 @admin.register(Pet)
@@ -37,3 +37,10 @@ class PetSightingAdmin(admin.ModelAdmin):
     list_display = ("missing_pet", "sighting_location", "sighting_date", "created_at")
     list_filter = ("sighting_date", "created_at")
     search_fields = ("missing_pet__pet_name", "sighting_location", "description")
+
+
+@admin.register(MissingPetNotification)
+class MissingPetNotificationAdmin(admin.ModelAdmin):
+    list_display = ("title", "user", "missing_pet", "event_type", "is_read", "created_at")
+    list_filter = ("event_type", "is_read", "created_at")
+    search_fields = ("title", "message", "user__email", "user__username", "missing_pet__pet_name")

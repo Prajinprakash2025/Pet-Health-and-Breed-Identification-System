@@ -69,6 +69,40 @@
         footer.footer a.text-muted:hover {
             color: var(--primary-color) !important;
         }
+        .notification-toggle {
+            position: relative;
+        }
+        .notification-badge {
+            position: absolute;
+            top: 0.1rem;
+            right: 0.25rem;
+            min-width: 1.15rem;
+            height: 1.15rem;
+            padding: 0 0.25rem;
+            border-radius: 999px;
+            background: #ef4444;
+            color: #ffffff;
+            font-size: 0.68rem;
+            line-height: 1.15rem;
+            text-align: center;
+            box-shadow: 0 0 0 2px #ffffff;
+        }
+        .notification-menu {
+            width: min(360px, calc(100vw - 1.5rem));
+        }
+        .notification-item {
+            border: 1px solid #e2e8f0;
+            background: #ffffff;
+            white-space: normal;
+        }
+        .notification-item.unread {
+            background: #f0fdfa;
+            border-color: #99f6e4;
+        }
+        .notification-message {
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
     </style>
 </head>
 <body class="{% block body_class %}{% endblock %}">
@@ -95,6 +129,55 @@
             </ul>
             <ul class="navbar-nav align-items-center">
                 {% if user.is_authenticated %}
+                    <li class="nav-item dropdown me-lg-2">
+                        <a class="nav-link notification-toggle d-flex align-items-center gap-2" href="#" id="notificationsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Notifications">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                                <path d="M8 16a2 2 0 0 0 1.985-1.75h-3.97A2 2 0 0 0 8 16zm.104-14.95A1 1 0 0 0 7 2v.086C4.72 2.57 3 4.59 3 7v2.382l-.724 1.447A1.5 1.5 0 0 0 3.618 13h8.764a1.5 1.5 0 0 0 1.342-2.171L13 9.382V7a5 5 0 0 0-4.896-4.95z"/>
+                            </svg>
+                            <span class="d-lg-none">Notifications</span>
+                            {% if nav_unread_notifications_count %}
+                                <span class="notification-badge">{{ nav_unread_notifications_count }}</span>
+                            {% endif %}
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end notification-menu shadow-lg border-0 mt-2 p-3 rounded-4" aria-labelledby="notificationsDropdown">
+                            <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                                <div>
+                                    <h6 class="fw-bold mb-1">Notifications</h6>
+                                    <small class="text-muted">{{ nav_unread_notifications_count }} unread</small>
+                                </div>
+                                {% if nav_unread_notifications_count %}
+                                    <form method="post" action="{% url 'pets:notifications' %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="mark_all_read" value="1">
+                                        <button type="submit" class="btn btn-sm btn-outline-primary rounded-pill">Mark read</button>
+                                    </form>
+                                {% endif %}
+                            </div>
+
+                            {% if nav_notifications %}
+                                <div class="d-flex flex-column gap-2">
+                                    {% for notification in nav_notifications %}
+                                        <a href="{% url 'pets:missing_pet_detail' notification.missing_pet.id %}" class="notification-item {% if not notification.is_read %}unread{% endif %} text-decoration-none rounded-3 p-3">
+                                            <div class="d-flex justify-content-between gap-2 mb-1">
+                                                <strong class="text-dark small">{{ notification.title }}</strong>
+                                                <small class="text-muted" style="white-space: nowrap;">{{ notification.created_at|date:"M d" }}</small>
+                                            </div>
+                                            <div class="notification-message text-muted small">{{ notification.message|truncatechars:110 }}</div>
+                                        </a>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <div class="fw-semibold text-dark mb-1">No notifications yet</div>
+                                    <p class="text-muted small mb-0">Missing pet updates will appear here.</p>
+                                </div>
+                            {% endif %}
+
+                            <div class="border-top mt-3 pt-3">
+                                <a href="{% url 'pets:notifications' %}" class="btn btn-primary rounded-pill w-100">View all notifications</a>
+                            </div>
+                        </div>
+                    </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown">
                              <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold" style="width: 34px; height: 34px; font-size: 13px;">

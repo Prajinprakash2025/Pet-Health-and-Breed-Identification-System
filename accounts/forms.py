@@ -175,13 +175,31 @@ class PasswordResetNewPasswordForm(SetPasswordForm):
 
 
 class UserProfileForm(forms.ModelForm):
+    first_name = forms.CharField(max_length=150, required=False)
+    last_name = forms.CharField(max_length=150, required=False)
+
     class Meta:
         model = UserProfile
-        fields = ("phone_number", "address", "city", "country")
+        fields = ("first_name", "last_name", "phone_number", "address", "city", "country")
 
     def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
+        if self.user is None and self.instance and self.instance.pk:
+            self.user = self.instance.user
+        if self.user is not None:
+            self.fields["first_name"].initial = self.user.first_name
+            self.fields["last_name"].initial = self.user.last_name
         for field in self.fields:
             self.fields[field].widget.attrs.update({'class': 'form-control'})
+
+    def save(self, commit: bool = True):
+        profile = super().save(commit=commit)
+        if self.user is not None:
+            self.user.first_name = self.cleaned_data.get("first_name", "").strip()
+            self.user.last_name = self.cleaned_data.get("last_name", "").strip()
+            if commit:
+                self.user.save(update_fields=["first_name", "last_name"])
+        return profile
 
 

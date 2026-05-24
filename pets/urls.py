@@ -14,6 +14,7 @@ urlpatterns = [
     path("<int:pet_id>/predict/", views.run_breed_prediction_view, name="run_breed_prediction"),
     path("<int:pet_id>/health-scan/", views.health_scan_view, name="health_scan"),
     path("<int:pet_id>/run-health-scan/", views.run_health_prediction_view, name="run_health_prediction"),
+    path("notifications/", views.notifications_view, name="notifications"),
     
     # Missing Pets
     path("missing/", views.missing_pets_list_view, name="missing_pets_list"),

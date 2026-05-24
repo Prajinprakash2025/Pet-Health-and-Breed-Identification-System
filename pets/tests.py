@@ -1,6 +1,7 @@
 from datetime import time
 
 from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
@@ -8,7 +9,7 @@ from django.utils import timezone
 from advisory.models import PetService, ServiceBooking
 from records.models import MedicalRecord, Reminder, VaccinationRecord
 
-from .models import HealthAssessment, MissingPet, Pet
+from .models import HealthAssessment, MissingPet, MissingPetNotification, Pet, PetSighting
 
 
 User = get_user_model()
@@ -130,6 +131,7 @@ class MissingPetDashboardTests(TestCase):
         self.assertContains(response, "Milo")
         self.assertContains(response, "Edit")
         self.assertContains(response, "Mark Found")
+        self.assertContains(response, "Missing Pet Notifications")
 
     def test_owner_can_update_missing_pet_report(self):
         self.client.force_login(self.user)
@@ -170,3 +172,138 @@ class MissingPetDashboardTests(TestCase):
         self.assertContains(response, "Missing Pet Reports")
         self.assertContains(response, "Milo")
         self.assertContains(response, "City Park")
+
+    def test_home_page_shows_live_missing_pet_preview(self):
+        response = self.client.get(reverse("home"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Missing: Milo")
+        self.assertContains(response, "City Park")
+        self.assertContains(response, "active")
+
+    def test_missing_report_creates_owner_notification(self):
+        self.client.force_login(self.user)
+
+        response = self.client.post(
+            reverse("pets:report_missing"),
+            {
+                "pet": self.pet.id,
+                "pet_name": "Juli",
+                "species": "dog",
+                "breed": "Beagle",
+                "description": "Red collar",
+                "last_seen_location": "Market Road",
+                "last_seen_date": timezone.localtime(timezone.now()).strftime("%Y-%m-%dT%H:%M"),
+                "contact_phone": "1112223333",
+                "photo": SimpleUploadedFile(
+                    "juli.gif",
+                    b"GIF87a\x01\x00\x01\x00\x80\x01\x00\x00\x00\x00ccc,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;",
+                    content_type="image/gif",
+                ),
+            },
+        )
+
+        self.assertRedirects(response, reverse("pets:missing_pets_list"))
+        self.assertTrue(
+            MissingPetNotification.objects.filter(
+                user=self.user,
+                event_type="missing_reported",
+                missing_pet__pet_name="Juli",
+            ).exists()
+        )
+
+    def test_sighting_creates_owner_notification(self):
+        response = self.client.post(
+            reverse("pets:missing_pet_detail", args=[self.report.id]),
+            {
+                "sighting_location": "Bus Stand",
+                "sighting_date": timezone.localtime(timezone.now()).strftime("%Y-%m-%dT%H:%M"),
+                "contact_info": "5555555555",
+                "description": "Saw a similar dog near the bus stand.",
+            },
+        )
+
+        self.assertRedirects(response, reverse("pets:missing_pet_detail", args=[self.report.id]))
+        self.assertTrue(PetSighting.objects.filter(missing_pet=self.report, sighting_location="Bus Stand").exists())
+        self.assertTrue(
+            MissingPetNotification.objects.filter(
+                user=self.user,
+                missing_pet=self.report,
+                event_type="sighting_reported",
+                message__icontains="Bus Stand",
+            ).exists()
+        )
+
+    def test_found_status_creates_owner_notification(self):
+        self.client.force_login(self.user)
+
+        response = self.client.post(reverse("pets:toggle_missing_pet_found", args=[self.report.id]))
+
+        self.assertRedirects(response, reverse("analytics:missing_pets_section"))
+        self.report.refresh_from_db()
+        self.assertTrue(self.report.is_found)
+        self.assertTrue(
+            MissingPetNotification.objects.filter(
+                user=self.user,
+                missing_pet=self.report,
+                event_type="marked_found",
+            ).exists()
+        )
+
+    def test_owner_can_mark_missing_pet_notifications_read(self):
+        MissingPetNotification.objects.create(
+            user=self.user,
+            missing_pet=self.report,
+            event_type="sighting_reported",
+            title="New sighting for Milo",
+            message="Someone reported seeing Milo near City Park.",
+        )
+        self.client.force_login(self.user)
+
+        response = self.client.post(
+            reverse("analytics:missing_pets_section"),
+            {"mark_missing_notifications_read": "1"},
+        )
+
+        self.assertRedirects(response, reverse("analytics:missing_pets_section"))
+        self.assertFalse(MissingPetNotification.objects.filter(user=self.user, is_read=False).exists())
+
+    def test_navbar_shows_latest_notifications_for_user(self):
+        MissingPetNotification.objects.create(
+            user=self.user,
+            missing_pet=self.report,
+            event_type="sighting_reported",
+            title="New sighting for Milo",
+            message="Someone reported seeing Milo near City Park.",
+        )
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse("home"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Notifications")
+        self.assertContains(response, "New sighting for Milo")
+        self.assertContains(response, "View all notifications")
+        self.assertEqual(response.context["nav_unread_notifications_count"], 1)
+
+    def test_notifications_page_lists_and_marks_notifications_read(self):
+        MissingPetNotification.objects.create(
+            user=self.user,
+            missing_pet=self.report,
+            event_type="marked_found",
+            title="Milo marked found",
+            message="Milo has been marked as found.",
+        )
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse("pets:notifications"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Your Notifications")
+        self.assertContains(response, "Milo marked found")
+        self.assertContains(response, "New")
+
+        response = self.client.post(reverse("pets:notifications"), {"mark_all_read": "1"})
+
+        self.assertRedirects(response, reverse("pets:notifications"))
+        self.assertFalse(MissingPetNotification.objects.filter(user=self.user, is_read=False).exists())

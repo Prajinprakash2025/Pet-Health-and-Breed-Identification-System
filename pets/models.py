@@ -106,3 +106,33 @@ class PetSighting(models.Model):
 
     def __str__(self):
         return f"Sighting for {self.missing_pet.pet_name} at {self.sighting_location}"
+
+
+class MissingPetNotification(models.Model):
+    EVENT_CHOICES = [
+        ("missing_reported", "Missing pet reported"),
+        ("sighting_reported", "Sighting reported"),
+        ("marked_found", "Pet marked found"),
+        ("reopened_missing", "Missing report reopened"),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="missing_pet_notifications")
+    missing_pet = models.ForeignKey(MissingPet, on_delete=models.CASCADE, related_name="notifications")
+    sighting = models.ForeignKey(
+        PetSighting,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="notifications",
+    )
+    event_type = models.CharField(max_length=30, choices=EVENT_CHOICES)
+    title = models.CharField(max_length=160)
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.title} for {self.user}"
