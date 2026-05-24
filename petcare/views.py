@@ -32,10 +32,12 @@ def home(request):
     else:
         review_form = CustomerReviewForm()
 
-    featured_reviews = CustomerReview.objects.filter(
+    home_reviews = list(CustomerReview.objects.filter(
         is_approved=True,
         show_on_home=True,
-    ).order_by("-updated_at", "-created_at")[:4]
+    ).order_by("-updated_at", "-created_at")[:8])
+    featured_reviews = home_reviews[:4]
+    additional_reviews = home_reviews[4:]
     review_count = CustomerReview.objects.filter(is_approved=True, show_on_home=True).count()
     latest_missing_reports = (
         MissingPet.objects.filter(is_found=False)
@@ -48,6 +50,7 @@ def home(request):
         "home.html",
         {
             "featured_reviews": featured_reviews,
+            "additional_reviews": additional_reviews,
             "review_count": review_count,
             "review_form": review_form,
             "latest_missing_reports": latest_missing_reports,
