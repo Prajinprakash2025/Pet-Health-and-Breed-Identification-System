@@ -1,8 +1,15 @@
+from urllib.parse import urljoin
+
+from django.conf import settings
+from django.urls import reverse
+
+from records.push_utils import send_user_push
+
 from .models import MissingPetNotification
 
 
 def create_missing_pet_notification(report, event_type, title, message, sighting=None):
-    return MissingPetNotification.objects.create(
+    notification = MissingPetNotification.objects.create(
         user=report.owner,
         missing_pet=report,
         sighting=sighting,
@@ -10,6 +17,12 @@ def create_missing_pet_notification(report, event_type, title, message, sighting
         title=title,
         message=message,
     )
+    detail_url = urljoin(
+        f"{settings.SITE_URL}/",
+        reverse("pets:missing_pet_detail", args=[report.id]).lstrip("/"),
+    )
+    send_user_push(report.owner, title, message, detail_url)
+    return notification
 
 
 def notify_missing_report_created(report):

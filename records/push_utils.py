@@ -106,3 +106,45 @@ def send_reminder_push(reminder, dry_run=False):
     if failures:
         return False, "; ".join(failures[:2])
     return False, "all push tokens are inactive"
+
+
+def send_user_push(user, title, body, url, dry_run=False):
+    tokens = list(PushNotificationToken.objects.filter(user=user, is_active=True))
+    if not tokens:
+        return False, "missing push token"
+
+    if dry_run:
+        return True, f"dry run for {len(tokens)} device(s)"
+
+    messaging = _get_firebase_messaging()
+    sent_count = 0
+    inactive_count = 0
+    failures = []
+
+    for token in tokens:
+        message = messaging.Message(
+            notification=messaging.Notification(title=title, body=body),
+            data={"url": url},
+            token=token.token,
+        )
+        try:
+            messaging.send(message)
+        except Exception as exc:
+            if _should_deactivate_token(exc):
+                token.is_active = False
+                token.save(update_fields=["is_active", "updated_at"])
+                inactive_count += 1
+                continue
+            failures.append(str(exc))
+            continue
+        sent_count += 1
+
+    if sent_count:
+        details = f"sent to {sent_count} device(s)"
+        if inactive_count:
+            details += f", deactivated {inactive_count} expired token(s)"
+        return True, details
+
+    if failures:
+        return False, "; ".join(failures[:2])
+    return False, "all push tokens are inactive"

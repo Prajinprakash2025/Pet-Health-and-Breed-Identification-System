@@ -1,6 +1,7 @@
 import json
 from io import StringIO
 from datetime import timedelta
+from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.core import mail
@@ -12,6 +13,7 @@ from django.utils import timezone
 from pets.models import Pet
 
 from .models import PushNotificationToken, Reminder
+from .push_utils import send_user_push
 
 
 User = get_user_model()
@@ -174,3 +176,41 @@ class ReminderPushNotificationTests(TestCase):
         output = out.getvalue()
         self.assertIn(due_now.title, output)
         self.assertNotIn(later.title, output)
+
+    def test_send_user_push_uses_firebase_token_and_url(self):
+        class FakeMessaging:
+            sent_messages = []
+
+            class Notification:
+                def __init__(self, title, body):
+                    self.title = title
+                    self.body = body
+
+            class Message:
+                def __init__(self, notification, data, token):
+                    self.notification = notification
+                    self.data = data
+                    self.token = token
+
+            @classmethod
+            def send(cls, message):
+                cls.sent_messages.append(message)
+
+        PushNotificationToken.objects.create(user=self.user, token="test-fcm-token")
+
+        with patch("records.push_utils._get_firebase_messaging", return_value=FakeMessaging):
+            sent, reason = send_user_push(
+                self.user,
+                "New sighting for Milo",
+                "Someone reported seeing Milo near City Park.",
+                "http://127.0.0.1:8000/pets/missing/1/",
+            )
+
+        self.assertTrue(sent)
+        self.assertEqual(reason, "sent to 1 device(s)")
+        self.assertEqual(len(FakeMessaging.sent_messages), 1)
+        message = FakeMessaging.sent_messages[0]
+        self.assertEqual(message.notification.title, "New sighting for Milo")
+        self.assertEqual(message.notification.body, "Someone reported seeing Milo near City Park.")
+        self.assertEqual(message.data["url"], "http://127.0.0.1:8000/pets/missing/1/")
+        self.assertEqual(message.token, "test-fcm-token")

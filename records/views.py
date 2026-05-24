@@ -200,11 +200,11 @@ const messaging = firebase.messaging();
 messaging.onBackgroundMessage((payload) => {{
     const notification = payload.notification || {{}};
     const data = payload.data || {{}};
-    const title = notification.title || "PetCare Reminder";
+    const title = notification.title || "PetCare Notification";
     const options = {{
-        body: notification.body || "You have a pet care reminder.",
+        body: notification.body || "You have a new PetCare update.",
         data: {{
-            url: data.url || "/records/reminders/",
+            url: data.url || "/pets/notifications/",
         }},
     }};
     if (data.icon) {{
@@ -217,7 +217,7 @@ self.addEventListener("notificationclick", (event) => {{
     event.notification.close();
     const url = event.notification.data && event.notification.data.url
         ? event.notification.data.url
-        : "/records/reminders/";
+        : "/pets/notifications/";
     event.waitUntil(clients.openWindow(url));
 }});
 """

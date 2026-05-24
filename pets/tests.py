@@ -1,4 +1,5 @@
 from datetime import time
+from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -213,15 +214,16 @@ class MissingPetDashboardTests(TestCase):
         )
 
     def test_sighting_creates_owner_notification(self):
-        response = self.client.post(
-            reverse("pets:missing_pet_detail", args=[self.report.id]),
-            {
-                "sighting_location": "Bus Stand",
-                "sighting_date": timezone.localtime(timezone.now()).strftime("%Y-%m-%dT%H:%M"),
-                "contact_info": "5555555555",
-                "description": "Saw a similar dog near the bus stand.",
-            },
-        )
+        with patch("pets.notifications.send_user_push") as send_user_push:
+            response = self.client.post(
+                reverse("pets:missing_pet_detail", args=[self.report.id]),
+                {
+                    "sighting_location": "Bus Stand",
+                    "sighting_date": timezone.localtime(timezone.now()).strftime("%Y-%m-%dT%H:%M"),
+                    "contact_info": "5555555555",
+                    "description": "Saw a similar dog near the bus stand.",
+                },
+            )
 
         self.assertRedirects(response, reverse("pets:missing_pet_detail", args=[self.report.id]))
         self.assertTrue(PetSighting.objects.filter(missing_pet=self.report, sighting_location="Bus Stand").exists())
@@ -233,6 +235,12 @@ class MissingPetDashboardTests(TestCase):
                 message__icontains="Bus Stand",
             ).exists()
         )
+        send_user_push.assert_called_once()
+        push_user, push_title, push_message, push_url = send_user_push.call_args.args
+        self.assertEqual(push_user, self.user)
+        self.assertEqual(push_title, "New sighting for Milo")
+        self.assertIn("Bus Stand", push_message)
+        self.assertIn(reverse("pets:missing_pet_detail", args=[self.report.id]), push_url)
 
     def test_found_status_creates_owner_notification(self):
         self.client.force_login(self.user)
