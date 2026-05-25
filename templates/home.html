@@ -12,6 +12,14 @@
         --border-color: #e2e8f0;
     }
 
+    body {
+        background-color: #f1f7f5 !important;
+        background-image: 
+            radial-gradient(circle at 10% 20%, rgba(13, 148, 136, 0.04) 0%, transparent 40%),
+            radial-gradient(circle at 90% 80%, rgba(249, 115, 22, 0.03) 0%, transparent 40%) !important;
+    }
+
+
     /* Original Features & Hero Elements */
     .home-hero {
         position: relative;
@@ -793,32 +801,32 @@
 
                 <!-- Empty State / Sighting reports -->
                 <div class="missing-body-split">
-                    {% if latest_missing_reports %}
-                        <div class="w-100 d-flex flex-column gap-3" style="max-height: 180px; overflow-y: auto;">
-                            {% for report in latest_missing_reports %}
-                                <a href="{% url 'pets:missing_pet_detail' report.id %}" class="text-decoration-none d-flex align-items-center gap-3 p-2 bg-white border border-light rounded-4 shadow-sm">
-                                    <img src="{{ report.photo.url }}" alt="{{ report.pet_name }}" style="width:50px;height:50px;border-radius:10px;object-fit:cover;flex-shrink:0;">
-                                    <div class="flex-grow-1 min-width-0">
-                                        <div class="d-flex align-items-center justify-content-between">
-                                            <strong class="text-dark small">Missing: {{ report.pet_name }}</strong>
-                                            <span class="badge bg-warning-subtle text-warning small px-2 py-1 rounded-pill">{{ report.sightings.count }} sightings</span>
+                    <div class="illustration-container d-none d-sm-block">
+                        <img src="{% static 'images/missing_pet_vector.png' %}" alt="Illustration playing with dog" class="illustration-img">
+                    </div>
+                    <div class="flex-grow-1 min-width-0">
+                        {% if latest_missing_reports %}
+                            <div class="d-flex flex-column gap-2" style="max-height: 145px; overflow-y: auto; padding-right: 0.25rem;">
+                                {% for report in latest_missing_reports %}
+                                    <a href="{% url 'pets:missing_pet_detail' report.id %}" class="text-decoration-none d-flex align-items-center gap-3 p-2 bg-white border border-light rounded-4 shadow-sm" style="border-left: 4px solid #ef4444 !important; transition: transform 0.2s ease;">
+                                        <img src="{{ report.photo.url }}" alt="{{ report.pet_name }}" style="width:44px;height:44px;border-radius:10px;object-fit:cover;flex-shrink:0;">
+                                        <div class="flex-grow-1 min-width-0">
+                                            <div class="d-flex align-items-center justify-content-between gap-2">
+                                                <strong class="text-dark small text-truncate">Missing: {{ report.pet_name }}</strong>
+                                                <span class="badge bg-warning-subtle text-warning small px-2 py-1 rounded-pill" style="font-size: 0.65rem;">{{ report.sightings.count }} sightings</span>
+                                            </div>
+                                            <p class="text-muted small mb-0 text-truncate" style="font-size: 0.75rem;">Last seen: {{ report.last_seen_location }}</p>
                                         </div>
-                                        <p class="text-muted small mb-0 text-truncate">Last seen near {{ report.last_seen_location }}</p>
-                                    </div>
-                                </a>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <div class="illustration-container">
-                            <img src="{% static 'images/missing_pet_vector.png' %}" alt="Illustration playing with dog" class="illustration-img">
-                        </div>
-                        <div>
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        {% else %}
                             <h3 class="empty-state-title">No active missing pet alerts</h3>
                             <p class="empty-state-text">
                                 When someone reports a missing pet, the latest alerts will appear here.
                             </p>
-                        </div>
-                    {% endif %}
+                        {% endif %}
+                    </div>
                 </div>
 
                 <!-- Bottom Buttons Split row -->
