@@ -61,8 +61,10 @@ def home(request):
             "latest_missing_reports": latest_missing_reports,
             "open_missing_count": MissingPet.objects.filter(is_found=False).count(),
             "community_sighting_count": PetSighting.objects.count(),
+            "user_pets": Pet.objects.filter(owner=request.user) if request.user.is_authenticated else None,
         },
     )
+
 
 
 def reviews(request):

@@ -140,8 +140,10 @@
         border-radius: 20px;
         overflow: hidden;
         margin-bottom: 1.5rem;
-        width: 100%;
-        height: 300px;
+        width: calc(100% + 4.5rem);
+        margin-left: -2.25rem;
+        margin-right: -2.25rem;
+        height: 320px;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
     }
 
@@ -158,9 +160,12 @@
         text-transform: uppercase;
         letter-spacing: 0.05em;
         font-size: 0.85rem;
-        border-radius: 12px;
-        padding: 0.9rem 1.5rem;
-        width: 100%;
+        border-radius: 0 0 24px 24px;
+        padding: 1.1rem 1.5rem;
+        width: calc(100% + 4.5rem);
+        margin-left: -2.25rem;
+        margin-right: -2.25rem;
+        margin-bottom: -2.25rem;
         text-align: center;
         border: none;
         transition: background-color 0.2s ease, transform 0.15s ease;
@@ -173,6 +178,12 @@
         background-color: var(--primary-green-hover);
         color: #ffffff;
     }
+
+    /* Pattern background paw pattern */
+    .pattern-bg {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='%230d9488' fill-opacity='0.02'%3E%3Cpath d='M90 15c2.2 0 4-1.8 4-4s-1.8-4-4-4-4 1.8-4 4 1.8 4 4 4zm8 8c2.2 0 4-1.8 4-4s-1.8-4-4-4-4 1.8-4 4 1.8 4 4 4zm-16 0c2.2 0 4-1.8 4-4s-1.8-4-4-4-4 1.8-4 4 1.8 4 4 4zm8 8c3.3 0 6-2.7 6-6s-2.7-6-6-6-6 2.7-6 6 2.7 6 6 6zm-50 40c2.2 0 4-1.8 4-4s-1.8-4-4-4-4 1.8-4 4 1.8 4 4 4zm8 8c2.2 0 4-1.8 4-4s-1.8-4-4-4-4 1.8-4 4 1.8 4 4 4zm-16 0c2.2 0 4-1.8 4-4s-1.8-4-4-4-4 1.8-4 4 1.8 4 4 4zm8 8c3.3 0 6-2.7 6-6s-2.7-6-6-6-6 2.7-6 6 2.7 6 6 6z'/%3E%3C/g%3E%3C/svg%3E");
+    }
+
 
     /* Right Card: Missing Pets & Sightings */
     .bell-btn {
@@ -753,7 +764,7 @@
     <div class="row g-4">
         <!-- Card 1: Your Pet Gallery -->
         <div class="col-lg-6 col-12">
-            <div class="home-card">
+            <div class="home-card pattern-bg">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h2 class="card-title-text mb-0">Your Pet Gallery</h2>
                     <span class="card-badge">For registered users</span>
@@ -761,9 +772,31 @@
                 <p class="card-desc">
                     Keep all your pets in one beautiful dashboard. Add profiles, upload photos and let PetCare AI keep track of health, breed details, and vet visits.
                 </p>
-                <div class="gallery-img-container">
-                    <img src="{% static 'images/pet_gallery_bed.png' %}" alt="Stunning Dog and Cat on bed" class="gallery-img">
-                </div>
+                {% if user_pets %}
+                    <div class="d-flex gap-3 mb-4 overflow-auto py-2" style="max-height: 310px; width: calc(100% + 4.5rem); margin-left: -2.25rem; margin-right: -2.25rem; padding: 0.25rem 2.25rem;">
+                        {% for pet in user_pets %}
+                            <a href="{% url 'pets:pet_detail' pet.id %}" class="text-decoration-none d-block flex-shrink-0" style="width: 170px; transition: transform 0.2s ease;">
+                                <div class="bg-white border border-light rounded-4 shadow-sm overflow-hidden h-100 p-2" style="border: 1px solid #f1f5f9;">
+                                    {% if pet.image %}
+                                        <img src="{{ pet.image.url }}" alt="{{ pet.name }}" style="width:100%; height:120px; object-fit:cover; border-radius:12px;">
+                                    {% else %}
+                                        <div class="d-flex align-items-center justify-content-center bg-light text-muted fw-bold" style="width:100%; height:120px; border-radius:12px; font-size: 2.2rem;">
+                                            {% if pet.species == "dog" %}🐕{% else %}🐈{% endif %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="mt-2 text-center">
+                                        <h5 class="fw-bold text-dark mb-0 text-truncate" style="font-size: 0.9rem;">{{ pet.name }}</h5>
+                                        <span class="text-muted small text-truncate d-block" style="font-size: 0.72rem;">{{ pet.get_species_display }}{% if pet.breed %} · {{ pet.breed }}{% endif %}</span>
+                                    </div>
+                                </div>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="gallery-img-container">
+                        <img src="{% static 'images/pet_gallery_bed.png' %}" alt="Stunning Dog and Cat on bed" class="gallery-img">
+                    </div>
+                {% endif %}
                 <a href="{% url 'pets:pet_add' %}" class="btn-green-wide">
                     + Add A New Pet
                 </a>
@@ -772,7 +805,7 @@
 
         <!-- Card 2: Missing Pets & Sightings -->
         <div class="col-lg-6 col-12">
-            <div class="home-card">
+            <div class="home-card pattern-bg">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h2 class="card-title-text mb-0">Missing Pets & Sightings</h2>
                     <!-- Bell notification button -->
