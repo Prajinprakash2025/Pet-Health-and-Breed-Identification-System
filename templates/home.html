@@ -3,10 +3,568 @@
 
 {% block content %}
 <style>
+    :root {
+        --primary-green: #0d9488;
+        --primary-green-hover: #0f766e;
+        --bg-light: #f8fafc;
+        --text-slate: #0f172a;
+        --text-muted: #64748b;
+        --border-color: #e2e8f0;
+    }
+
+    /* Original Features & Hero Elements */
     .home-hero {
         position: relative;
     }
 
+    .feature-card {
+        background: white;
+        border-radius: 16px;
+        padding: 2.5rem 1.5rem;
+        height: 100%;
+        border: 1px solid #E5E7EB;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+    }
+
+    .feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: linear-gradient(180deg, rgba(13, 148, 136, 0.05) 0%, rgba(255,255,255,0) 100%);
+        z-index: -1;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        border-color: var(--primary-green);
+    }
+    
+    .feature-card:hover::before {
+        opacity: 1;
+    }
+
+    .icon-wrapper {
+        width: 64px;
+        height: 64px;
+        background: var(--primary-green);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 10px 15px -3px rgba(13, 148, 136, 0.4);
+        transition: transform 0.3s ease;
+    }
+
+    .icon-wrapper svg {
+        width: 32px;
+        height: 32px;
+    }
+
+    .feature-card:hover .icon-wrapper {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    .feature-title {
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: var(--text-slate);
+    }
+
+    .feature-text {
+        color: var(--text-muted);
+        line-height: 1.6;
+        font-size: 0.92rem;
+    }
+
+    /* Redesigned Grid Dashboard Cards */
+    .home-card {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: 24px;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+        padding: 2.25rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+    }
+
+    .home-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 35px rgba(15, 23, 42, 0.06);
+    }
+
+    .card-badge {
+        font-size: 0.68rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        background-color: #f0fdfa;
+        color: var(--primary-green);
+        padding: 0.35rem 0.75rem;
+        border-radius: 999px;
+    }
+
+    .card-title-text {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: var(--text-slate);
+        letter-spacing: -0.5px;
+    }
+
+    .card-desc {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        line-height: 1.5;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Left Card: Pet Gallery */
+    .gallery-img-container {
+        border-radius: 20px;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+        width: 100%;
+        height: 300px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .gallery-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .btn-green-wide {
+        background-color: var(--primary-green);
+        color: #ffffff;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-size: 0.85rem;
+        border-radius: 12px;
+        padding: 0.9rem 1.5rem;
+        width: 100%;
+        text-align: center;
+        border: none;
+        transition: background-color 0.2s ease, transform 0.15s ease;
+        margin-top: auto;
+        display: inline-block;
+        text-decoration: none;
+    }
+
+    .btn-green-wide:hover {
+        background-color: var(--primary-green-hover);
+        color: #ffffff;
+    }
+
+    /* Right Card: Missing Pets & Sightings */
+    .bell-btn {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background-color: #fdf2f8;
+        color: #db2777;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        transition: transform 0.2s ease;
+        position: absolute;
+        top: 2rem;
+        right: 2rem;
+    }
+
+    .bell-btn:hover {
+        transform: scale(1.05);
+    }
+
+    .bell-dot {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 8px;
+        height: 8px;
+        background-color: #ef4444;
+        border-radius: 50%;
+        box-shadow: 0 0 0 2px #fdf2f8;
+    }
+
+    .stats-badges-row {
+        display: flex;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .stat-badge-missing {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 0.35rem 0.85rem;
+        border-radius: 999px;
+    }
+
+    .stat-badge-missing.active-alerts {
+        background-color: #fef2f2;
+        color: #ef4444;
+    }
+
+    .stat-badge-missing.sightings {
+        background-color: #eff6ff;
+        color: #3b82f6;
+    }
+
+    /* Empty state inner layout */
+    .missing-body-split {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        background-color: #fafafa;
+        border-radius: 20px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        height: 100%;
+    }
+
+    .illustration-container {
+        width: 140px;
+        height: 140px;
+        flex-shrink: 0;
+    }
+
+    .illustration-img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    .empty-state-title {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--text-slate);
+        margin-bottom: 0.25rem;
+    }
+
+    .empty-state-text {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        line-height: 1.4;
+        margin-bottom: 0;
+    }
+
+    /* Buttons block at bottom of right card */
+    .buttons-row-split {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+        margin-top: auto;
+    }
+
+    .btn-green-split {
+        background-color: var(--primary-green);
+        color: #ffffff;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-size: 0.8rem;
+        border-radius: 12px;
+        padding: 0.9rem 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        border: none;
+        transition: background-color 0.2s ease;
+        text-decoration: none;
+    }
+
+    .btn-green-split:hover {
+        background-color: var(--primary-green-hover);
+        color: #ffffff;
+    }
+
+    .btn-white-split {
+        background-color: #ffffff;
+        color: var(--text-slate);
+        border: 1px solid var(--border-color);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-size: 0.8rem;
+        border-radius: 12px;
+        padding: 0.9rem 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        transition: background-color 0.2s ease, border-color 0.2s ease;
+        text-decoration: none;
+    }
+
+    .btn-white-split:hover {
+        background-color: #fafafa;
+        border-color: var(--text-muted);
+        color: var(--text-slate);
+    }
+
+    /* Feature Capabilities Horizontal Bar */
+    .capabilities-card {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: 24px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+        padding: 1.75rem 2rem;
+        margin-top: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .capability-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        height: 100%;
+    }
+
+    .capability-icon-circle {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background-color: #ecfeff;
+        color: var(--primary-green);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .capability-title {
+        font-size: 0.9rem;
+        font-weight: 800;
+        color: var(--text-slate);
+        margin-bottom: 0.2rem;
+    }
+
+    .capability-desc {
+        font-size: 0.78rem;
+        color: var(--text-muted);
+        line-height: 1.35;
+        margin-bottom: 0;
+    }
+
+    /* Testimonials Header */
+    .testimonials-header-block {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+    }
+
+    .testimonials-title {
+        font-size: 1.85rem;
+        font-weight: 800;
+        color: var(--text-slate);
+        letter-spacing: -0.5px;
+        margin-bottom: 0.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .testimonials-subtitle {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        margin-bottom: 0;
+    }
+
+    .btn-outline-green {
+        background-color: #ffffff;
+        color: var(--primary-green);
+        border: 1.5px solid var(--primary-green);
+        font-weight: 700;
+        font-size: 0.8rem;
+        border-radius: 12px;
+        padding: 0.75rem 1.25rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        text-decoration: none;
+    }
+
+    .btn-outline-green:hover {
+        background-color: var(--primary-green);
+        color: #ffffff;
+    }
+
+    /* Carousel with outer controls */
+    .testimonial-carousel-container {
+        position: relative;
+        padding: 0 3.5rem;
+        margin-bottom: 3.5rem;
+    }
+
+    .carousel-control-outer {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #ffffff;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-slate);
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 10;
+        transition: all 0.2s ease;
+        opacity: 1;
+    }
+
+    .carousel-control-outer:hover {
+        background-color: var(--primary-green);
+        color: #ffffff;
+        border-color: var(--primary-green);
+    }
+
+    .carousel-control-outer.control-left {
+        left: 0;
+    }
+
+    .carousel-control-outer.control-right {
+        right: 0;
+    }
+
+    /* Testimonial Card */
+    .testimonial-card {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        padding: 1.75rem;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.03);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.2s ease;
+        position: relative;
+    }
+
+    .testimonial-card:hover {
+        transform: translateY(-2px);
+    }
+
+    .stars-row {
+        display: flex;
+        gap: 0.15rem;
+        color: #fbbf24;
+        font-size: 0.95rem;
+    }
+
+    .rating-value-badge {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--text-muted);
+        position: absolute;
+        top: 1.75rem;
+        right: 1.75rem;
+    }
+
+    .quote-content {
+        font-size: 0.92rem;
+        line-height: 1.55;
+        color: var(--text-slate);
+        font-weight: 500;
+        margin-top: 1rem;
+        margin-bottom: 1.5rem;
+        flex-grow: 1;
+        position: relative;
+    }
+
+    .testimonial-user {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+        margin-top: auto;
+    }
+
+    .user-avatar-circle {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        overflow: hidden;
+        background: linear-gradient(135deg, #0d9488, #818cf8);
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.85rem;
+        flex-shrink: 0;
+    }
+
+    .user-avatar-circle img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .user-name {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--text-slate);
+        margin-bottom: 0.05rem;
+    }
+
+    .user-role {
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        font-weight: 600;
+    }
+
+    /* Carousel Dot Indicators */
+    .carousel-dots {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 1.5rem;
+        margin-bottom: 0;
+        padding-left: 0;
+        list-style: none;
+    }
+
+    .carousel-dot-btn {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: var(--border-color);
+        border: none;
+        padding: 0;
+        transition: background-color 0.2s ease, width 0.2s ease;
+    }
+
+    .carousel-dot-btn.active {
+        background-color: var(--primary-green);
+        width: 24px;
+        border-radius: 4px;
+    }
+
+    /* Review Form Elements */
     .review-star-picker {
         display: inline-flex;
         align-items: center;
@@ -45,217 +603,6 @@
         min-width: 5.5rem;
     }
 
-    .review-section {
-        position: relative;
-        overflow: hidden;
-        background:
-            radial-gradient(circle at 9% 88%, rgba(34, 197, 94, 0.12) 0 11rem, transparent 11.2rem),
-            radial-gradient(circle at 91% 88%, rgba(13, 148, 136, 0.1) 0 10rem, transparent 10.3rem),
-            linear-gradient(135deg, #fff7ed 0%, #ffffff 36%, #effaf7 100%);
-        border: 1px solid rgba(13, 148, 136, 0.1);
-    }
-
-    .review-section .text-primary {
-        color: #0d9488 !important;
-    }
-
-    .review-section .btn-outline-primary {
-        color: #0d9488;
-        border-color: #0d9488;
-        background: rgba(255, 255, 255, 0.74);
-    }
-
-    .review-section .btn-outline-primary:hover {
-        color: #ffffff;
-        background: #0d9488;
-        border-color: #0d9488;
-    }
-
-    .review-shell {
-        max-width: 1080px;
-        margin: 0 auto;
-        position: relative;
-        z-index: 1;
-    }
-
-    .review-carousel-frame {
-        position: relative;
-        padding: 0 4.5rem;
-    }
-
-    .review-kicker {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.45rem;
-        padding: 0.4rem 1rem;
-        border-radius: 999px;
-        background: rgba(16, 185, 129, 0.1);
-        color: #059669;
-        font-size: 0.74rem;
-        font-weight: 800;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-    }
-
-    .review-kicker svg,
-    .review-share-icon svg,
-    .review-stat-icon svg {
-        width: 18px;
-        height: 18px;
-    }
-
-    .review-card {
-        position: relative;
-        min-height: 300px;
-        border: 1px solid rgba(13, 148, 136, 0.12);
-        box-shadow: 0 20px 42px rgba(15, 23, 42, 0.08) !important;
-        transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-    }
-
-    .review-card.is-featured {
-        border-color: rgba(13, 148, 136, 0.34);
-        box-shadow: 0 24px 46px rgba(13, 148, 136, 0.14) !important;
-    }
-
-    .review-card.is-featured::after {
-        content: '"';
-        position: absolute;
-        top: -18px;
-        right: 28px;
-        width: 44px;
-        height: 44px;
-        border-radius: 999px;
-        background: #059669;
-        color: #ffffff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 2.25rem;
-        line-height: 1;
-        font-weight: 800;
-        box-shadow: 0 14px 24px rgba(5, 150, 105, 0.28);
-    }
-
-    .review-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 26px 52px rgba(15, 23, 42, 0.11) !important;
-        border-color: rgba(13, 148, 136, 0.22);
-    }
-
-    .review-message,
-    .review-reply-text,
-    .missing-preview-text {
-        overflow-wrap: anywhere;
-        word-break: break-word;
-    }
-
-    .review-message {
-        display: -webkit-box;
-        -webkit-line-clamp: 5;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        min-height: 7rem;
-        color: #1f2937;
-        font-size: 1.02rem;
-        line-height: 1.55;
-    }
-
-    .review-quote-mark {
-        color: rgba(16, 185, 129, 0.26);
-        font-size: 3.25rem;
-        font-weight: 900;
-        line-height: 1;
-        height: 2.25rem;
-    }
-
-    .review-reply {
-        background: #f8fafc;
-        border-left: 4px solid var(--primary-color);
-    }
-
-    .review-avatar {
-        width: 56px;
-        height: 56px;
-        flex: 0 0 56px;
-        background:
-            radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.8), transparent 24%),
-            linear-gradient(135deg, #0d9488, #14b8a6 52%, #f97316);
-        color: #ffffff;
-        box-shadow: 0 10px 20px rgba(13, 148, 136, 0.22);
-    }
-
-    .review-carousel-control {
-        width: 46px;
-        height: 46px;
-        top: 50%;
-        transform: translateY(-50%);
-        border: 1px solid rgba(13, 148, 136, 0.08);
-        border-radius: 999px;
-        background: #ffffff;
-        opacity: 1;
-        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.1);
-    }
-
-    .review-carousel-control:hover {
-        background: var(--primary-color);
-        border-color: var(--primary-color);
-    }
-
-    .review-carousel-control:hover .carousel-control-prev-icon,
-    .review-carousel-control:hover .carousel-control-next-icon {
-        filter: brightness(0) invert(1);
-    }
-
-    .review-carousel-control .carousel-control-prev-icon,
-    .review-carousel-control .carousel-control-next-icon {
-        width: 1rem;
-        height: 1rem;
-        filter: invert(33%) sepia(11%) saturate(810%) hue-rotate(176deg) brightness(87%) contrast(86%);
-    }
-
-    .review-more-panel {
-        border-top: 1px dashed #cbd5e1;
-    }
-
-    .review-stats {
-        max-width: 820px;
-        margin: 2rem auto 0;
-        border: 1px solid rgba(13, 148, 136, 0.11);
-        background: rgba(255, 255, 255, 0.78);
-        backdrop-filter: blur(12px);
-        box-shadow: 0 18px 42px rgba(15, 23, 42, 0.06);
-    }
-
-    .review-stat {
-        min-width: 0;
-    }
-
-    .review-stat-icon,
-    .review-share-icon {
-        width: 50px;
-        height: 50px;
-        border-radius: 999px;
-        background: #d1fae5;
-        color: #059669;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: inset 0 0 0 10px rgba(255, 255, 255, 0.45);
-    }
-
-    .review-stat-value {
-        color: #111827;
-        font-size: 1.75rem;
-        font-weight: 900;
-        line-height: 1;
-    }
-
-    .review-stat-label {
-        color: #64748b;
-        font-size: 0.8rem;
-        font-weight: 700;
-    }
-
     .review-form-card {
         max-width: 760px;
         margin: 0 auto;
@@ -263,44 +610,25 @@
         box-shadow: 0 20px 44px rgba(15, 23, 42, 0.08) !important;
     }
 
-    .review-share-block {
-        max-width: 620px;
-        margin: 2.25rem auto 0;
-    }
-
-    .community-card {
-        border: 1px solid #e2e8f0;
-        transition: transform 0.18s ease, box-shadow 0.18s ease;
-    }
-
-    .community-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
-    }
-
-    .missing-mini-card {
-        border: 1px solid #fee2e2;
-        background: linear-gradient(135deg, #fff7ed 0%, #fff 65%);
+    @media (max-width: 991.98px) {
+        .buttons-row-split {
+            grid-template-columns: 1fr;
+        }
+        .missing-body-split {
+            flex-direction: column;
+            text-align: center;
+        }
+        .capability-item {
+            margin-bottom: 1.5rem;
+        }
     }
 
     @media (max-width: 767.98px) {
-        .review-carousel-frame {
+        .testimonial-carousel-container {
             padding: 0;
         }
-
-        .review-card {
-            min-height: 0;
-        }
-
-        .review-carousel-control {
-            position: static;
-            transform: none;
-            display: inline-flex;
-            margin: 1rem 0.35rem 0;
-        }
-
-        .review-stats {
-            border-radius: 24px !important;
+        .carousel-control-outer {
+            display: none;
         }
     }
 </style>
@@ -316,10 +644,10 @@
         </p>
         <div class="d-flex flex-column flex-sm-row justify-content-center justify-content-lg-start gap-3">
             {% if user.is_authenticated %}
-                <a class="btn btn-primary btn-lg rounded-pill px-5 shadow-sm" href="{% url 'accounts:profile' %}" role="button">Go to My Profile</a>
+                <a class="btn btn-primary btn-lg rounded-pill px-5 shadow-sm text-decoration-none" href="{% url 'accounts:profile' %}" role="button">Go to My Profile</a>
             {% else %}
-                <a class="btn btn-primary btn-lg rounded-pill px-5 py-3 shadow-sm" href="{% url 'accounts:register' %}" role="button">Get Started Now</a>
-                <a class="btn btn-secondary btn-lg rounded-pill px-5 py-3 shadow-sm" href="{% url 'accounts:login' %}" role="button">Sign In</a>
+                <a class="btn btn-primary btn-lg rounded-pill px-5 py-3 shadow-sm text-decoration-none" href="{% url 'accounts:register' %}" role="button">Get Started Now</a>
+                <a class="btn btn-secondary btn-lg rounded-pill px-5 py-3 shadow-sm text-decoration-none" href="{% url 'accounts:login' %}" role="button">Sign In</a>
             {% endif %}
         </div>
     </div>
@@ -333,7 +661,7 @@
     </div>
 </div>
 
-<!-- Features Section -->
+<!-- Why Choose PetCare AI Capabilities Section -->
 <div class="container px-4 py-5 mb-5 bg-white rounded-5 shadow-sm">
     <div class="text-center mb-5">
         <span class="text-accent fw-bold text-uppercase tracking-wider small mb-2 d-block" style="color: var(--accent-color);">Capabilities</span>
@@ -343,8 +671,8 @@
     <div class="row g-4 justify-content-center">
         <!-- Feature 1 -->
         <div class="col-md-6 col-lg-4">
-            <div class="feature-card h-100 border-0 shadow-sm bg-light">
-                <div class="icon-wrapper bg-primary">
+            <div class="feature-card">
+                <div class="icon-wrapper">
                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="white" class="bi bi-search" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
                 </div>
                 <h3 class="feature-title h4">Breed Identification</h3>
@@ -354,8 +682,8 @@
 
         <!-- Feature 2 -->
         <div class="col-md-6 col-lg-4">
-            <div class="feature-card h-100 border-0 shadow-sm bg-light">
-                <div class="icon-wrapper bg-secondary">
+            <div class="feature-card">
+                <div class="icon-wrapper" style="background-color: #0d9488;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="white" class="bi bi-clipboard2-pulse" viewBox="0 0 16 16"><path d="M9.5 0a.5.5 0 0 1 .5.5.5.5 0 0 0 .5.5.5.5 0 0 1 .5.5V2a.5.5 0 0 1-.5.5h-5A.5.5 0 0 1 5 2v-.5a.5.5 0 0 1 .5-.5.5.5 0 0 0 .5-.5.5.5 0 0 1 .5-.5h3Z"/><path d="M3 2.5a.5.5 0 0 1 .5-.5H4a.5.5 0 0 0 0-1h-.5A1.5 1.5 0 0 0 2 2.5v12A1.5 1.5 0 0 0 3.5 16h9a1.5 1.5 0 0 0 1.5-1.5v-12A1.5 1.5 0 0 0 12.5 1H12a.5.5 0 0 0 0 1h.5a.5.5 0 0 1 .5.5v12a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5v-12Z"/><path d="M9.979 5.356a.5.5 0 0 0-.968.04L7.92 10.49l-.94-3.135a.5.5 0 0 0-.926-.08L4.69 10H4.5a.5.5 0 0 0 0 1h.5a.5.5 0 0 0 .447-.276l.936-1.873 1.138 3.793a.5.5 0 0 0 .968-.04L9.58 7.51l.94 3.135A.5.5 0 0 0 11 11h.5a.5.5 0 0 0 0-1h-.128l-.893-2.644Z"/></svg>
                 </div>
                 <h3 class="feature-title h4">Health Insights</h3>
@@ -365,7 +693,7 @@
 
         <!-- Feature 3 -->
         <div class="col-md-6 col-lg-4">
-            <div class="feature-card h-100 border-0 shadow-sm bg-light">
+            <div class="feature-card">
                 <div class="icon-wrapper" style="background-color: var(--accent-color);">
                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="white" class="bi bi-shield-check" viewBox="0 0 16 16"><path d="M5.338 1.59a61.44 61.44 0 0 0-2.837.856.481.481 0 0 0-.328.39c-.554 4.157.726 7.19 2.253 9.188a10.725 10.725 0 0 0 2.287 2.233c.346.244.652.42.893.533.12.057.218.095.293.118a.55.55 0 0 0 .101.025.615.615 0 0 0 .1-.025c.076-.023.174-.061.294-.118.24-.113.547-.29.893-.533a10.726 10.726 0 0 0 2.287-2.233c1.527-1.997 2.807-5.031 2.253-9.188a.48.48 0 0 0-.328-.39c-.651-.213-1.75-.56-2.837-.855C9.552 1.29 8.531 1.067 8 1.067c-.53 0-1.552.223-2.662.524zM5.072.56C6.157.265 7.31 0 8 0s1.843.265 2.928.56c1.11.3 2.229.655 2.887.87a1.54 1.54 0 0 1 1.044 1.262c.596 4.477-.787 7.795-2.465 9.99a11.775 11.775 0 0 1-2.517 2.453 7.159 7.159 0 0 1-1.048.625c-.28.132-.581.24-.829.24s-.548-.108-.829-.24a7.158 7.158 0 0 1-1.048-.625 11.777 11.777 0 0 1-2.517-2.453C1.928 10.487.545 7.169 1.141 2.692A1.54 1.54 0 0 1 2.185 1.43 62.456 62.456 0 0 1 5.072.56z"/><path d="M10.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0z"/></svg>
                 </div>
@@ -376,7 +704,7 @@
     </div>
 </div>
 
-<!-- How It Works -->
+<!-- How It Works Section -->
 <div class="container py-5 mb-5">
     <div class="text-center mb-5">
         <h2 class="fw-bold text-dark display-6">How It Works</h2>
@@ -407,375 +735,356 @@
     </div>
 </div>
 
-<!-- Testimonials -->
-<div id="reviews" class="review-section py-5 rounded-4 shadow-sm mb-5">
-    <div class="container">
-        <div class="review-shell">
-        <div class="text-center mb-5">
-             <span class="review-kicker mb-3">
-                  <svg fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z"/></svg>
-                  Loved by pet owners
-             </span>
-             <h2 class="fw-bold text-dark display-5 mb-2">Happy Pet Parents</h2>
-             <p class="text-muted mb-0">Real stories from pet owners who trust PetCare AI for their pets' health and happiness.</p>
-        </div>
-        <div>
-             {% if featured_reviews %}
-             <div id="homeReviewsCarousel" class="carousel slide review-carousel-frame" data-bs-ride="carousel" data-bs-interval="7000">
-                  <div class="carousel-inner">
-                  {% for review in featured_reviews %}
-                       {% if forloop.counter0|divisibleby:3 %}
-                       <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                            <div class="row g-4">
-                       {% endif %}
-                                <div class="col-md-6 col-lg-4">
-                                     <article class="review-card {% if forloop.counter == 2 %}is-featured{% endif %} bg-white p-4 rounded-4 shadow-sm h-100 d-flex flex-column">
-                                          <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
-                                               <ul class="d-flex list-unstyled gap-1 mb-0 text-warning">
-                                                    {% for _ in "12345" %}
-                                                         <li>
-                                                              {% if forloop.counter <= review.rating %}
-                                                                   <span style="font-size: 1.05rem; line-height: 1;">&#9733;</span>
-                                                              {% else %}
-                                                                   <span class="text-secondary opacity-25" style="font-size: 1.05rem; line-height: 1;">&#9733;</span>
-                                                              {% endif %}
-                                                         </li>
-                                                    {% endfor %}
-                                               </ul>
-                                               <span class="text-primary fw-bold small">{{ review.rating }}/5</span>
-                                          </div>
-                                          <div class="review-quote-mark">"</div>
-                                          <p class="review-message mb-3">{{ review.message|truncatechars:190 }}</p>
-                                          {% if review.admin_reply %}
-                                               <div class="review-reply rounded-4 p-3 mt-auto mb-3">
-                                                    <small class="text-primary fw-bold text-uppercase d-block mb-1">Admin Reply</small>
-                                                    <p class="review-reply-text text-muted small mb-0">{{ review.admin_reply|truncatechars:150 }}</p>
-                                               </div>
-                                          {% endif %}
-                                          <div class="d-flex align-items-center mt-auto">
-                                               <div class="review-avatar rounded-circle d-flex align-items-center justify-content-center fw-bold me-3">{{ review.initials }}</div>
-                                               <div>
-                                                    <h6 class="mb-0 fw-bold">{{ review.name }}</h6>
-                                                    <small class="text-primary fw-semibold">{{ review.role|default:"Pet Owner" }}</small>
-                                               </div>
-                                          </div>
-                                     </article>
-                                </div>
-                       {% if forloop.counter|divisibleby:3 or forloop.last %}
-                            </div>
-                       </div>
-                       {% endif %}
-                  {% endfor %}
-                  </div>
-                  {% if featured_reviews|length > 3 %}
-                       <button class="carousel-control-prev review-carousel-control" type="button" data-bs-target="#homeReviewsCarousel" data-bs-slide="prev" aria-label="Previous reviews">
-                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                       </button>
-                       <button class="carousel-control-next review-carousel-control" type="button" data-bs-target="#homeReviewsCarousel" data-bs-slide="next" aria-label="Next reviews">
-                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                       </button>
-                  {% endif %}
-             </div>
-
-             <div class="review-stats rounded-4 p-3 p-lg-4">
-                  <div class="row g-3 align-items-center text-center text-md-start">
-                       <div class="col-md-4">
-                            <div class="review-stat d-flex align-items-center justify-content-center justify-content-md-start gap-3">
-                                 <span class="review-stat-icon">
-                                      <svg fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/></svg>
-                                 </span>
-                                 <div>
-                                      <div class="review-stat-value">{{ average_rating|floatformat:1 }}</div>
-                                      <div class="review-stat-label">Average Rating</div>
-                                      <div class="text-warning small">&#9733; &#9733; &#9733; &#9733; &#9733;</div>
-                                 </div>
-                            </div>
-                       </div>
-                       <div class="col-md-4 border-md-start">
-                            <div class="review-stat d-flex align-items-center justify-content-center gap-3">
-                                 <span class="review-stat-icon">
-                                      <svg fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Zm7 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3ZM8 8a1.75 1.75 0 1 0 0-3.5A1.75 1.75 0 0 0 8 8Zm-3.5 2.5C2.6 10.5 1 12 1 13.75A1.25 1.25 0 0 0 2.25 15h11.5A1.25 1.25 0 0 0 15 13.75c0-1.75-1.6-3.25-3.5-3.25-.9 0-1.67.28-2.2.76A2.98 2.98 0 0 0 8 11a2.98 2.98 0 0 0-1.3.26 3.18 3.18 0 0 0-2.2-.76Z"/></svg>
-                                 </span>
-                                 <div>
-                                      <div class="review-stat-value">{{ pet_count|default:0 }}+</div>
-                                      <div class="review-stat-label">Happy Pets and counting</div>
-                                 </div>
-                            </div>
-                       </div>
-                       <div class="col-md-4">
-                            <div class="review-stat d-flex align-items-center justify-content-center justify-content-md-end gap-3">
-                                 <span class="review-stat-icon">
-                                      <svg fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path d="M5.338 1.59 8 0l2.662 1.59 3.105.686.29 3.168L16 8l-1.943 2.556-.29 3.168-3.105.686L8 16l-2.662-1.59-3.105-.686-.29-3.168L0 8l1.943-2.556.29-3.168 3.105-.686Zm5.015 5.264a.5.5 0 0 0-.707-.708L7.25 8.543 6.354 7.646a.5.5 0 1 0-.708.708l1.25 1.25a.5.5 0 0 0 .708 0l2.75-2.75Z"/></svg>
-                                 </span>
-                                 <div>
-                                      <div class="review-stat-value">100%</div>
-                                      <div class="review-stat-label">Trusted by Pet Owners</div>
-                                 </div>
-                            </div>
-                       </div>
-                  </div>
-             </div>
-
-             {% if review_count > featured_reviews|length %}
-                  <div class="d-flex flex-wrap justify-content-center gap-2 mt-4">
-                       {% if additional_reviews %}
-                            <button class="btn btn-primary rounded-pill px-4" type="button" data-bs-toggle="collapse" data-bs-target="#moreHomeReviews" aria-expanded="false" aria-controls="moreHomeReviews">
-                                 Show More Stories
-                            </button>
-                       {% endif %}
-                       <a href="{% url 'reviews' %}" class="btn btn-outline-primary rounded-pill px-4">View All Reviews</a>
-                  </div>
-             {% endif %}
-
-             {% if additional_reviews %}
-             <div class="collapse" id="moreHomeReviews">
-                  <div class="review-more-panel mt-4 pt-4">
-                       <div class="row g-4">
-                            {% for review in additional_reviews %}
-                            <div class="col-md-6 col-lg-4">
-                                 <article class="review-card bg-white p-4 rounded-4 shadow-sm h-100 d-flex flex-column">
-                                      <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
-                                           <ul class="d-flex list-unstyled gap-1 mb-0 text-warning">
-                                                {% for _ in "12345" %}
-                                                     <li>
-                                                          {% if forloop.counter <= review.rating %}
-                                                               <span style="font-size: 1.05rem; line-height: 1;">&#9733;</span>
-                                                          {% else %}
-                                                               <span class="text-secondary opacity-25" style="font-size: 1.05rem; line-height: 1;">&#9733;</span>
-                                                          {% endif %}
-                                                     </li>
-                                                {% endfor %}
-                                           </ul>
-                                           <span class="text-primary fw-bold small">{{ review.rating }}/5</span>
-                                      </div>
-                                      <div class="review-quote-mark">"</div>
-                                      <p class="review-message mb-3">{{ review.message|truncatechars:190 }}</p>
-                                      {% if review.admin_reply %}
-                                           <div class="review-reply rounded-4 p-3 mt-auto mb-3">
-                                                <small class="text-primary fw-bold text-uppercase d-block mb-1">Admin Reply</small>
-                                                <p class="review-reply-text text-muted small mb-0">{{ review.admin_reply|truncatechars:150 }}</p>
-                                           </div>
-                                      {% endif %}
-                                      <div class="d-flex align-items-center mt-auto">
-                                           <div class="review-avatar rounded-circle d-flex align-items-center justify-content-center fw-bold me-3">{{ review.initials }}</div>
-                                           <div>
-                                                <h6 class="mb-0 fw-bold">{{ review.name }}</h6>
-                                                <small class="text-primary fw-semibold">{{ review.role|default:"Pet Owner" }}</small>
-                                           </div>
-                                      </div>
-                                 </article>
-                            </div>
-                            {% endfor %}
-                       </div>
-                  </div>
-             </div>
-             {% endif %}
-             {% else %}
-             <div class="row g-4">
-             <div class="col-md-6 col-lg-4">
-                  <div class="review-card bg-white p-4 rounded-4 shadow-sm h-100 d-flex flex-column">
-                       <ul class="d-flex list-unstyled gap-1 mb-3 text-warning">
-                            <li><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-star-fill" viewBox="0 0 16 16"><path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/></svg></li>
-                            <li><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-star-fill" viewBox="0 0 16 16"><path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/></svg></li>
-                            <li><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-star-fill" viewBox="0 0 16 16"><path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/></svg></li>
-                            <li><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-star-fill" viewBox="0 0 16 16"><path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/></svg></li>
-                            <li><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-star-fill" viewBox="0 0 16 16"><path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/></svg></li>
-                       </ul>
-                       <div class="review-quote-mark">"</div>
-                       <p class="review-message mb-3">PetCare AI completely changed how I look after my adopted mixed-breed dog. The health insights helped me prepare for her vet visits.</p>
-                       <div class="d-flex align-items-center mt-auto">
-                            <div class="review-avatar rounded-circle d-flex align-items-center justify-content-center fw-bold me-3">SJ</div>
-                            <div>
-                                 <h6 class="mb-0 fw-bold">Sarah Jenkins</h6>
-                                 <small class="text-primary fw-semibold">Dog Owner</small>
-                            </div>
-                       </div>
-                  </div>
-             </div>
-             <div class="col-md-6 col-lg-4">
-                  <div class="review-card is-featured bg-white p-4 rounded-4 shadow-sm h-100 d-flex flex-column">
-                       <ul class="d-flex list-unstyled gap-1 mb-3 text-warning">
-                            <li><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-star-fill" viewBox="0 0 16 16"><path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/></svg></li>
-                            <li><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-star-fill" viewBox="0 0 16 16"><path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/></svg></li>
-                            <li><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-star-fill" viewBox="0 0 16 16"><path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/></svg></li>
-                            <li><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-star-fill" viewBox="0 0 16 16"><path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/></svg></li>
-                            <li><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-star-half" viewBox="0 0 16 16"><path d="M5.354 5.119 7.538.792A.516.516 0 0 1 8 .5c.183 0 .366.097.465.292l2.184 4.327 4.898.696A.537.537 0 0 1 16 6.32a.54.54 0 0 1-.17.445l-3.523 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256a.52.52 0 0 1-.146.05c-.342.06-.668-.254-.6-.642l.83-4.73L.173 6.765a.55.55 0 0 1-.172-.403.58.58 0 0 1 .085-.302.513.513 0 0 1 .37-.245l4.898-.696zM8 12.027a.5.5 0 0 1 .232.056l3.686 1.894-.694-3.957a.565.565 0 0 1 .162-.505l2.907-2.77-4.052-.576a.525.525 0 0 1-.393-.288L8.001 2.223 8 2.226v9.8z"/></svg></li>
-                       </ul>
-                       <div class="review-quote-mark">"</div>
-                       <p class="review-message mb-3">As a volunteer at a shelter, the breed identification tool has been invaluable. We can provide much better information to adopters.</p>
-                       <div class="d-flex align-items-center mt-auto">
-                            <div class="review-avatar rounded-circle d-flex align-items-center justify-content-center fw-bold me-3">MR</div>
-                            <div>
-                                 <h6 class="mb-0 fw-bold">Mike Roberts</h6>
-                                 <small class="text-primary fw-semibold">Shelter Volunteer</small>
-                            </div>
-                       </div>
-                  </div>
-             </div>
-             </div>
-             {% endif %}
-        </div>
-        </div>
-
-        <div class="review-share-block text-center">
-             <div class="review-share-icon mb-3">
-                  <svg fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path d="M8.5 4.5a2 2 0 1 0-4 0c0 .54.22 1.03.57 1.39-.36.2-.68.47-.94.8A2 2 0 0 0 2 10.5V12a1 1 0 0 0 1 1h3.1a2.5 2.5 0 0 1 4.8 0H14a1 1 0 0 0 1-1v-1.5a2 2 0 0 0-2.13-2c-.26-.33-.58-.6-.94-.8A2 2 0 1 0 8.5 4.5Z"/></svg>
-             </div>
-             <h3 class="h4 fw-bold mb-2">Share Your Experience</h3>
-             <p class="text-muted small mb-4">Your feedback helps us improve and care for more pets.</p>
-             {% if not user.is_authenticated %}
-                  <a href="{% url 'accounts:login' %}" class="btn btn-outline-primary rounded-pill px-4">Share Your Story</a>
-             {% endif %}
-        </div>
-
-        <div class="row justify-content-center mt-4">
-             <div class="col-lg-8">
-                  <div class="review-form-card {% if not user.is_authenticated %}d-none{% endif %} bg-white p-4 rounded-4 shadow-sm">
-                       <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
-                            <div>
-                                 <h3 class="h4 fw-bold mb-1">Write Your Story</h3>
-                                  <p class="text-muted small mb-0">Your review will be published immediately. Admin may reply or hide inappropriate content.</p>
-                            </div>
-                            {% if user.is_authenticated %}
-                                 <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2">Signed in as {{ user.get_full_name|default:user.username }}</span>
-                            {% endif %}
-                       </div>
-
-                       {% if user.is_authenticated %}
-                            <form method="post" class="row g-3">
-                                 {% csrf_token %}
-                                 <div class="col-md-6">
-                                      <label class="form-label fw-semibold small text-uppercase">{{ review_form.role.label }}</label>
-                                      {{ review_form.role }}
-                                      {% for error in review_form.role.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
-                                 </div>
-                                 <div class="col-md-6">
-                                      <label class="form-label fw-semibold small text-uppercase">{{ review_form.rating.label }}</label>
-                                      {{ review_form.rating }}
-                                      <div class="d-flex flex-wrap align-items-center gap-3">
-                                           <div class="review-star-picker" role="radiogroup" aria-label="Rating" data-selected="{{ review_form.rating.value|default:'5' }}">
-                                                <button type="button" class="review-star-button" data-rating="1" role="radio" aria-label="1 star" aria-checked="false">&#9733;</button>
-                                                <button type="button" class="review-star-button" data-rating="2" role="radio" aria-label="2 stars" aria-checked="false">&#9733;</button>
-                                                <button type="button" class="review-star-button" data-rating="3" role="radio" aria-label="3 stars" aria-checked="false">&#9733;</button>
-                                                <button type="button" class="review-star-button" data-rating="4" role="radio" aria-label="4 stars" aria-checked="false">&#9733;</button>
-                                                <button type="button" class="review-star-button" data-rating="5" role="radio" aria-label="5 stars" aria-checked="false">&#9733;</button>
-                                           </div>
-                                           <span class="review-rating-label" id="reviewRatingLabel">Excellent</span>
-                                      </div>
-                                      {% for error in review_form.rating.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
-                                 </div>
-                                 <div class="col-12">
-                                      <label class="form-label fw-semibold small text-uppercase">{{ review_form.message.label }}</label>
-                                      {{ review_form.message }}
-                                      {% for error in review_form.message.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
-                                 </div>
-                                 <div class="col-12">
-                                      <button type="submit" class="btn btn-primary rounded-pill px-4">Submit Review</button>
-                                 </div>
-                            </form>
-                       {% else %}
-                            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 bg-light rounded-4 p-3">
-                                 <span class="text-muted small">Sign in to submit your own PetCare AI review.</span>
-                                 <a href="{% url 'accounts:login' %}" class="btn btn-primary rounded-pill px-4">Sign In</a>
-                            </div>
-                       {% endif %}
-                  </div>
-             </div>
-        </div>
+<!-- Community & Pet Gallery Dashboard Grid Section -->
+<div class="container py-5 mb-4">
+    <div class="text-center mb-5">
+        <h2 class="fw-bold text-dark display-6">Community &amp; Pet Gallery</h2>
+        <p class="text-muted">Quick access to your pet dashboard and community alerts.</p>
     </div>
-</div>
 
-<!-- Community & Pet Gallery -->
-<div class="container py-5 mb-5">
-    <div class="row align-items-start g-4">
-        <!-- Your Pet Gallery -->
-        <div class="col-lg-6">
-            <div class="glass-card h-100">
+    <div class="row g-4">
+        <!-- Card 1: Your Pet Gallery -->
+        <div class="col-lg-6 col-12">
+            <div class="home-card">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h2 class="h3 fw-bold mb-0">Your Pet Gallery</h2>
-                    <span class="badge bg-primary-subtle text-primary small text-uppercase">For registered users</span>
+                    <h2 class="card-title-text mb-0">Your Pet Gallery</h2>
+                    <span class="card-badge">For registered users</span>
                 </div>
-                <p class="text-muted mb-4">
-                    Keep all your pets in one beautiful dashboard. Add profiles, upload photos, and let PetCare AI keep track of health, breed details, and vet visits.
+                <p class="card-desc">
+                    Keep all your pets in one beautiful dashboard. Add profiles, upload photos and let PetCare AI keep track of health, breed details, and vet visits.
                 </p>
-                <div class="row g-3 mb-4">
-                    <div class="col-4">
-                        <div class="rounded-4 overflow-hidden bg-light ratio ratio-1x1">
-                            <img src="{% static 'images/hero_pet.png' %}" alt="Pet gallery sample" class="w-100 h-100 object-fit-cover">
-                        </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="rounded-4 overflow-hidden bg-light ratio ratio-1x1 d-flex align-items-center justify-content-center text-muted small">
-                            + your pets
-                        </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="rounded-4 overflow-hidden bg-light ratio ratio-1x1 d-flex align-items-center justify-content-center text-muted small">
-                            + more memories
-                        </div>
-                    </div>
+                <div class="gallery-img-container">
+                    <img src="{% static 'images/pet_gallery_bed.png' %}" alt="Stunning Dog and Cat on bed" class="gallery-img">
                 </div>
-                <div class="d-flex flex-wrap gap-3">
-                    <a href="{% url 'pets:pet_add' %}" class="btn btn-primary">
-                        Add a new pet
-                    </a>
-                    <a href="{% url 'pets:pet_list' %}" class="btn btn-outline-secondary">
-                        View my pets
-                    </a>
-                </div>
+                <a href="{% url 'pets:pet_add' %}" class="btn-green-wide">
+                    + Add A New Pet
+                </a>
             </div>
         </div>
 
-        <!-- Missing Pets & Sightings -->
-        <div class="col-lg-6">
-            <div class="community-card glass-card h-100">
-                <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
-                    <div>
-                        <h2 class="h3 fw-bold mb-1">Missing Pets & Sightings</h2>
-                        <p class="text-muted mb-0">A cleaner community safety board with active missing alerts and sighting reports.</p>
-                    </div>
-                    <div class="d-flex gap-2">
-                        <span class="badge bg-danger-subtle text-danger rounded-pill px-3">{{ open_missing_count }} active</span>
-                        <span class="badge bg-primary-subtle text-primary rounded-pill px-3">{{ community_sighting_count }} sightings</span>
-                    </div>
+        <!-- Card 2: Missing Pets & Sightings -->
+        <div class="col-lg-6 col-12">
+            <div class="home-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2 class="card-title-text mb-0">Missing Pets & Sightings</h2>
+                    <!-- Bell notification button -->
+                    <a href="{% url 'pets:notifications' %}" class="bell-btn" aria-label="View notifications">
+                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M8 16a2 2 0 0 0 1.985-1.75h-3.97A2 2 0 0 0 8 16zm.104-14.95A1 1 0 0 0 7 2v.086C4.72 2.57 3 4.59 3 7v2.382l-.724 1.447A1.5 1.5 0 0 0 3.618 13h8.764a1.5 1.5 0 0 0 1.342-2.171L13 9.382V7a5 5 0 0 0-4.896-4.95z"/></svg>
+                        {% if nav_unread_notifications_count %}
+                            <span class="bell-dot"></span>
+                        {% endif %}
+                    </a>
+                </div>
+                <p class="card-desc pe-5">
+                    A cleaner community safety board with active missing alerts and sighting reports.
+                </p>
+                
+                <!-- Status Badges row -->
+                <div class="stats-badges-row">
+                    <span class="stat-badge-missing active-alerts">
+                        <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="me-1"><path d="M8 16a2 2 0 0 0 1.985-1.75h-3.97A2 2 0 0 0 8 16zm.104-14.95A1 1 0 0 0 7 2v.086C4.72 2.57 3 4.59 3 7v2.382l-.724 1.447A1.5 1.5 0 0 0 3.618 13h8.764a1.5 1.5 0 0 0 1.342-2.171L13 9.382V7a5 5 0 0 0-4.896-4.95z"/></svg>
+                        {{ open_missing_count }} Active
+                    </span>
+                    <span class="stat-badge-missing sightings">
+                        <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="me-1"><path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/><path d="M0 8s3-5.5 8-5.5 8 5.5 8 5.5-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/></svg>
+                        {{ community_sighting_count }} Sightings
+                    </span>
                 </div>
 
-                <div class="d-flex flex-column gap-3 mb-4">
+                <!-- Empty State / Sighting reports -->
+                <div class="missing-body-split">
                     {% if latest_missing_reports %}
-                        {% for report in latest_missing_reports %}
-                            <a href="{% url 'pets:missing_pet_detail' report.id %}" class="text-decoration-none">
-                                <div class="missing-mini-card rounded-4 p-3">
-                                    <div class="d-flex align-items-center gap-3">
-                                        <img src="{{ report.photo.url }}" alt="{{ report.pet_name }}" style="width:58px;height:58px;border-radius:14px;object-fit:cover;">
-                                        <div class="flex-grow-1 min-width-0">
-                                            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
-                                                <strong class="text-dark">Missing: {{ report.pet_name }}</strong>
-                                                <span class="badge bg-warning text-dark rounded-pill">{{ report.sightings.count }} sightings</span>
-                                            </div>
-                                            <p class="missing-preview-text text-muted small mb-0">
-                                                Last seen near {{ report.last_seen_location }} on {{ report.last_seen_date|date:"M d, Y" }}.
-                                            </p>
+                        <div class="w-100 d-flex flex-column gap-3" style="max-height: 180px; overflow-y: auto;">
+                            {% for report in latest_missing_reports %}
+                                <a href="{% url 'pets:missing_pet_detail' report.id %}" class="text-decoration-none d-flex align-items-center gap-3 p-2 bg-white border border-light rounded-4 shadow-sm">
+                                    <img src="{{ report.photo.url }}" alt="{{ report.pet_name }}" style="width:50px;height:50px;border-radius:10px;object-fit:cover;flex-shrink:0;">
+                                    <div class="flex-grow-1 min-width-0">
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <strong class="text-dark small">Missing: {{ report.pet_name }}</strong>
+                                            <span class="badge bg-warning-subtle text-warning small px-2 py-1 rounded-pill">{{ report.sightings.count }} sightings</span>
                                         </div>
+                                        <p class="text-muted small mb-0 text-truncate">Last seen near {{ report.last_seen_location }}</p>
                                     </div>
-                                </div>
-                            </a>
-                        {% endfor %}
+                                </a>
+                            {% endfor %}
+                        </div>
                     {% else %}
-                        <div class="missing-mini-card rounded-4 p-4 text-center">
-                            <h6 class="fw-bold mb-1">No active missing pet alerts</h6>
-                            <p class="text-muted small mb-0">When someone reports a missing pet, the latest alerts will appear here.</p>
+                        <div class="illustration-container">
+                            <img src="{% static 'images/missing_pet_vector.png' %}" alt="Illustration playing with dog" class="illustration-img">
+                        </div>
+                        <div>
+                            <h3 class="empty-state-title">No active missing pet alerts</h3>
+                            <p class="empty-state-text">
+                                When someone reports a missing pet, the latest alerts will appear here.
+                            </p>
                         </div>
                     {% endif %}
                 </div>
 
-                <div class="d-flex flex-wrap gap-3">
-                    <a href="{% url 'pets:report_missing' %}" class="btn btn-primary rounded-pill px-4">
-                        Report a missing pet
+                <!-- Bottom Buttons Split row -->
+                <div class="buttons-row-split">
+                    <a href="{% url 'pets:report_missing' %}" class="btn-green-split">
+                        <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M13 2.5a1.5 1.5 0 0 1 3 0v11a1.5 1.5 0 0 1-3 0v-11zm-1 .5H2a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zM3 5.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5z"/></svg>
+                        Report A Missing Pet
                     </a>
-                    <a href="{% url 'pets:missing_pets_list' %}" class="btn btn-outline-primary rounded-pill px-4">
+                    <a href="{% url 'pets:missing_pets_list' %}" class="btn-white-split">
+                        <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
                         Search Missing Pets
                     </a>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Capabilities Horizontal Bar Section -->
+    <div class="capabilities-card">
+        <div class="row g-4">
+            <!-- Cap 1 -->
+            <div class="col-lg-3 col-md-6">
+                <div class="capability-item">
+                    <div class="capability-icon-circle">
+                        <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M5.338 1.59a61.44 61.44 0 0 0-2.837.856.481.481 0 0 0-.328.39c-.554 4.157.726 7.19 2.253 9.188a10.725 10.725 0 0 0 2.287 2.233c.346.244.652.42.893.533.12.057.218.095.293.118a.55.55 0 0 0 .101.025.615.615 0 0 0 .1-.025c.076-.023.174-.061.294-.118.24-.113.547-.29.893-.533a10.726 10.726 0 0 0 2.287-2.233c1.527-1.997 2.807-5.031 2.253-9.188a.48.48 0 0 0-.328-.39c-.651-.213-1.75-.56-2.837-.855C9.552 1.29 8.531 1.067 8 1.067c-.53 0-1.552.223-2.662.524zM5.072.56C6.157.265 7.31 0 8 0s1.843.265 2.928.56c1.11.3 2.229.655 2.887.87a1.54 1.54 0 0 1 1.044 1.262c.596 4.477-.787 7.795-2.465 9.99a11.775 11.775 0 0 1-2.517 2.453 7.159 7.159 0 0 1-1.048.625c-.28.132-.581.24-.829.24s-.548-.108-.829-.24a7.158 7.158 0 0 1-1.048-.625 11.777 11.777 0 0 1-2.517-2.453C1.928 10.487.545 7.169 1.141 2.692A1.54 1.54 0 0 1 2.185 1.43 62.456 62.456 0 0 1 5.072.56z"/></svg>
+                    </div>
+                    <div>
+                        <h4 class="capability-title">Smart Health Tracking</h4>
+                        <p class="capability-desc">Monitor vaccinations, medications & vet visits easily.</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Cap 2 -->
+            <div class="col-lg-3 col-md-6">
+                <div class="capability-item">
+                    <div class="capability-icon-circle">
+                        <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M11 6.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5zm-6 2.5a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5z"/><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/></svg>
+                    </div>
+                    <div>
+                        <h4 class="capability-title">Reminders & Alerts</h4>
+                        <p class="capability-desc">Never miss an important appointment.</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Cap 3 -->
+            <div class="col-lg-3 col-md-6">
+                <div class="capability-item">
+                    <div class="capability-icon-circle">
+                        <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path fill-rule="evenodd" d="M5.216 14A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216z"/><path d="M4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/></svg>
+                    </div>
+                    <div>
+                        <h4 class="capability-title">Community Support</h4>
+                        <p class="capability-desc">Connect with pet parents and share experiences.</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Cap 4 -->
+            <div class="col-lg-3 col-md-6">
+                <div class="capability-item">
+                    <div class="capability-icon-circle">
+                        <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z"/></svg>
+                    </div>
+                    <div>
+                        <h4 class="capability-title">All In One Place</h4>
+                        <p class="capability-desc">Everything your pet needs, all in one dashboard.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loved by Pet Parents Header Section -->
+<div class="container mt-5">
+    <div class="testimonials-header-block">
+        <div>
+            <h2 class="testimonials-title">Loved by Pet Parents 💚</h2>
+            <p class="testimonials-subtitle">Real stories from pet owners who trust PetCare AI.</p>
+        </div>
+        <div>
+            <a href="#reviewFormBlock" class="btn-outline-green" id="scrollToShareBtn">
+                <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="me-1"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/></svg>
+                Share Your Story
+            </a>
+        </div>
+    </div>
+
+    <!-- Testimonials Slider Container -->
+    <div class="testimonial-carousel-container">
+        {% if featured_reviews %}
+            <div id="petParentsCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="6000">
+                <div class="carousel-inner">
+                    {% for review in featured_reviews %}
+                        {% if forloop.counter0|divisibleby:3 %}
+                            <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                <div class="row g-4">
+                        {% endif %}
+                        <div class="col-lg-4 col-md-6 col-12">
+                            <article class="testimonial-card">
+                                <div class="stars-row">
+                                    {% for _ in "12345" %}
+                                        <span>
+                                            {% if forloop.counter <= review.rating %}
+                                                &#9733;
+                                            {% else %}
+                                                <span class="text-secondary opacity-25">&#9733;</span>
+                                            {% endif %}
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                                <span class="rating-value-badge">{{ review.rating }}/5</span>
+                                <p class="quote-content">
+                                    “{{ review.message|truncatechars:180 }}”
+                                </p>
+                                <div class="testimonial-user">
+                                    <div class="user-avatar-circle">
+                                        {{ review.initials }}
+                                    </div>
+                                    <div>
+                                        <h4 class="user-name">{{ review.name }}</h4>
+                                        <span class="user-role">{{ review.role|default:"Pet Owner" }}</span>
+                                    </div>
+                                </div>
+                            </article>
+                        </div>
+                        {% if forloop.counter|divisibleby:3 or forloop.last %}
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+                <!-- Carousel Dot indicators -->
+                {% if featured_reviews|length > 3 %}
+                    <ul class="carousel-dots">
+                        <li data-bs-target="#petParentsCarousel" data-bs-slide-to="0" class="active">
+                            <button class="carousel-dot-btn active" aria-label="Slide 1"></button>
+                        </li>
+                        {% if featured_reviews|length > 3 %}
+                            <li data-bs-target="#petParentsCarousel" data-bs-slide-to="1">
+                                <button class="carousel-dot-btn" aria-label="Slide 2"></button>
+                            </li>
+                        {% endif %}
+                        {% if featured_reviews|length > 6 %}
+                            <li data-bs-target="#petParentsCarousel" data-bs-slide-to="2">
+                                <button class="carousel-dot-btn" aria-label="Slide 3"></button>
+                            </li>
+                        {% endif %}
+                    </ul>
+
+                    <!-- Floating Outer controls -->
+                    <button class="carousel-control-outer control-left" type="button" data-bs-target="#petParentsCarousel" data-bs-slide="prev" aria-label="Previous slide">
+                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/></svg>
+                    </button>
+                    <button class="carousel-control-outer control-right" type="button" data-bs-target="#petParentsCarousel" data-bs-slide="next" aria-label="Next slide">
+                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/></svg>
+                    </button>
+                {% endif %}
+            </div>
+        {% else %}
+            <!-- Static Testimonial Cards when there are no dynamic reviews -->
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6 col-12">
+                    <article class="testimonial-card">
+                        <div class="stars-row">★★★★★</div>
+                        <span class="rating-value-badge">5/5</span>
+                        <p class="quote-content">
+                            “Booked within minutes. Clean and user-friendly website. PetCare AI completely changed how I look after my dog.”
+                        </p>
+                        <div class="testimonial-user">
+                            <div class="user-avatar-circle">AS</div>
+                            <div>
+                                <h4 class="user-name">Asish S</h4>
+                                <span class="user-role">Dog Owner</span>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+                <div class="col-lg-4 col-md-6 col-12">
+                    <article class="testimonial-card">
+                        <div class="stars-row">★★★★★</div>
+                        <span class="rating-value-badge">5/5</span>
+                        <p class="quote-content">
+                            “PetCare AI helped me understand my pet's health and care needs easily. Very useful insights!”
+                        </p>
+                        <div class="testimonial-user">
+                            <div class="user-avatar-circle">NN</div>
+                            <div>
+                                <h4 class="user-name">Neha Nair</h4>
+                                <span class="user-role">Cat Owner</span>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+                <div class="col-lg-4 col-md-6 col-12">
+                    <article class="testimonial-card">
+                        <div class="stars-row">★★★★★</div>
+                        <span class="rating-value-badge">5/5</span>
+                        <p class="quote-content">
+                            “Great platform for pet parents. Everything I need for my pet, in one place. Highly recommend.”
+                        </p>
+                        <div class="testimonial-user">
+                            <div class="user-avatar-circle">RM</div>
+                            <div>
+                                <h4 class="user-name">Rohit Menon</h4>
+                                <span class="user-role">Dog Owner</span>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Review Form Section -->
+    <div id="reviewFormBlock" class="row justify-content-center mt-5 pt-3">
+        <div class="col-lg-8">
+            <div class="review-form-card bg-white p-4 rounded-4 shadow-sm">
+                <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+                    <div>
+                        <h3 class="h4 fw-bold mb-1">Write Your Story</h3>
+                        <p class="text-muted small mb-0">Your review will be published immediately on the homepage.</p>
+                    </div>
+                    {% if user.is_authenticated %}
+                        <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2">Signed in as {{ user.get_full_name|default:user.username }}</span>
+                    {% endif %}
+                </div>
+
+                {% if user.is_authenticated %}
+                    <form method="post" class="row g-3">
+                        {% csrf_token %}
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small text-uppercase">{{ review_form.role.label }}</label>
+                            {{ review_form.role }}
+                            {% for error in review_form.role.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small text-uppercase">{{ review_form.rating.label }}</label>
+                            {{ review_form.rating }}
+                            <div class="d-flex flex-wrap align-items-center gap-3">
+                                <div class="review-star-picker" role="radiogroup" aria-label="Rating" data-selected="{{ review_form.rating.value|default:'5' }}">
+                                    <button type="button" class="review-star-button" data-rating="1" role="radio" aria-label="1 star" aria-checked="false">&#9733;</button>
+                                    <button type="button" class="review-star-button" data-rating="2" role="radio" aria-label="2 stars" aria-checked="false">&#9733;</button>
+                                    <button type="button" class="review-star-button" data-rating="3" role="radio" aria-label="3 stars" aria-checked="false">&#9733;</button>
+                                    <button type="button" class="review-star-button" data-rating="4" role="radio" aria-label="4 stars" aria-checked="false">&#9733;</button>
+                                    <button type="button" class="review-star-button" data-rating="5" role="radio" aria-label="5 stars" aria-checked="false">&#9733;</button>
+                                </div>
+                                <span class="review-rating-label" id="reviewRatingLabel">Excellent</span>
+                            </div>
+                            {% for error in review_form.rating.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold small text-uppercase">{{ review_form.message.label }}</label>
+                            {{ review_form.message }}
+                            {% for error in review_form.message.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary rounded-pill px-4">Submit Review</button>
+                        </div>
+                    </form>
+                {% else %}
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 bg-light rounded-4 p-3">
+                        <span class="text-muted small">Sign in to submit your own PetCare AI review.</span>
+                        <a href="{% url 'accounts:login' %}" class="btn btn-primary rounded-pill px-4">Sign In</a>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -783,59 +1092,73 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+    // Star Picker rating logic
     const picker = document.querySelector(".review-star-picker");
     const input = document.getElementById("reviewRatingInput");
     const label = document.getElementById("reviewRatingLabel");
-    if (!picker || !input || !label) {
-        return;
+    if (picker && input && label) {
+        const labels = {
+            1: "Poor",
+            2: "Fair",
+            3: "Good",
+            4: "Very good",
+            5: "Excellent",
+        };
+        const buttons = Array.from(picker.querySelectorAll(".review-star-button"));
+
+        const paint = (rating, className) => {
+            buttons.forEach((button) => {
+                const value = Number(button.dataset.rating);
+                button.classList.toggle(className, value <= rating);
+            });
+        };
+
+        const setRating = (rating) => {
+            const value = Math.max(1, Math.min(5, Number(rating) || 5));
+            input.value = String(value);
+            label.textContent = labels[value];
+            buttons.forEach((button) => {
+                const buttonRating = Number(button.dataset.rating);
+                button.classList.toggle("active", buttonRating <= value);
+                button.setAttribute("aria-checked", buttonRating === value ? "true" : "false");
+            });
+        };
+
+        buttons.forEach((button) => {
+            button.addEventListener("mouseenter", () => paint(Number(button.dataset.rating), "preview"));
+            button.addEventListener("focus", () => paint(Number(button.dataset.rating), "preview"));
+            button.addEventListener("mouseleave", () => paint(0, "preview"));
+            button.addEventListener("blur", () => paint(0, "preview"));
+            button.addEventListener("click", () => setRating(button.dataset.rating));
+        });
+
+        setRating(picker.dataset.selected);
     }
 
-    const labels = {
-        1: "Poor",
-        2: "Fair",
-        3: "Good",
-        4: "Very good",
-        5: "Excellent",
-    };
-    const buttons = Array.from(picker.querySelectorAll(".review-star-button"));
-
-    const paint = (rating, className) => {
-        buttons.forEach((button) => {
-            const value = Number(button.dataset.rating);
-            button.classList.toggle(className, value <= rating);
-        });
-    };
-
-    const setRating = (rating) => {
-        const value = Math.max(1, Math.min(5, Number(rating) || 5));
-        input.value = String(value);
-        label.textContent = labels[value];
-        buttons.forEach((button) => {
-            const buttonRating = Number(button.dataset.rating);
-            button.classList.toggle("active", buttonRating <= value);
-            button.setAttribute("aria-checked", buttonRating === value ? "true" : "false");
-        });
-    };
-
-    buttons.forEach((button) => {
-        button.addEventListener("mouseenter", () => paint(Number(button.dataset.rating), "preview"));
-        button.addEventListener("focus", () => paint(Number(button.dataset.rating), "preview"));
-        button.addEventListener("mouseleave", () => paint(0, "preview"));
-        button.addEventListener("blur", () => paint(0, "preview"));
-        button.addEventListener("click", () => setRating(button.dataset.rating));
-        button.addEventListener("keydown", (event) => {
-            if (event.key === "ArrowLeft" || event.key === "ArrowDown") {
-                event.preventDefault();
-                setRating(Number(input.value) - 1);
-            }
-            if (event.key === "ArrowRight" || event.key === "ArrowUp") {
-                event.preventDefault();
-                setRating(Number(input.value) + 1);
+    // Scroll smoothly to the review form block when "Share Your Story" is clicked
+    const shareBtn = document.getElementById("scrollToShareBtn");
+    if (shareBtn) {
+        shareBtn.addEventListener("click", function (e) {
+            e.preventDefault();
+            const target = document.getElementById("reviewFormBlock");
+            if (target) {
+                target.scrollIntoView({ behavior: "smooth" });
             }
         });
-    });
+    }
 
-    setRating(picker.dataset.selected);
+    // Carousel indicator dot auto-syncing
+    const carouselEl = document.getElementById("petParentsCarousel");
+    if (carouselEl) {
+        carouselEl.addEventListener("slide.bs.carousel", function (event) {
+            const slideTo = event.to;
+            const dots = document.querySelectorAll(".carousel-dots .carousel-dot-btn");
+            dots.forEach((dot, idx) => {
+                dot.classList.toggle("active", idx === slideTo);
+                dot.parentElement.classList.toggle("active", idx === slideTo);
+            });
+        });
+    }
 });
 </script>
 
