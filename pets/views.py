@@ -386,7 +386,6 @@ def report_missing_view(request):
         
         form = MissingPetForm(user=request.user, initial=initial)
         
-    import json
     user_pets = Pet.objects.filter(owner=request.user)
     pets_data = {
         pet.id: {
@@ -395,12 +394,11 @@ def report_missing_view(request):
             "breed": pet.breed
         } for pet in user_pets
     }
-    pets_json = json.dumps(pets_data)
         
     return render(request, "pets/report_missing.html", {
         "form": form, 
         "active_section": "missing_pets",
-        "pets_json": pets_json
+        "pets_data": pets_data
     })
 
 
@@ -417,7 +415,6 @@ def edit_missing_pet_view(request, report_id):
     else:
         form = MissingPetForm(user=request.user, instance=report)
 
-    import json
     user_pets = Pet.objects.filter(owner=request.user)
     pets_data = {
         pet.id: {
@@ -432,7 +429,7 @@ def edit_missing_pet_view(request, report_id):
         "report": report,
         "is_update": True,
         "active_section": "missing_pets",
-        "pets_json": json.dumps(pets_data),
+        "pets_data": pets_data,
     })
 
 

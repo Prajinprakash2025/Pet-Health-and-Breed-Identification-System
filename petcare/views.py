@@ -37,8 +37,8 @@ def home(request):
         is_approved=True,
         show_on_home=True,
     ).order_by("-updated_at", "-created_at")[:9])
-    featured_reviews = home_reviews[:6]
-    additional_reviews = home_reviews[6:]
+    featured_reviews = home_reviews[:4]
+    additional_reviews = home_reviews[4:]
     approved_reviews = CustomerReview.objects.filter(is_approved=True, show_on_home=True)
     review_count = approved_reviews.count()
     average_rating = approved_reviews.aggregate(value=Avg("rating"))["value"] or 5

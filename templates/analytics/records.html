@@ -60,7 +60,7 @@
 <div class="chart-card mb-4">
     <div class="chart-card-title">💉 Vaccination Records</div>
     {% if vaccinations %}
-    <div class="table-responsive">
+    <div class="table-responsive table-scrollable">
         <table class="data-table">
             <thead>
                 <tr>
@@ -99,7 +99,7 @@
 <div class="chart-card">
     <div class="chart-card-title">🏥 Medical Visit Records</div>
     {% if medical_records %}
-    <div class="table-responsive">
+    <div class="table-responsive table-scrollable">
         <table class="data-table">
             <thead>
                 <tr>
@@ -141,11 +141,20 @@
 <script>
 Chart.defaults.font.family = "'Inter', sans-serif";
 Chart.defaults.plugins.legend.labels.usePointStyle = true;
+
+const vaxLabels = {{ vax_labels|safe }};
+const vaxColorMap = {
+    'Completed': '#22C55E',
+    'Scheduled': '#3B82F6',
+    'Missed': '#EF4444'
+};
+const vaxColors = vaxLabels.map(label => vaxColorMap[label] || '#64748B');
+
 new Chart(document.getElementById('vaxChart'), {
     type: 'doughnut',
     data: {
-        labels: {{ vax_labels|safe }},
-        datasets: [{ data: {{ vax_counts|safe }}, backgroundColor: ['#22C55E', '#3B82F6', '#EF4444'], borderWidth: 0, hoverOffset: 10 }]
+        labels: vaxLabels,
+        datasets: [{ data: {{ vax_counts|safe }}, backgroundColor: vaxColors, borderWidth: 0, hoverOffset: 10 }]
     },
     options: { cutout: '55%', plugins: { legend: { position: 'right', labels: { padding: 20 } } }, responsive: true, maintainAspectRatio: false }
 });

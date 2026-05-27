@@ -515,6 +515,16 @@
         position: relative;
     }
 
+    .review-reply {
+        background: #f8fafc;
+        border-left: 4px solid var(--primary-green);
+    }
+
+    .review-reply-text {
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+
     .testimonial-user {
         display: flex;
         align-items: center;
@@ -937,7 +947,7 @@
     <div class="testimonials-header-block">
         <div>
             <h2 class="testimonials-title">Loved by Pet Parents 💚</h2>
-            <p class="testimonials-subtitle">Real stories from pet owners who trust PetCare AI.</p>
+            <p class="testimonials-subtitle">Showing the latest {{ featured_reviews|length }} of {{ review_count }} stories from pet owners who trust PetCare AI.</p>
         </div>
         <div>
             <a href="#reviewFormBlock" class="btn-outline-green" id="scrollToShareBtn">
@@ -974,6 +984,12 @@
                                 <p class="quote-content">
                                     “{{ review.message|truncatechars:180 }}”
                                 </p>
+                                {% if review.admin_reply %}
+                                    <div class="review-reply rounded-4 p-3 mt-auto mb-3 text-start">
+                                        <small class="text-primary fw-bold text-uppercase d-block mb-1" style="color: var(--primary-green) !important;">Admin Reply</small>
+                                        <p class="review-reply-text text-muted small mb-0">{{ review.admin_reply }}</p>
+                                    </div>
+                                {% endif %}
                                 <div class="testimonial-user">
                                     <div class="user-avatar-circle">
                                         {{ review.initials }}

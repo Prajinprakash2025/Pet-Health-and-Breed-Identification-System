@@ -156,9 +156,17 @@ new Chart(document.getElementById('healthChart'), {
 {% endif %}
 
 {% if vax_labels %}
+const vaxLabels = {{ vax_labels|safe }};
+const vaxColorMap = {
+    'Completed': GREEN,
+    'Scheduled': BLUE,
+    'Missed': RED
+};
+const vaxColors = vaxLabels.map(label => vaxColorMap[label] || SLATE);
+
 new Chart(document.getElementById('vaxChart'), {
     type: 'doughnut',
-    data: { labels: {{ vax_labels|safe }}, datasets: [{ data: {{ vax_counts|safe }}, backgroundColor: [GREEN, BLUE, RED], borderWidth: 0, hoverOffset: 10 }] },
+    data: { labels: vaxLabels, datasets: [{ data: {{ vax_counts|safe }}, backgroundColor: vaxColors, borderWidth: 0, hoverOffset: 10 }] },
     options: { cutout: '55%', plugins: { legend: { position: 'bottom', labels: { padding: 16 } } }, responsive: true, maintainAspectRatio: false }
 });
 {% endif %}

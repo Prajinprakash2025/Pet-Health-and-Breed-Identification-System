@@ -755,7 +755,50 @@ body.has-dashboard-sidebar .footer {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 6px 16px rgba(0, 0, 0, 0.04);
   border: 1px solid rgba(0, 0, 0, 0.04);
   height: 100%;
+  max-width: 100%;
+  overflow: hidden; /* Prevents wide content from breaking card boundaries */
 }
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-scrollable {
+  max-height: 380px;
+  overflow-y: auto;
+  border: 1px solid #f1f5f9;
+  border-radius: 8px;
+}
+
+.table-scrollable thead th {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: #f8fafc !important;
+  box-shadow: inset 0 -2px 0 #e2e8f0;
+}
+
+.table-scrollable::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.table-scrollable::-webkit-scrollbar-track {
+  background: #f8fafc;
+  border-radius: 999px;
+}
+
+.table-scrollable::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+}
+
+.table-scrollable::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
 
 .chart-card-title {
   font-weight: 700;
